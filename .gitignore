@@ -33,6 +33,7 @@
 /[Aa]ssets/Plugins/Editor/JetBrains*
 # Jetbrains Rider personal-layer settings
 *.DotSettings.user
+.idea/
 
 # Visual Studio cache directory
 .vs/
@@ -48,6 +49,9 @@ ExportedObj/
 *.sln
 *.slnx
 *.suo
+*.rsuser
+*.userosscache
+*.sln.docstates
 *.tmp
 *.user
 *.userprefs
@@ -58,6 +62,20 @@ ExportedObj/
 *.mdb
 *.opendb
 *.VC.db
+Generated\ Files/
+*.code-workspace
+
+# Visual Studio build outputs
+[Dd]ebug/
+[Dd]ebugPublic/
+[Rr]elease/
+[Rr]eleases/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+[Bb]in/
 
 # Unity3D generated meta files
 *.pidb.meta
