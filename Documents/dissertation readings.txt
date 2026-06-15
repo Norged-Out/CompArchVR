@@ -1,0 +1,95 @@
+Dissertation Readings
+
+Questions to ask:
+- What to do if reading is not in TCD library?
+- Is Google Scholar good enough?
+- Is IEEE Xplore also a good alternative?
+- Should I use Zotero?
+- How to make reading efficient?
+- ask about SQLator:  https://dl.acm.org/doi/10.1145/1026487.1008055
+- paper I want to get: https://www.spiedigitallibrary.org/conference-proceedings-of-spie/13732/137321Q/Construction-and-realization-of-microprocessor-pipeline-virtual-reality-system/10.1117/12.3071905.short?utm_source=chatgpt.com
+
+researchgate, academia.edu
+
+Reading Groups:
+1. Database Visualization in VR
+2. Educational VR for Database Learning
+3. VR-based Learning for Computer Architecture
+4. VR in Computer Science Education
+5. Challenges of VR in Education
+6. Visualization and VR Design (skeptical about this, may merge depending on accumulated readings later)
+7. misc docs on evaluation, adaptivity, and implementation in VR Education (even more skeptical about this)
+
+Notes:
+Oberhauser papers are connected
+- first one is about VRiDaM (Virtual Reality Immersion in Data Models)
+- "a generic database-model approach for visualizing, navigating, and conveying database-model information interactively in a web browser using WebVR technology"
+- uses Benediktine space to map the information
+- uses WebVR for accessibility
+- is a tool rather than a whole query engine
+- second one expands on trade-offs between WebVR approach and a Headset approach
+
+Data Visceralization
+- "a datadriven experience which evokes visceral feelings within a user to facilitate intuitive understanding of physical measurements and quantities."
+- shows a few different "design probes" of how VR can help visualize things and people interact with events
+- talks about how 1:1 mapping enhances learning experiences, notes on complexity weakening focus
+- suggests that vr should complement visualisation than replace the analytical part of it
+
+Linked Data
+- talks about a prototype called Graph2VR to execute queries against linked data graphs and then explore the resulting subgraphs in VR
+- discusses how VR could address spacial congestion of graph nodes, as well as issues with navigation and comprehension in 2D vs 3D
+- converts SPARQL queries into visual representation of returned data
+ 
+2005
+- basically covers technicalities of merging VR with a DBMS
+- a VR theatre experience where users interact with the scene which is handled by a multimedia database-model
+- leaned more so on a cultural model and how to incorporate databases to give a rich VR experience
+
+Kewat
+- pretty short read from a friend, only serves as a proof of concept
+- prototype that simulates ER diagrams Interactions, SQL query simulations, normalization
+
+Adaptive Games SQL
+- GBL approach (Game-based Learning) to SQL
+- produced a narrative where the player is a detective and has to string together clues through a query in order to achieve results
+- showed differences in how offering adaptive modes for learning may perform better than just textbook learning
+
+Comp Architecture through mobile game
+- not so much about visualisation of computer architecture, but more so a paper on learning it through a game
+- game is a platformer, player collects items that have info on concepts, fights are QnA sessions
+- once again, leans into proof of concept of comp architecture being a hard to articulate course
+- can be referenced for different methodology of learning
+
+Dascalu
+- VR approach on the assembly of a computer instead of doing it in a lab with the risk of breaking components
+- help understand how exactly the pipeline works, to understand the importance of different components
+- a simple method of exploring architecture decisions in a safe environment through active interactions
+
+Serious Game
+- this one actually shows a vr game of how exactly internal CPU operations works: intstruction fetch, execution, interrupt handling
+- being able to visualize registers, memory, and understanding the pipeline in an immersive environment improved engagement
+- game proceeds in a level based experience of slowly understanding and tackling comp architecture concepts
+- probably the closest implementation to my idea
+
+Pirker
+- this is about how VR can be useful in teaching CS concepts through visual assistance
+- showcases a simple game to learn sorting algorithm, show how interactive approach outperforms textbased debugging approach
+- can be used to define motivations on bridging gap between abstract concepts and interactive applications
+
+VR in CS education
+- not really much of a focus, but rather an analysis of the use of VR in CS education
+- review later, might get some insight on usage rates of VR?
+
+Samala
+- even more abstract, since this one is about usage of VR in education as a whole
+- review later
+
+Cook
+- talks about the difficulties of incorporating VR in educative environment
+- highlights a few methodologies to consider 
+- review later
+
+Korkut & Surer 
+- pretty large paper, in-depth discussion on the difficulties of visual clutter in 2D space
+- discusses few approaches of incorporation of VR to tackle challenges and prioritize engagement over analytical performance
+- may be used to motivate visualization choices 
