@@ -122,3 +122,36 @@ InitTestScene*.unity*
 
 # Auto-generated cache in Assets folder
 /[Aa]ssets/[Ss]ceneDependencyCache*
+
+# Nested Unity project in this repository
+ThePrototype/[Ll]ibrary/
+ThePrototype/[Tt]emp/
+ThePrototype/[Oo]bj/
+ThePrototype/[Bb]uild/
+ThePrototype/[Bb]uilds/
+ThePrototype/[Ll]ogs/
+ThePrototype/[Uu]ser[Ss]ettings/
+ThePrototype/[Mm]emoryCaptures/
+ThePrototype/[Rr]ecordings/
+ThePrototype/ServerData/
+ThePrototype/Assets/StreamingAssets/aa*
+ThePrototype/Assets/AddressableAssetsData/link.xml*
+ThePrototype/Assets/Addressables_Temp*
+ThePrototype/Assets/AddressableAssetsData/*/*.bin*
+ThePrototype/Assets/Unity.VisualScripting.Generated/VisualScripting.Flow/UnitOptions.db
+ThePrototype/Assets/Unity.VisualScripting.Generated/VisualScripting.Flow/UnitOptions.db.meta
+ThePrototype/Assets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers
+ThePrototype/Assets/Unity.VisualScripting.Generated/VisualScripting.Core/Property Providers.meta
+ThePrototype/Assets/InitTestScene*.unity*
+ThePrototype/Assets/SceneDependencyCache*
+
+# Optional editor-only template walkthrough content
+ThePrototype/Assets/VRTemplateAssets/Tutorial/
+ThePrototype/Assets/VRTemplateAssets/Tutorial.meta
+ThePrototype/Assets/Samples/
+ThePrototype/Assets/Samples.meta
+ThePrototype/Assets/CompositionLayers/
+ThePrototype/Assets/CompositionLayers.meta
+ThePrototype/Assets/CompositionLayers/UserSettings/
+ThePrototype/Assets/CompositionLayers/UserSettings.meta
+ThePrototype/.vsconfig
