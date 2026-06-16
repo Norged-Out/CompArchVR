@@ -3,15 +3,15 @@
 ## Current Status
 
 Project phase:
-- Early prototype + planning consolidation
+- First playable `add` vertical slice baseline
 
 Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype focus:
-- placeholder CPU datapath nodes
-- XR interaction foundations
-- initial instruction-system architecture drafts
+- gated `add` lesson flow
+- XR button-driven register selection
+- reusable datapath lesson scaffolding for `addi` and `lw`
 - narrowed dissertation scope after supervisor discussion
 
 Current milestone:
@@ -24,16 +24,14 @@ Current milestone:
 The project now has:
 - a Unity project committed and pushed
 - a `Testing Ground` scene being used as the active prototype sandbox
-- five placeholder CPU nodes in the scene:
-  - `PC`
-  - `Instruction Memory`
-  - `Registers`
-  - `ALU`
-  - `Write Back`
-- a physical XR push button that advances the node highlight sequence
-- a first draft node-sequencing script in `Assets/MyScripts`
-- an initial `InstructionSystemV1` script scaffold for future instruction definitions and lesson flow
-- a clarified project direction focused on a narrow, defensible learning objective rather than a grand all-of-architecture simulator
+- a scene-linked lesson flow + node map on `CPU Placeholder Nodes`
+- a first playable `add` walkthrough that auto-loads on play
+- explicit datapath highlighting by node id rather than incidental sequence order
+- a runtime-created `Data Memory` placeholder so the scene is ready for `lw`
+- a world-space lesson UI that shows instruction, stage, explanation, and feedback
+- a curated physical register bank for operand selection
+- a cleaner lesson architecture split across focused scripts instead of one large controller
+- draft `addi` and `lw` instruction assets for later extension
 
 ## Chronological Entries
 
@@ -81,30 +79,120 @@ Completed:
   - on `2026-06-29`, the user intends to demo this V1 to the supervisor
   - this does not mean later expansion is off the table
 
+### 2026-06-16 - Add Vertical Slice Implemented
+
+Completed:
+- evolved `CpuNodeSequenceController` from pure sequence stepping into a reusable node highlighter that can also route the existing advance button through lesson progression
+- added `DatapathNodeRegistry` to map logical datapath node ids to the actual placeholder renderers in `Testing Ground`
+- converted `InstructionFlowControllerDraft` into the active V1 lesson runtime
+- expanded `InstructionFlowStep` with gating metadata:
+  - required interaction type
+  - required register selections
+  - optional write-back confirmation role
+- expanded `InstructionDefinition` with:
+  - assembly text
+  - field breakdown text
+  - expected operand registers
+  - curated register-bank choices
+- added `LessonInteractableButton` for runtime-built XR register buttons and the reset button
+- added `AddInstructionDefinition`, plus draft `AddiInstructionDefinition` and `LwInstructionDefinition`, under `Assets/MyData/Resources/InstructionDefinitions`
+- attached the lesson controller and datapath registry components to `CPU Placeholder Nodes` in `Testing Ground`
+- implemented a runtime-created `Data Memory` placeholder so the scene now supports the full single-cycle node set
+- implemented a runtime world-space lesson UI near the test zone
+- implemented a curated physical register bank for the first `add` lesson
+- implemented the first playable `add` walkthrough stages:
+  - `ProgramCounter`
+  - `InstructionMemory`
+  - `Registers`
+  - `ALU`
+  - `WriteBack`
+  - recap/completion
+
+Changed:
+- the original advance button now behaves as `Advance Step` during lesson play instead of blindly stepping the legacy sequence
+- register selection is now physically gated and wrong choices show local feedback
+- write-back requires a final physical confirmation of `rd`
+- `DataMemory` is available in the scene model but intentionally skipped by the `add` lesson
+
+Next:
+- test the in-headset readability and physical spacing of the runtime-created UI and register bank
+- validate that the register buttons feel reliable with the chosen XR interaction path
+- polish the `add` walkthrough wording and pacing if any step feels awkward
+- start extending the same lesson framework into `addi`
+
+Risks / Notes:
+- the new UI, register bank, reset button, and `Data Memory` placeholder are created at runtime on play rather than authored as static scene objects
+- this was the safest path from the current repo state without opening the Unity editor from here
+- the unrelated local file `ThePrototype/Assets/XR/AndroidXR/AndroidXRSettingsInitializer` was left untouched
+
+### 2026-06-16 - Lesson Runtime Refactored
+
+Completed:
+- refactored the oversized lesson controller into a smaller orchestration script:
+  - `CpuLessonFlow`
+- split the lesson runtime into focused helper scripts:
+  - `NodeMap`
+  - `LessonSetup`
+  - `LessonUI`
+  - `RegisterBank`
+  - `RegisterButton`
+  - `LessonChecks`
+  - `ButtonFactory`
+- moved the fallback `add` definition builder into:
+  - `InstructionDefaults`
+- removed the now-obsolete runtime button script:
+  - `LessonInteractableButton`
+- updated the instruction selection draft to start the lesson after loading an instruction
+
+Changed:
+- runtime-generated UI, register-bank, and reset-button creation are now explicitly treated as fallback scaffolding rather than the preferred long-term scene workflow
+- the main lesson flow now focuses on lesson state, progression, validation calls, and presentation updates instead of also constructing every runtime object itself
+- script names were simplified where it mattered most for readability:
+  - `InstructionFlowControllerDraft` -> `CpuLessonFlow`
+  - `DatapathNodeRegistry` -> `NodeMap`
+
+Next:
+- when Unity is open again, co-author the lesson UI and interaction layout in-scene instead of relying on runtime placement for final positioning
+- validate that the refactored lesson still behaves correctly in play mode
+- begin extending the same lesson framework into `addi` after the `add` slice is confirmed stable
+
+Risks / Notes:
+- this refactor was done without opening Unity today, so behavior still needs in-editor validation later
+- the scene/layout collaboration rule is now explicit: when placement matters visually, prefer user-guided scene authoring over silent code-built layout
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
 
 - `Testing Ground` is the sandbox scene
-- the prototype currently supports a simple step-through node highlight loop
-- the physical XR button interaction is working
+- the prototype now auto-loads a playable `add` lesson on play
+- the original scene advance button is still the primary progression input
+- the scene can still build a runtime lesson UI, runtime reset button, and runtime register bank as fallback scaffolding
 - minimal visual feedback is acceptable; heavy animation is not required
 
 ### Architecture / Script Baseline
 
 Current relevant scripts:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuNodeSequenceController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\NodeMap.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonSetup.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonUI.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterBank.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterButton.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\ButtonFactory.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefinition.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionRuntimeSelection.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionEnums.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionUiLayout.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionFlowControllerDraft.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefaults.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionSelectionUiControllerDraft.cs`
 
 Interpretation:
 - these are useful scaffolding
-- they should not be scrapped outright
-- they will likely be refined into a more stage-driven interaction/validation system
+- they have now been pushed into a working first-pass lesson system with a cleaner separation of responsibilities
+- the next work should refine and extend them rather than replace them
 
 ## Immediate Next Steps
 
@@ -112,33 +200,28 @@ Recommended next development priorities:
 
 1. Treat `add`, `addi`, and `lw` as the non-negotiable V1 set for the `2026-06-28` milestone.
    Recommended implementation order:
-   - `add`
    - `addi`
    - `lw`
 
-2. Convert the current "highlight sequence" prototype into a gated lesson flow.
+2. Validate the first playable `add` slice in headset.
    This means:
-   - stage progression
-   - correctness checks
-   - feedback for wrong choices
-   - explicit lesson prompts
+   - check readability of the lesson UI
+   - check reachability/comfort of the register bank
+   - confirm the advance/reset/register interactions feel reliable
+   - decide what should stay runtime-generated versus what should become scene-authored
 
-3. Build the first lesson loop around meaningful interactions only.
-   Keep physical:
-   - register selection
-   - mux/path choices
-   - destination/write-back decisions
-   Keep UI-based:
-   - opcode/funct/control lookup
-   - format reminders
-   - text prompts
-   - short explanations
+3. Refine the `add` lesson wording and pacing if needed.
+   Focus on:
+   - clearer stage prompts
+   - cleaner wrong-answer feedback
+   - stronger recap wording
 
-4. Extend the script architecture with stage/requirement data.
-   Likely future additions:
-   - instruction stage definitions
-   - interaction requirement definitions
-   - lesson validation logic
+4. Extend the same framework into `addi`.
+   Reuse:
+   - instruction assets
+   - node registry
+   - UI system
+   - curated register bank workflow
 
 5. Keep the post-V1 door open.
    After the June 29 supervisor demo:

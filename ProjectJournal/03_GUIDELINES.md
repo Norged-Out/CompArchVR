@@ -43,6 +43,19 @@ Reserved project folders currently in use:
 - `Assets/MyScripts`
 - `Assets/MyPrefabs`
 
+## Scene Collaboration Rule
+
+If scene placement, readability, spacing, or general visual feel matters:
+- do not silently solve it by generating everything in code
+- tell the user what needs to exist in-scene
+- let the user help place and eyeball it inside Unity
+
+Runtime-generated scene objects are acceptable only as:
+- temporary fallback scaffolding
+- emergency prototyping glue when Unity is not open
+
+They are not the preferred final workflow for layout-heavy scene elements.
+
 ## Design Rules
 
 Prefer:
@@ -78,6 +91,15 @@ Instead:
 - preserve useful data model ideas
 - refactor toward a stage-driven lesson system
 - introduce new data structures when the lesson design clearly needs them
+
+Do not allow one script to become a dumping ground for:
+- lesson state
+- scene setup
+- UI creation
+- validation logic
+- runtime button construction
+
+Prefer several focused scripts over one bloated controller.
 
 ## Documentation Update Rule
 

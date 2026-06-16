@@ -117,6 +117,31 @@ Why:
 Implication:
 - updating the journal is part of the workflow, not optional housekeeping
 
+## 2026-06-16 - Scene Layout Should Be Co-Authored, Not Silently Built In Code
+
+Decision:
+- when placement and visual feel matter, prefer scene-authored layout with the user present
+- runtime-generated UI and interaction objects are acceptable only as fallback scaffolding
+
+Why:
+- the user explicitly wants to eyeball placement and design choices in Unity
+- code-generated layout can be technically functional while still feeling wrong in-scene
+
+Implication:
+- future assistants should ask for scene objects or layout collaboration instead of defaulting to building everything procedurally
+
+## 2026-06-16 - Lesson Runtime Should Stay Split Across Focused Scripts
+
+Decision:
+- avoid bloating one controller with scene setup, validation, UI construction, and runtime interaction creation
+
+Why:
+- the user explicitly called out the old lesson controller as too bloated and hard to trust
+- smaller scripts make the prototype easier to reason about and safer to extend into `addi` and `lw`
+
+Implication:
+- future lesson work should preserve separation of concerns unless there is a strong reason to merge responsibilities
+
 ## Open Questions
 
 - which instruction should become the first fully playable lesson

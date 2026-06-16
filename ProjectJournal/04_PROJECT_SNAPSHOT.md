@@ -20,16 +20,25 @@ Scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype features:
-- placeholder CPU nodes
-- working physical XR push button
-- highlight progression through nodes
-- early instruction-system script scaffolding
+- auto-loaded `add` lesson on play
+- explicit node highlighting by datapath id
+- refactored lesson runtime split across small helper scripts
+- runtime world-space lesson UI fallback
+- runtime physical register bank + reset button fallback
+- draft instruction assets for `add`, `addi`, and `lw`
 
 ## Most Important Scripts Right Now
 
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuNodeSequenceController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\NodeMap.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonSetup.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonUI.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterBank.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterButton.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefinition.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionFlowControllerDraft.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefaults.cs`
 
 ## Recommended Development Order
 
@@ -63,6 +72,8 @@ Before stopping:
 
 ## Current Open Questions
 
+- how readable and comfortable the current lesson UI and register bank feel in-headset
+- which of those elements should become scene-authored instead of runtime-generated
 - how much of instruction decode should be physical vs UI-driven
 - how explicit the control-signal interactions should be in the first version
 - whether instruction choice is user-selected, randomized, or both
@@ -70,9 +81,9 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- define the `add` lesson as a gated stage flow first
-- decide the player actions required at each stage so the same structure can extend into `addi` and `lw`
-- reshape the instruction scripts toward stage/requirement-driven progression
+- validate and polish the playable `add` lesson in-headset
+- co-author any important UI/register-bank layout changes in-scene with the user
+- then extend the same framework into `addi`
 
 ## Personal Reminder
 
