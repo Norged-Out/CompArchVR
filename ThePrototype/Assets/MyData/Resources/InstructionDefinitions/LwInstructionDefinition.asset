@@ -1,0 +1,101 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
+  m_Name: LwInstructionDefinition
+  m_EditorClassIdentifier: 
+  displayName: lw
+  mnemonic: 8
+  format: 1
+  category: 2
+  summary: Load a word from Data Memory into rt using a base register plus immediate offset.
+  assemblyInstructionText: lw t1, 8(t0)
+  fieldBreakdownText: "opcode: 100011\nrs: t0\nrt: t1\nimmediate: 8"
+  opcodeBits: 100011
+  functBits: 
+  expectedRs: t0
+  expectedRt: t1
+  expectedRd: 
+  registerBankChoices:
+  - t0
+  - t1
+  - t2
+  - s0
+  - s1
+  - zero
+  touchesDataMemory: 1
+  writesRegisterFile: 1
+  usesImmediate: 1
+  usesDestinationRegister: 0
+  uiLayout:
+    showOpcode: 1
+    showRs: 1
+    showRt: 1
+    showRd: 0
+    showShamt: 0
+    showImmediate: 1
+    showFunct: 0
+    showAddress: 0
+  flowSteps:
+  - stepName: Fetch
+    highlightedNode: 1
+    explanation: Draft flow for lw. Fetch still starts from the Program Counter.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Instruction Memory
+    highlightedNode: 2
+    explanation: lw is I-type and uses the immediate field as an address offset.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Base Register + Offset
+    highlightedNode: 3
+    explanation: The learner will eventually choose the base register and the destination rt before reasoning about the address offset.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Address Calculation
+    highlightedNode: 4
+    explanation: The ALU adds the base register value and the sign-extended immediate to compute the memory address.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Data Memory
+    highlightedNode: 5
+    explanation: Data Memory is actively used by lw, unlike add. This is why the scene now includes a dedicated Data Memory placeholder.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Write Back
+    highlightedNode: 6
+    explanation: The loaded memory value writes back to rt.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 

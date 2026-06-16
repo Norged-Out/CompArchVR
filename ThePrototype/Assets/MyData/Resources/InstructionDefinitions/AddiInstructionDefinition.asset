@@ -1,0 +1,92 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
+  m_Name: AddiInstructionDefinition
+  m_EditorClassIdentifier: 
+  displayName: addi
+  mnemonic: 5
+  format: 1
+  category: 0
+  summary: Add an immediate value to a source register and write the result into rt.
+  assemblyInstructionText: addi t1, t0, 4
+  fieldBreakdownText: "opcode: 001000\nrs: t0\nrt: t1\nimmediate: 4"
+  opcodeBits: 001000
+  functBits: 
+  expectedRs: t0
+  expectedRt: t1
+  expectedRd: 
+  registerBankChoices:
+  - t0
+  - t1
+  - t2
+  - s0
+  - s1
+  - zero
+  touchesDataMemory: 0
+  writesRegisterFile: 1
+  usesImmediate: 1
+  usesDestinationRegister: 0
+  uiLayout:
+    showOpcode: 1
+    showRs: 1
+    showRt: 1
+    showRd: 0
+    showShamt: 0
+    showImmediate: 1
+    showFunct: 0
+    showAddress: 0
+  flowSteps:
+  - stepName: Fetch
+    highlightedNode: 1
+    explanation: Draft flow for addi. Fetch begins at the Program Counter as usual.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Instruction Memory
+    highlightedNode: 2
+    explanation: addi is I-type, so the immediate field replaces rd and funct.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Registers + Immediate
+    highlightedNode: 3
+    explanation: The learner will eventually need to choose rs, the destination rt, and reason about the immediate path.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: ALU Execute
+    highlightedNode: 4
+    explanation: addi should use the immediate input path into the ALU instead of a second register operand.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Write Back
+    highlightedNode: 6
+    explanation: The ALU result should write back to rt rather than rd.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 

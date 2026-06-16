@@ -70,3 +70,29 @@ public enum DatapathNodeId
     DataMemory,
     WriteBack,
 }
+
+/// <summary>
+/// The kind of learner action a lesson step expects before it can finish.
+/// This keeps the lesson data focused on pedagogy rather than scene-object details.
+/// </summary>
+public enum InstructionStepInteractionType
+{
+    None,
+    ContinueButton,
+    RegisterSelection,
+    WriteBackRegisterConfirmation,
+    Completion,
+}
+
+/// <summary>
+/// Logical operand roles used by the lesson system.
+/// These let the controller ask for "the rs register" or "the rd register"
+/// without hardcoding the actual register name into scene logic.
+/// </summary>
+public enum InstructionRegisterRole
+{
+    None,
+    Rs,
+    Rt,
+    Rd,
+}

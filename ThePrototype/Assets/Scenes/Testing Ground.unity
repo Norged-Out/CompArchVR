@@ -16898,6 +16898,8 @@ GameObject:
   m_Component:
   - component: {fileID: 910001000000000002}
   - component: {fileID: 910001000000000060}
+  - component: {fileID: 910001000000000061}
+  - component: {fileID: 910001000000000062}
   m_Layer: 0
   m_Name: CPU Placeholder Nodes
   m_TagString: Untagged
@@ -16948,6 +16950,48 @@ MonoBehaviour:
   m_HighlightEmissionColor: {r: 0.85, g: 0.45, b: 0.05, a: 1}
   m_HighlightScaleMultiplier: 1.08
   m_Loop: 1
+--- !u!114 &910001000000000061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f637a0cb87543729d63db2e97a6ce6d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &910001000000000062
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 910001000000000001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5c8d7731e6ee45079105d0ef36b5e62a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_CurrentInstruction: {fileID: 0}
+  m_RuntimeSelection:
+    definition: {fileID: 0}
+    selectedRs: t0
+    selectedRt: t1
+    selectedRd: t2
+    immediateValue: 0
+    immediateIsHex: 0
+    confirmedWriteBackRegister: 
+  m_NodeSequenceController: {fileID: 0}
+  m_NodeRegistry: {fileID: 0}
+  m_DefaultInstructionResourcePath: InstructionDefinitions/AddInstructionDefinition
+  m_AutoLoadInstructionOnStart: 1
+  m_AutoBuildLessonScene: 1
+  m_LessonUiLocalPosition: {x: 0, y: 1.45, z: 2.1}
+  m_RegisterBankLocalPosition: {x: 0, y: 0.05, z: 2.55}
+  m_ResetButtonLocalPosition: {x: -0.85, y: 0.35, z: 1.25}
+  m_RegisterButtonGridSpacing: {x: 0.4, y: 0.32}
 --- !u!1 &910001000000000011
 GameObject:
   m_ObjectHideFlags: 0

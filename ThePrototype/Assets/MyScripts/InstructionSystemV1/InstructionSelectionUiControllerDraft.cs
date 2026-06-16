@@ -19,7 +19,7 @@ public class InstructionSelectionUiControllerDraft : MonoBehaviour
     InstructionDefinition[] m_AvailableInstructions = Array.Empty<InstructionDefinition>();
 
     [SerializeField]
-    InstructionFlowControllerDraft m_FlowController;
+    CpuLessonFlow m_FlowController;
 
     [Header("Optional UI Field Roots")]
 
@@ -67,7 +67,10 @@ public class InstructionSelectionUiControllerDraft : MonoBehaviour
 
         var selectedInstruction = m_AvailableInstructions[instructionIndex];
         if (m_FlowController != null)
+        {
             m_FlowController.LoadInstruction(selectedInstruction);
+            m_FlowController.StartLesson();
+        }
 
         ApplyLayout(selectedInstruction != null ? selectedInstruction.uiLayout : null);
     }

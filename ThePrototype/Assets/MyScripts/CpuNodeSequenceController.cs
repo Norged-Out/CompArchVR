@@ -1,75 +1,119 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Cycles through a fixed list of renderers and keeps exactly one node highlighted at a time.
-/// This is used by the physical push button in Testing Ground to step through the placeholder
-/// CPU datapath nodes in order.
+/// Handles visual highlighting for datapath placeholder nodes.
+///
+/// The original version only stepped through a fixed renderer array.
+/// This version keeps that legacy fallback, but can also highlight exact
+/// logical datapath nodes by consulting the scene-side registry.
 /// </summary>
 public class CpuNodeSequenceController : MonoBehaviour
 {
-    // The order here matters: the first renderer is highlighted on the first button press,
-    // the second renderer on the next press, and so on.
     [SerializeField]
     Renderer[] m_NodeRenderers;
 
-    // Main color tint applied to the active node.
     [SerializeField]
     Color m_HighlightColor = new(1f, 0.82f, 0.2f, 1f);
 
-    // Extra glow color for shaders/materials that expose an emission channel.
-    // If the material does not support emission, this value will not be visible.
     [SerializeField]
     Color m_HighlightEmissionColor = new(0.85f, 0.45f, 0.05f, 1f);
 
-    // Small scale-up so the active node feels more "selected" even without strong material effects.
     [SerializeField]
     float m_HighlightScaleMultiplier = 1.08f;
 
-    // When enabled, the sequence wraps back to the first node after the last one.
     [SerializeField]
     bool m_Loop = true;
 
-    // Common shader property names used by Unity materials.
     static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
     static readonly int k_ColorId = Shader.PropertyToID("_Color");
     static readonly int k_EmissionColorId = Shader.PropertyToID("_EmissionColor");
 
-    MaterialPropertyBlock m_PropertyBlock;
-    Vector3[] m_OriginalScales;
-    Color[] m_OriginalColors;
-    bool[] m_UsesBaseColor;
-    bool[] m_HasEmission;
-    int m_CurrentIndex = -1;
+    readonly List<Renderer> m_TrackedRenderers = new();
+    readonly Dictionary<Renderer, RendererVisualState> m_RendererStates = new();
 
-    /// <summary>
-    /// Caches the original renderer state once so we can safely restore it later.
-    /// </summary>
+    MaterialPropertyBlock m_PropertyBlock;
+    Renderer m_CurrentHighlightedRenderer;
+    int m_CurrentSequenceIndex = -1;
+
+    NodeMap m_NodeMap;
+    CpuLessonFlow m_LessonFlow;
+
+    struct RendererVisualState
+    {
+        public Vector3 originalScale;
+        public Color originalColor;
+        public bool usesBaseColor;
+        public bool hasEmission;
+    }
+
     void Awake()
     {
-        CacheNodeState();
-        ApplyHighlight(-1);
+        m_NodeMap = GetComponent<NodeMap>();
+        m_LessonFlow = GetComponent<CpuLessonFlow>();
+
+        if (m_NodeMap != null && m_NodeMap.HasAnyNodes)
+            SetTrackedRenderers(m_NodeMap.GetOrderedRenderers());
+        else
+            SetTrackedRenderers(m_NodeRenderers);
+
+        ResetHighlight();
     }
 
-    /// <summary>
-    /// Resets every node when the component is disabled so the scene does not keep stale highlight state.
-    /// </summary>
     void OnDisable()
     {
-        ApplyHighlight(-1);
+        ResetHighlight();
     }
 
     /// <summary>
-    /// Advances the highlight to the next renderer in the list.
-    /// Called by the physical XR push button in the scene.
+    /// Replaces the tracked renderer set.
+    /// This is used after runtime scene setup adds the Data Memory placeholder.
+    /// </summary>
+    public void SetTrackedRenderers(IEnumerable<Renderer> renderers)
+    {
+        ResetHighlight();
+
+        m_TrackedRenderers.Clear();
+        m_RendererStates.Clear();
+        m_CurrentSequenceIndex = -1;
+
+        if (renderers == null)
+            return;
+
+        foreach (var nodeRenderer in renderers)
+        {
+            if (nodeRenderer == null || m_RendererStates.ContainsKey(nodeRenderer))
+                continue;
+
+            m_TrackedRenderers.Add(nodeRenderer);
+            CacheRendererState(nodeRenderer);
+        }
+    }
+
+    /// <summary>
+    /// Existing scene push button entrypoint.
+    ///
+    /// If the instruction lesson controller is active, the button advances the
+    /// lesson instead of blindly stepping to the next renderer.
     /// </summary>
     [ContextMenu("Advance Highlight")]
     public void AdvanceHighlight()
     {
-        if (m_NodeRenderers == null || m_NodeRenderers.Length == 0)
+        m_LessonFlow ??= GetComponent<CpuLessonFlow>();
+        if (m_LessonFlow != null && m_LessonFlow.IsLessonModeActive)
+        {
+            m_LessonFlow.HandleAdvanceButtonPressed();
+            return;
+        }
+
+        if (m_TrackedRenderers.Count == 0)
+            TryRefreshTrackedRenderers();
+
+        if (m_TrackedRenderers.Count == 0)
             return;
 
-        var nextIndex = m_CurrentIndex + 1;
-        if (nextIndex >= m_NodeRenderers.Length)
+        var nextIndex = m_CurrentSequenceIndex + 1;
+        if (nextIndex >= m_TrackedRenderers.Count)
         {
             if (!m_Loop)
                 return;
@@ -77,107 +121,109 @@ public class CpuNodeSequenceController : MonoBehaviour
             nextIndex = 0;
         }
 
-        ApplyHighlight(nextIndex);
+        m_CurrentSequenceIndex = nextIndex;
+        HighlightRenderer(m_TrackedRenderers[nextIndex]);
     }
 
     /// <summary>
-    /// Clears the active highlight and restores every node to its original appearance.
+    /// Highlights an exact logical datapath node if the registry knows it.
+    /// </summary>
+    public void HighlightNode(DatapathNodeId nodeId)
+    {
+        if (nodeId == DatapathNodeId.None)
+        {
+            ResetHighlight();
+            return;
+        }
+
+        m_NodeMap ??= GetComponent<NodeMap>();
+        if (m_NodeMap == null)
+        {
+            ResetHighlight();
+            return;
+        }
+
+        if (!m_NodeMap.TryGetRenderer(nodeId, out var targetRenderer) || targetRenderer == null)
+        {
+            ResetHighlight();
+            return;
+        }
+
+        if (!m_RendererStates.ContainsKey(targetRenderer))
+            SetTrackedRenderers(m_NodeMap.GetOrderedRenderers());
+
+        HighlightRenderer(targetRenderer);
+    }
+
+    /// <summary>
+    /// Clears the active highlight and restores all tracked renderers.
     /// </summary>
     [ContextMenu("Reset Highlight")]
     public void ResetHighlight()
     {
-        ApplyHighlight(-1);
+        HighlightRenderer(null);
+        m_CurrentSequenceIndex = -1;
     }
 
-    /// <summary>
-    /// Reads each renderer's original scale and material colors.
-    /// We use sharedMaterial here only to capture the baseline values without instantiating materials.
-    /// </summary>
-    void CacheNodeState()
+    void TryRefreshTrackedRenderers()
     {
-        if (m_NodeRenderers == null)
-            return;
+        m_NodeMap ??= GetComponent<NodeMap>();
+        if (m_NodeMap != null)
+            SetTrackedRenderers(m_NodeMap.GetOrderedRenderers());
+    }
 
-        m_PropertyBlock ??= new MaterialPropertyBlock();
-        m_OriginalScales = new Vector3[m_NodeRenderers.Length];
-        m_OriginalColors = new Color[m_NodeRenderers.Length];
-        m_UsesBaseColor = new bool[m_NodeRenderers.Length];
-        m_HasEmission = new bool[m_NodeRenderers.Length];
-
-        for (var i = 0; i < m_NodeRenderers.Length; i++)
+    void CacheRendererState(Renderer nodeRenderer)
+    {
+        var state = new RendererVisualState
         {
-            var nodeRenderer = m_NodeRenderers[i];
-            if (nodeRenderer == null)
-                continue;
+            originalScale = nodeRenderer.transform.localScale,
+            originalColor = Color.white,
+            usesBaseColor = false,
+            hasEmission = false,
+        };
 
-            // Store the node's original size so we can enlarge only the active one.
-            m_OriginalScales[i] = nodeRenderer.transform.localScale;
-
-            var material = nodeRenderer.sharedMaterial;
-            if (material == null)
-            {
-                m_OriginalColors[i] = Color.white;
-                continue;
-            }
-
+        var material = nodeRenderer.sharedMaterial;
+        if (material != null)
+        {
             if (material.HasProperty(k_BaseColorId))
             {
-                m_UsesBaseColor[i] = true;
-                m_OriginalColors[i] = material.GetColor(k_BaseColorId);
+                state.usesBaseColor = true;
+                state.originalColor = material.GetColor(k_BaseColorId);
             }
             else if (material.HasProperty(k_ColorId))
             {
-                m_OriginalColors[i] = material.GetColor(k_ColorId);
-            }
-            else
-            {
-                m_OriginalColors[i] = Color.white;
+                state.originalColor = material.GetColor(k_ColorId);
             }
 
-            // Not every shader supports emission, so we cache that capability per renderer.
-            m_HasEmission[i] = material.HasProperty(k_EmissionColorId);
+            state.hasEmission = material.HasProperty(k_EmissionColorId);
         }
+
+        m_RendererStates[nodeRenderer] = state;
     }
 
-    /// <summary>
-    /// Applies highlight styling to the requested index and restores all others.
-    /// </summary>
-    /// <param name="highlightedIndex">
-    /// The node index to highlight, or -1 to clear all highlights.
-    /// </param>
-    void ApplyHighlight(int highlightedIndex)
+    void HighlightRenderer(Renderer targetRenderer)
     {
-        m_CurrentIndex = highlightedIndex;
-
-        if (m_NodeRenderers == null || m_NodeRenderers.Length == 0)
-            return;
-
+        m_CurrentHighlightedRenderer = targetRenderer;
         m_PropertyBlock ??= new MaterialPropertyBlock();
 
-        for (var i = 0; i < m_NodeRenderers.Length; i++)
+        foreach (var nodeRenderer in m_TrackedRenderers)
         {
-            var nodeRenderer = m_NodeRenderers[i];
-            if (nodeRenderer == null)
+            if (nodeRenderer == null || !m_RendererStates.TryGetValue(nodeRenderer, out var state))
                 continue;
 
-            var isHighlighted = i == highlightedIndex;
-
-            // Scale only the active node so it stands out even if the material change is subtle.
+            var isHighlighted = nodeRenderer == targetRenderer;
             nodeRenderer.transform.localScale = isHighlighted
-                ? m_OriginalScales[i] * m_HighlightScaleMultiplier
-                : m_OriginalScales[i];
+                ? state.originalScale * m_HighlightScaleMultiplier
+                : state.originalScale;
 
-            // MaterialPropertyBlock lets us override visuals per renderer without modifying
-            // the shared material asset used elsewhere in the project.
             m_PropertyBlock.Clear();
 
-            if (m_UsesBaseColor[i])
-                m_PropertyBlock.SetColor(k_BaseColorId, isHighlighted ? m_HighlightColor : m_OriginalColors[i]);
+            if (state.usesBaseColor)
+                m_PropertyBlock.SetColor(k_BaseColorId, isHighlighted ? m_HighlightColor : state.originalColor);
             else
-                m_PropertyBlock.SetColor(k_ColorId, isHighlighted ? m_HighlightColor : m_OriginalColors[i]);
+                m_PropertyBlock.SetColor(k_ColorId, isHighlighted ? m_HighlightColor : state.originalColor);
 
-            // If the shader supports emission, add a little extra glow to the active node.
-            if (m_HasEmission[i])
+            if (state.hasEmission)
                 m_PropertyBlock.SetColor(k_EmissionColorId, isHighlighted ? m_HighlightEmissionColor : Color.black);
 
             nodeRenderer.SetPropertyBlock(m_PropertyBlock);

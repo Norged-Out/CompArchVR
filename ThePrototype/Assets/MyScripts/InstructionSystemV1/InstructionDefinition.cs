@@ -25,6 +25,25 @@ public class InstructionFlowStep
     // Lets us later insert pure explanation steps without necessarily moving
     // the highlight again.
     public bool advanceVisualHighlight = true;
+
+    // Describes how the player is expected to progress past this step.
+    public InstructionStepInteractionType requiredInteraction = InstructionStepInteractionType.ContinueButton;
+
+    // When true, the controller should block progression until the required
+    // interaction has been completed correctly.
+    public bool blockProgressUntilValidated = true;
+
+    // Ordered register choices needed by this step.
+    // For the first pass, this is mainly used by the "Registers" stage of add.
+    public InstructionRegisterRole[] requiredRegisterSelections = Array.Empty<InstructionRegisterRole>();
+
+    // Optional single register confirmation used by steps such as write-back.
+    public InstructionRegisterRole confirmationRegisterRole = InstructionRegisterRole.None;
+
+    // Future-facing placeholder for scene object validation.
+    // This is kept as a simple string for now so steps can name a required
+    // object without forcing the asset to reference a specific scene instance.
+    public string expectedTargetObjectName = string.Empty;
 }
 
 /// <summary>
@@ -55,12 +74,29 @@ public class InstructionDefinition : ScriptableObject
     public string summary =
         "Add two registers and write the result into a destination register.";
 
+    [TextArea(2, 3)]
+    public string assemblyInstructionText = "add t2, t0, t1";
+
+    [TextArea(3, 8)]
+    public string fieldBreakdownText =
+        "opcode: 000000\nrs: t0\nrt: t1\nrd: t2\nfunct: 100000";
+
     [Header("Encoding")]
 
     // Kept as strings for now because the teaching UI may want to display
     // literal bit patterns exactly as entered.
     public string opcodeBits = "000000";
     public string functBits = "100000";
+
+    [Header("Expected Operands")]
+
+    // The lesson controller compares player selections against these values.
+    public string expectedRs = "t0";
+    public string expectedRt = "t1";
+    public string expectedRd = "t2";
+
+    // Small curated set of choices to build a first-pass physical register bank.
+    public string[] registerBankChoices = { "t0", "t1", "t2", "s0", "s1", "zero" };
 
     [Header("Behavior Flags")]
 
@@ -79,4 +115,18 @@ public class InstructionDefinition : ScriptableObject
 
     // Ordered walkthrough for the instruction.
     public InstructionFlowStep[] flowSteps = Array.Empty<InstructionFlowStep>();
+
+    /// <summary>
+    /// Returns the expected register name for a logical operand role.
+    /// </summary>
+    public string GetExpectedRegisterName(InstructionRegisterRole role)
+    {
+        return role switch
+        {
+            InstructionRegisterRole.Rs => expectedRs,
+            InstructionRegisterRole.Rt => expectedRt,
+            InstructionRegisterRole.Rd => expectedRd,
+            _ => string.Empty,
+        };
+    }
 }

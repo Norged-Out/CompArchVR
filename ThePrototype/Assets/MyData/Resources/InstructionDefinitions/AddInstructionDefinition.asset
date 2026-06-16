@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
+  m_Name: AddInstructionDefinition
+  m_EditorClassIdentifier: 
+  displayName: add
+  mnemonic: 0
+  format: 0
+  category: 0
+  summary: Add two registers and write the result into a destination register.
+  assemblyInstructionText: add t2, t0, t1
+  fieldBreakdownText: "opcode: 000000\nrs: t0\nrt: t1\nrd: t2\nfunct: 100000"
+  opcodeBits: 000000
+  functBits: 100000
+  expectedRs: t0
+  expectedRt: t1
+  expectedRd: t2
+  registerBankChoices:
+  - t0
+  - t1
+  - t2
+  - s0
+  - s1
+  - zero
+  touchesDataMemory: 0
+  writesRegisterFile: 1
+  usesImmediate: 0
+  usesDestinationRegister: 1
+  uiLayout:
+    showOpcode: 1
+    showRs: 1
+    showRt: 1
+    showRd: 1
+    showShamt: 0
+    showImmediate: 0
+    showFunct: 1
+    showAddress: 0
+  flowSteps:
+  - stepName: Fetch
+    highlightedNode: 1
+    explanation: The Program Counter holds the address of the next instruction to fetch. Start the add walkthrough by reading the current PC value.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Instruction Memory
+    highlightedNode: 2
+    explanation: Instruction Memory uses the PC address to fetch the add instruction. For this first pass, the bit-field breakdown is shown in the lesson UI instead of making you manually build the full encoding.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Register Selection
+    highlightedNode: 3
+    explanation: Choose the operand registers in order. add reads rs and rt as ALU inputs, and rd is the destination that will receive the result.
+    advanceVisualHighlight: 1
+    requiredInteraction: 2
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections:
+    - 1
+    - 2
+    - 3
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: ALU Execute
+    highlightedNode: 4
+    explanation: The ALU adds the values from rs and rt. Because add is R-type, it does not use an immediate and it does not touch Data Memory.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Write Back
+    highlightedNode: 6
+    explanation: The ALU result is written back to rd. Confirm the correct destination register using the physical register bank.
+    advanceVisualHighlight: 1
+    requiredInteraction: 3
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 3
+    expectedTargetObjectName: 
+  - stepName: Recap
+    highlightedNode: 6
+    explanation: Recap: add fetched the instruction, read rs and rt from the register file, used the ALU to add them, skipped Data Memory, and wrote the result back to rd.
+    advanceVisualHighlight: 1
+    requiredInteraction: 4
+    blockProgressUntilValidated: 0
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
