@@ -35,7 +35,7 @@ public class CpuLessonFlow : MonoBehaviour
     bool m_AutoLoadInstructionOnStart = true;
 
     [SerializeField]
-    bool m_StartLessonOnPlay = true;
+    bool m_StartLessonOnPlay = false;
 
     int m_CurrentStepIndex = -1;
     int m_CurrentRegisterSelectionIndex;
@@ -95,6 +95,7 @@ public class CpuLessonFlow : MonoBehaviour
         m_CurrentRegisterSelectionIndex = 0;
 
         PrepareSceneForInstruction();
+        m_LessonSetup?.registerBank?.ResetAllRegisters();
         ClearFeedback();
         SyncRegisterVisuals();
     }
@@ -121,6 +122,7 @@ public class CpuLessonFlow : MonoBehaviour
 
         m_RuntimeSelection.definition = m_CurrentInstruction;
         m_RuntimeSelection.ResetOperands();
+        m_LessonSetup?.registerBank?.ResetAllRegisters();
         BeginLesson();
     }
 

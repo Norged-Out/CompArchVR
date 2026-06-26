@@ -24,7 +24,10 @@ Current prototype features:
 - explicit node highlighting by datapath id
 - refactored lesson runtime split across small helper scripts
 - runtime world-space lesson UI fallback
-- runtime physical register bank + reset button fallback
+- scene-authored `Register Bank` anchor for permanent register layout
+- editor-time register-bank builder for 32 grabbable MIPS registers
+- custom register prefab path under `D:\CompArchVR\ThePrototype\Assets\MyPrefabs\Registers`
+- local register-bank reset button path separate from lesson reset
 - draft instruction assets for `add`, `addi`, and `lw`
 
 ## Most Important Scripts Right Now
@@ -34,8 +37,11 @@ Current prototype features:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\NodeMap.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonSetup.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonUI.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterBank.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterButton.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankAuthoring.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankResetButton.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterButton.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefinition.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefaults.cs`
@@ -73,7 +79,8 @@ Before stopping:
 ## Current Open Questions
 
 - how readable and comfortable the current lesson UI and register bank feel in-headset
-- which of those elements should become scene-authored instead of runtime-generated
+- whether the generated register-bank layout needs spacing or height adjustment after the first in-editor pass
+- which remaining elements should become scene-authored instead of runtime-generated
 - how much of instruction decode should be physical vs UI-driven
 - how explicit the control-signal interactions should be in the first version
 - whether instruction choice is user-selected, randomized, or both
@@ -81,8 +88,9 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
+- open `Testing Ground`, let the `Register Bank` authoring script rebuild the 32 register pieces from the custom register prefab, and save the scene
+- co-author any spacing or readability changes to that bank in-scene with the user
 - validate and polish the playable `add` lesson in-headset
-- co-author any important UI/register-bank layout changes in-scene with the user
 - then extend the same framework into `addi`
 
 ## Personal Reminder

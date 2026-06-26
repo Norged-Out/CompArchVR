@@ -10,7 +10,7 @@ Current working scene:
 
 Current prototype focus:
 - gated `add` lesson flow
-- XR button-driven register selection
+- authored physical register selection
 - reusable datapath lesson scaffolding for `addi` and `lw`
 - narrowed dissertation scope after supervisor discussion
 
@@ -29,7 +29,10 @@ The project now has:
 - explicit datapath highlighting by node id rather than incidental sequence order
 - a runtime-created `Data Memory` placeholder so the scene is ready for `lw`
 - a world-space lesson UI that shows instruction, stage, explanation, and feedback
-- a curated physical register bank for operand selection
+- a scene-side `Register Bank` anchor for permanent register authoring
+- a register-bank authoring path that targets all 32 MIPS registers as grabbable scene objects
+- a register-bank rework in progress that restores the chunkier labeled register look instead of the failed tiny-cylinder pass
+- a dedicated register prefab path under `Assets/MyPrefabs/Registers`
 - a cleaner lesson architecture split across focused scripts instead of one large controller
 - draft `addi` and `lw` instruction assets for later extension
 
@@ -160,6 +163,63 @@ Risks / Notes:
 - this refactor was done without opening Unity today, so behavior still needs in-editor validation later
 - the scene/layout collaboration rule is now explicit: when placement matters visually, prefer user-guided scene authoring over silent code-built layout
 
+### 2026-06-26 - Register Bank Moved Toward Permanent Scene Authoring
+
+Completed:
+- treated the user-created `Register Bank` object in `Testing Ground` as the canonical register area
+- repurposed `RegisterBank` from a runtime button spawner into a scene-owned manager for authored register pieces
+- added `RegisterToken` to represent one physical grabbable MIPS register
+- added `RegisterBankAuthoring` to build the register bank in the Unity editor instead of during play
+- added `RegisterBankResetButton` so the bank can have its own local reset control
+- attached the register-bank authoring components to the existing `Register Bank` object in the scene file
+- updated lesson reset/load flow so authored registers are snapped back to their home poses when the lesson resets
+- updated `LessonSetup` so it prefers the authored scene register bank before creating any runtime fallback
+
+Changed:
+- the intended register interaction path is now based on grabbing physical register tokens rather than pressing runtime-generated register buttons
+- the authored registers are set up to reuse XR Interaction Toolkit sample interactables as their base, especially the stock highlight affordance and dynamic-attach grab feel
+- the register-bank reset is now separated from the lesson reset, so lost pieces can be returned home without restarting the whole lesson
+
+Next:
+- open `Testing Ground` in Unity and let the authoring script populate the 32 register objects plus the local reset button
+- eyeball spacing, readability, and reachability on the bank plane with the user present
+- save the scene after that editor pass so the generated register layout becomes permanently serialized
+- test that grabbing a register still drives the current lesson flow correctly
+
+Risks / Notes:
+- Unity was not opened during this session, so the 32 authored register children are not yet serialized into the scene file
+- the scene is wired so opening it in the editor should generate them under `Register Bank`; saving the scene afterward will make them permanent
+- runtime lesson UI and other fallbacks still exist for now, but the register-bank direction is now explicitly scene-authored first
+
+### 2026-06-26 - Register Bank Visual Pass Corrected In Repo
+
+Completed:
+- moved register-related scripts into `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers`
+- added `D:\CompArchVR\ThePrototype\Assets\MyPrefabs\Registers\Register Token.prefab`
+- changed the authored register direction away from the bad tiny-cylinder look
+- reworked the authoring flow so it full-rebuilds register tokens from the custom register prefab
+- changed the authored token presentation toward the earlier chunky labeled design:
+  - base block
+  - top block
+  - floating register label
+  - highlight affordance glow bound to the top block
+- kept the registers grabbable with XR grab behavior instead of button-only behavior
+- kept a local push-button reset path for the register bank
+
+Changed:
+- the register bank no longer depends on the sample cylinder as its visible body
+- the register visuals are now intended to match the earlier look more closely while still behaving like grabbable objects
+- register code is no longer buried inside the `CpuLesson` folder
+
+Next:
+- let Unity recompile and rebuild the `Register Bank` objects in-scene
+- confirm the new register size, spacing, glow, and label readability visually
+- tweak the layout with the user if the bank needs another sizing pass
+
+Risks / Notes:
+- this pass was done from the repo side without visually validating the rebuilt result in Unity yet
+- the previous bad register objects shown in-editor were likely unsaved generated objects; the new authoring pass should replace them on rebuild
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
@@ -167,7 +227,7 @@ Risks / Notes:
 - `Testing Ground` is the sandbox scene
 - the prototype now auto-loads a playable `add` lesson on play
 - the original scene advance button is still the primary progression input
-- the scene can still build a runtime lesson UI, runtime reset button, and runtime register bank as fallback scaffolding
+- the scene can still build runtime fallback objects when necessary, but the preferred register path is now the authored `Register Bank`
 - minimal visual feedback is acceptable; heavy animation is not required
 
 ### Architecture / Script Baseline
@@ -178,10 +238,13 @@ Current relevant scripts:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\NodeMap.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonSetup.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonUI.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterBank.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\RegisterButton.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankAuthoring.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankResetButton.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterButton.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\ButtonFactory.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\ButtonFactory.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefinition.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionRuntimeSelection.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionEnums.cs`
@@ -206,8 +269,9 @@ Recommended next development priorities:
 2. Validate the first playable `add` slice in headset.
    This means:
    - check readability of the lesson UI
-   - check reachability/comfort of the register bank
+   - check reachability/comfort of the authored register bank
    - confirm the advance/reset/register interactions feel reliable
+   - save the generated register-bank layout once it feels right
    - decide what should stay runtime-generated versus what should become scene-authored
 
 3. Refine the `add` lesson wording and pacing if needed.

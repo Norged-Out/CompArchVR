@@ -134,6 +134,10 @@ public class LessonSetup : MonoBehaviour
         if (m_RegisterBank != null)
             return;
 
+        m_RegisterBank = FindRegisterBankInScene();
+        if (m_RegisterBank != null)
+            return;
+
         if (!m_AllowRuntimeFallbacks || m_RuntimeRoot == null)
             return;
 
@@ -143,6 +147,40 @@ public class LessonSetup : MonoBehaviour
         registerBankRoot.transform.localRotation = Quaternion.identity;
         registerBankRoot.transform.localScale = Vector3.one;
         m_RegisterBank = registerBankRoot.AddComponent<RegisterBank>();
+    }
+
+    RegisterBank FindRegisterBankInScene()
+    {
+        foreach (var registerBank in Resources.FindObjectsOfTypeAll<RegisterBank>())
+        {
+            if (registerBank == null)
+                continue;
+
+            if (!registerBank.gameObject.scene.IsValid() || !registerBank.gameObject.scene.isLoaded)
+                continue;
+
+            if (registerBank.gameObject.scene != gameObject.scene)
+                continue;
+
+            if (string.Equals(registerBank.gameObject.name, "Register Bank", StringComparison.OrdinalIgnoreCase))
+                return registerBank;
+        }
+
+        foreach (var registerBank in Resources.FindObjectsOfTypeAll<RegisterBank>())
+        {
+            if (registerBank == null)
+                continue;
+
+            if (!registerBank.gameObject.scene.IsValid() || !registerBank.gameObject.scene.isLoaded)
+                continue;
+
+            if (registerBank.gameObject.scene != gameObject.scene)
+                continue;
+
+            return registerBank;
+        }
+
+        return null;
     }
 
     void EnsureResetButton(CpuLessonFlow flow)
