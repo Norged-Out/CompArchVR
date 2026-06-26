@@ -195,6 +195,37 @@ Why:
 Implication:
 - lesson reset and prop reset are separate concerns and should remain separate unless a future reason emerges to merge them
 
+## 2026-06-26 - Execution And WriteBack Should Use Physical Register Pedestals
+
+Decision:
+- handle `EX` / `ALU` and `WB` interactions through authored pedestal zones rather than through abstract UI-only confirmation
+
+Why:
+- the user wants the learner to physically place the correct register onto the appropriate lesson target
+- this keeps VR interaction meaningful instead of reducing later phases to button presses
+- pedestal scanning also gives a clean path for instructions that reuse the same register in more than one logical role
+
+Implication:
+- pedestal objects should become part of the scene-authored interaction set
+- each pedestal should validate only when its lesson step is active
+- a pedestal should read the placed register token's identity, hold that scanned result, and then drive success/failure feedback
+- future duplicate-register instructions should rely on scanned logical identity rather than requiring duplicate physical register props
+
+## 2026-06-26 - Register Placement Validation May Use A Short Stable-Placement Rule
+
+Decision:
+- it is acceptable for a pedestal to require a short stability condition before accepting a register, such as:
+  - the token being released
+  - or the token remaining in-zone for roughly 1-2 seconds
+
+Why:
+- this reduces accidental brush-triggering while still feeling physical
+- it gives the learner a clear "place and confirm" rhythm during later datapath phases
+
+Implication:
+- pedestal validation should be designed around placement confirmation, not instant overlap detection alone
+- the exact acceptance rule can still be tuned once the first pedestal exists in-scene
+
 ## Open Questions
 
 - which instruction should become the first fully playable lesson

@@ -20,14 +20,14 @@ Scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype features:
-- auto-loaded `add` lesson on play
+- lesson framework present, but not intended to auto-start during ordinary scene iteration
 - explicit node highlighting by datapath id
 - refactored lesson runtime split across small helper scripts
 - runtime world-space lesson UI fallback
-- scene-authored `Register Bank` anchor for permanent register layout
-- editor-time register-bank builder for 32 grabbable MIPS registers
-- custom register prefab path under `D:\CompArchVR\ThePrototype\Assets\MyPrefabs\Registers`
+- scene-authored `Register Bank` with 32 permanent grabbable MIPS registers
+- reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - local register-bank reset button path separate from lesson reset
+- planned `Execution` / `WriteBack` pedestal-zones for physical register placement validation
 - draft instruction assets for `add`, `addi`, and `lw`
 
 ## Most Important Scripts Right Now
@@ -79,18 +79,26 @@ Before stopping:
 ## Current Open Questions
 
 - how readable and comfortable the current lesson UI and register bank feel in-headset
-- whether the generated register-bank layout needs spacing or height adjustment after the first in-editor pass
 - which remaining elements should become scene-authored instead of runtime-generated
 - how much of instruction decode should be physical vs UI-driven
 - how explicit the control-signal interactions should be in the first version
 - whether instruction choice is user-selected, randomized, or both
+- the exact acceptance rule for pedestal validation:
+  - immediate on release
+  - after 1-2 seconds stable in-zone
+  - or some combination of both
+- how pedestal feedback should distinguish:
+  - wrong register
+  - right register
+  - right register but wrong phase
 
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- open `Testing Ground`, let the `Register Bank` authoring script rebuild the 32 register pieces from the custom register prefab, and save the scene
-- co-author any spacing or readability changes to that bank in-scene with the user
+- co-author any remaining spacing or readability changes to the saved register bank in-scene with the user
 - validate and polish the playable `add` lesson in-headset
+- author pedestal zones for the `ALU` / `Execution` phase and later `WriteBack`
+- make each pedestal scan the placed register token and validate it only for the active lesson step
 - then extend the same framework into `addi`
 
 ## Personal Reminder

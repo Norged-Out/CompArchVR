@@ -11,6 +11,7 @@ Current working scene:
 Current prototype focus:
 - gated `add` lesson flow
 - authored physical register selection
+- authored 32-register MIPS bank with local reset
 - reusable datapath lesson scaffolding for `addi` and `lw`
 - narrowed dissertation scope after supervisor discussion
 
@@ -30,9 +31,9 @@ The project now has:
 - a runtime-created `Data Memory` placeholder so the scene is ready for `lw`
 - a world-space lesson UI that shows instruction, stage, explanation, and feedback
 - a scene-side `Register Bank` anchor for permanent register authoring
-- a register-bank authoring path that targets all 32 MIPS registers as grabbable scene objects
-- a register-bank rework in progress that restores the chunkier labeled register look instead of the failed tiny-cylinder pass
-- a dedicated register prefab path under `Assets/MyPrefabs/Registers`
+- a permanent 32-register MIPS bank serialized into `Testing Ground`
+- grabbable labeled register tokens with working local reset behavior
+- a reusable register prefab/material path under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - a cleaner lesson architecture split across focused scripts instead of one large controller
 - draft `addi` and `lw` instruction assets for later extension
 
@@ -220,14 +221,42 @@ Risks / Notes:
 - this pass was done from the repo side without visually validating the rebuilt result in Unity yet
 - the previous bad register objects shown in-editor were likely unsaved generated objects; the new authoring pass should replace them on rebuild
 
+### 2026-06-26 - Register Bank Baseline Confirmed And ALU Zone Direction Chosen
+
+Completed:
+- confirmed in Unity that the register-bank local reset button works and returns all register tokens to their home poses
+- confirmed the existing CPU lesson flow still works with the current register-bank setup
+- disabled automatic lesson start on play so scene edits can be made more safely during iteration
+- documented the current color behavior of lesson-selected registers:
+  - hover/grab feedback can temporarily change the body color
+  - validated lesson picks can remain green until reset
+  - the local register reset restores them to their default visual state
+
+Changed:
+- the project baseline is now a scene-authored 32-register bank rather than a bank still waiting to be generated and saved
+- the next intended interaction pattern for `Execution` and `WriteBack` is no longer abstract "selection only"
+- instead, those phases should use physical placement pedestals that inspect the dropped register token and validate it against the current lesson step
+
+Next:
+- build authored pedestal zones for the `ALU` / `Execution` phase and later `WriteBack`
+- let each pedestal validate only during its active lesson step
+- let the pedestal accept a register after a short stable condition such as:
+  - the token being ungrabbed
+  - or the token resting in-zone for roughly 1-2 seconds
+- use those pedestals later to support instructions that reuse the same logical register in more than one role by scanning and storing the register identity rather than requiring duplicate physical copies
+
+Risks / Notes:
+- the current "selected register stays green" behavior is acceptable for now but should be revisited later if it becomes visually confusing during longer multi-step lessons
+- the pedestal interaction plan is the current preferred route for `EX` and `WB`, because it preserves physical VR interaction while still allowing lesson gating and duplicate-register handling
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
 
 - `Testing Ground` is the sandbox scene
-- the prototype now auto-loads a playable `add` lesson on play
+- the lesson framework exists, but it should not auto-start on play during general scene iteration
 - the original scene advance button is still the primary progression input
-- the scene can still build runtime fallback objects when necessary, but the preferred register path is now the authored `Register Bank`
+- the preferred register path is now the authored `Register Bank` with 32 permanent register tokens
 - minimal visual feedback is acceptable; heavy animation is not required
 
 ### Architecture / Script Baseline
@@ -271,23 +300,30 @@ Recommended next development priorities:
    - check readability of the lesson UI
    - check reachability/comfort of the authored register bank
    - confirm the advance/reset/register interactions feel reliable
-   - save the generated register-bank layout once it feels right
    - decide what should stay runtime-generated versus what should become scene-authored
 
-3. Refine the `add` lesson wording and pacing if needed.
+3. Build the next interaction layer around placement pedestals.
+   Focus on:
+   - `Execution` / `ALU` pedestals that scan a placed register token
+   - `WriteBack` pedestals that confirm the correct destination register
+   - success / failure colors tied to active lesson-step validation
+   - storing scanned register identity so reused registers can be handled cleanly
+
+4. Refine the `add` lesson wording and pacing if needed.
    Focus on:
    - clearer stage prompts
    - cleaner wrong-answer feedback
    - stronger recap wording
 
-4. Extend the same framework into `addi`.
+5. Extend the same framework into `addi`.
    Reuse:
    - instruction assets
    - node registry
    - UI system
    - curated register bank workflow
+   - pedestal validation workflow
 
-5. Keep the post-V1 door open.
+6. Keep the post-V1 door open.
    After the June 29 supervisor demo:
    - expand to more instructions only if the V1 loop is stable
    - preserve the architecture so later instructions can reuse it
