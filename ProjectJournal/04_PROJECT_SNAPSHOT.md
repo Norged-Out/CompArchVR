@@ -20,15 +20,20 @@ Scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype features:
-- lesson framework present, but not intended to auto-start during ordinary scene iteration
-- explicit node highlighting by datapath id
-- refactored lesson runtime split across small helper scripts
-- runtime world-space lesson UI fallback
-- scene-authored `Register Bank` with 32 permanent grabbable MIPS registers
+- lesson framework re-wired around `Lesson Guide`
+- scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
+- scene-authored `Register Zone` with 32 permanent grabbable MIPS registers
+- register scanners for `Read Register 1`, `Read Register 2`, and `Write Register`
 - reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - local register-bank reset button path separate from lesson reset
-- planned `Execution` / `WriteBack` pedestal-zones for physical register placement validation
+- authored register placement validation in the register zone
+- planned later zone-specific lesson panels for `ALU`, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
+- slim lesson scripts now reduced to:
+  - `CpuLessonFlow`
+  - `LessonGuideController`
+  - `LessonChecks`
+  - register bank / token / scanner scripts
 
 ## Most Important Scripts Right Now
 
@@ -95,11 +100,12 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- co-author any remaining spacing or readability changes to the saved register bank in-scene with the user
-- validate and polish the playable `add` lesson in-headset
-- author pedestal zones for the `ALU` / `Execution` phase and later `WriteBack`
-- make each pedestal scan the placed register token and validate it only for the active lesson step
-- then extend the same framework into `addi`
+- finish the minimal intro-to-register MVP:
+- start from `Intro UI`
+- show instruction/decode guidance there
+- hand off to a duplicated register-area lesson panel
+- validate `rs`, `rt`, and destination placement through the authored scanners
+- then trim dead lesson scripts so the repo matches the actual scene again
 
 ## Personal Reminder
 

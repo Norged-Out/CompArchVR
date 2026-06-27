@@ -3,17 +3,17 @@
 ## Current Status
 
 Project phase:
-- First playable `add` vertical slice baseline
+- scene-authored MVP lesson rebuild for the June 29 V1 check-in
 
 Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype focus:
-- gated `add` lesson flow
-- authored physical register selection
+- minimal playable lesson loop in `Testing Ground`
+- scene-authored intro and per-step world-space UI
 - authored 32-register MIPS bank with local reset
-- reusable datapath lesson scaffolding for `addi` and `lw`
-- narrowed dissertation scope after supervisor discussion
+- register scanner validation path for `rs`, `rt`, and destination register
+- keeping only the lesson/code scaffolding that still matches the current scene
 
 Current milestone:
 - V1 supervisor demo target on `2026-06-29`
@@ -25,16 +25,13 @@ Current milestone:
 The project now has:
 - a Unity project committed and pushed
 - a `Testing Ground` scene being used as the active prototype sandbox
-- a scene-linked lesson flow + node map on `CPU Placeholder Nodes`
-- a first playable `add` walkthrough that auto-loads on play
-- explicit datapath highlighting by node id rather than incidental sequence order
-- a runtime-created `Data Memory` placeholder so the scene is ready for `lw`
-- a world-space lesson UI that shows instruction, stage, explanation, and feedback
+- a scene-authored `Lesson Guide` area hosting world-space lesson UI
 - a scene-side `Register Bank` anchor for permanent register authoring
 - a permanent 32-register MIPS bank serialized into `Testing Ground`
 - grabbable labeled register tokens with working local reset behavior
 - a reusable register prefab/material path under `Assets/MyPrefabs` and `Assets/MyMaterials`
-- a cleaner lesson architecture split across focused scripts instead of one large controller
+- register scanner pedestals for `Read Register 1`, `Read Register 2`, and `Write Register`
+- a cleaner lesson architecture split across focused scripts instead of one large controller, though some old lesson junk still needs pruning
 - draft `addi` and `lw` instruction assets for later extension
 
 ## Chronological Entries
@@ -248,6 +245,53 @@ Next:
 Risks / Notes:
 - the current "selected register stays green" behavior is acceptable for now but should be revisited later if it becomes visually confusing during longer multi-step lessons
 - the pedestal interaction plan is the current preferred route for `EX` and `WB`, because it preserves physical VR interaction while still allowing lesson gating and duplicate-register handling
+
+### 2026-06-27 - Scene-Authored UI Direction Locked In
+
+Completed:
+- confirmed that `Intro UI` in `Testing Ground` is a real `Spatial Panel Scroll` world-space UI under `Lesson Guide`
+- stopped treating the scene as if the old placeholder-node/runtime-UI setup were still authoritative
+- added minimal authored intro text into the `Intro UI` content area
+- kept the register bank, register scanners, and local reset as the current physical interaction baseline
+- accepted that the next lesson pass must be wired against the actual current scene, not the older placeholder layout
+
+Changed:
+- the scene-authored UI direction is now the primary path, not fallback
+- future lesson steps should be represented by authored panels placed where the player needs them
+- the next MVP should begin from the intro panel, show instruction/decode content, and then hand off to the register-zone panel
+
+Next:
+- add a real start button element to the intro panel content
+- duplicate the intro panel into a register-zone lesson panel and retarget its content
+- reconnect the lesson flow so it starts from the intro panel instead of auto-starting or depending on dead placeholder assumptions
+- prune `MyScripts` so only the currently relevant lesson/register code remains
+
+Risks / Notes:
+- the repo still contains older lesson/runtime scripts that reflect superseded scene assumptions
+- any lesson code changes should now be validated against the current authored `Testing Ground` scene first
+
+### 2026-06-27 - Minimal Intro-To-Register MVP Rewired
+
+Completed:
+- attached a new slim `CpuLessonFlow` and `LessonGuideController` to `Lesson Guide`
+- rewired the lesson around the current authored scene instead of the deleted placeholder-node setup
+- removed the broken temporary intro text overrides from the scroll content
+- kept the authored `Register Zone`, scanners, and reset button as the physical interaction baseline
+- pruned old lesson/runtime-button scripts that no longer match the current scene
+
+Changed:
+- the MVP no longer depends on `CPU Placeholder Nodes`, runtime-spawned lesson canvases, or runtime XR register buttons
+- `Lesson Guide` now owns lesson start/progression UI behavior
+- the lesson should now begin from `Intro UI`, then hand off to a register-area panel for scanner-driven validation
+
+Next:
+- verify the two-panel lesson flow inside Unity play mode
+- adjust the register-area panel position if it lands awkwardly relative to the authored bank
+- if stable, extend the same pattern into `addi` and `lw`
+
+Risks / Notes:
+- the register-area panel is currently cloned from the intro panel at runtime for speed
+- if the layout feels right, the next cleanup pass should serialize that second panel permanently into the scene
 
 ## Current Working Baseline
 

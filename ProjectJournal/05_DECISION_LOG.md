@@ -226,6 +226,48 @@ Implication:
 - pedestal validation should be designed around placement confirmation, not instant overlap detection alone
 - the exact acceptance rule can still be tuned once the first pedestal exists in-scene
 
+## 2026-06-27 - Lesson UI Should Be Authored As Zone-Specific World-Space Panels
+
+Decision:
+- prefer separate authored lesson panels placed near the relevant interaction zones instead of one giant fixed UI
+
+Why:
+- the user wants the learner to physically move through the lesson space
+- the current authored `Intro UI` and `Register Zone` support this better than a single central dashboard
+- this keeps prompts close to the action and reduces unnecessary head-turning
+
+Implication:
+- `Intro UI` should host lesson start and instruction/decode framing
+- the register area should get its own panel for `rs` / `rt` / destination guidance
+- later zones can follow the same pattern for `ALU`, memory, and write-back
+
+## 2026-06-27 - Scene Must Be Rescanned After Manual Cleanup
+
+Decision:
+- if the user deletes or restructures scene objects, treat the current `Testing Ground` hierarchy as the source of truth and rescan it before extending the system
+
+Why:
+- several earlier mistakes came from relying on stale assumptions about the scene
+- the user is actively co-authoring `Testing Ground` inside Unity
+
+Implication:
+- future work should inspect the live scene state first
+- dead code tied to removed scene structures should be pruned rather than preserved automatically
+
+## 2026-06-27 - A Small Runtime Clone Of The Intro Panel Is Acceptable For Fast MVP Wiring
+
+Decision:
+- for the immediate MVP, it is acceptable to clone the existing intro scroll panel at runtime to create the register-area guide panel
+
+Why:
+- the authored scene already has the right visual language in `Intro UI`
+- duplicating that panel manually in the scene would take longer than the current checkpoint allows
+- this preserves the user's current scene layout while still giving the lesson a second panel near the register zone
+
+Implication:
+- the runtime clone is a speed-first solution, not the final authored layout
+- if the placement and content feel correct in play mode, the next cleanup pass should serialize that second panel into the scene permanently
+
 ## Open Questions
 
 - which instruction should become the first fully playable lesson

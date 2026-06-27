@@ -49,6 +49,7 @@ If scene placement, readability, spacing, or general visual feel matters:
 - do not silently solve it by generating everything in code
 - tell the user what needs to exist in-scene
 - let the user help place and eyeball it inside Unity
+- if the user has recently edited the scene, rescan `Testing Ground` before assuming older hierarchy or components still exist
 
 Runtime-generated scene objects are acceptable only as:
 - temporary fallback scaffolding
@@ -100,6 +101,9 @@ Do not allow one script to become a dumping ground for:
 - runtime button construction
 
 Prefer several focused scripts over one bloated controller.
+
+Also:
+- if older scene assumptions are no longer true, refactor or delete the dead code instead of layering more hacks on top
 
 ## Documentation Update Rule
 

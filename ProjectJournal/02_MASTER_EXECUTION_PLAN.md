@@ -100,6 +100,7 @@ The minimum viable playable lesson should include:
 - meaningful learner decisions
 - correctness gating
 - explanation prompts tied to each major stage
+- scene-authored world-space panels at the places the learner actually visits
 
 The first instruction does not need to be the most complex one.
 It needs to be the one most likely to produce a clean, working lesson loop.
@@ -160,6 +161,20 @@ The ideal lesson loop is:
 5. block incorrect progression locally
 6. explain what the current stage is doing
 7. finish with a recap of the instruction flow
+
+Current preferred authored-panel shape:
+
+1. `Intro UI`
+   - start lesson
+   - show current instruction
+   - show the fetch/decode framing
+2. `Register Zone UI`
+   - remind the learner which fields map to `rs`, `rt`, and destination
+   - keep prompts physically near the register bank and scanners
+3. later zone-specific panels
+   - `ALU`
+   - `Data Memory`
+   - `WriteBack`
 
 ## Interaction Heuristic
 

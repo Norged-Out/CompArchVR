@@ -1,171 +1,108 @@
-using TMPro;
+using System;
 using UnityEngine;
-using UnityEngine.UI;
 
 /// <summary>
-/// Runtime orchestrator for the current CPU lesson slice.
-/// It owns lesson state and delegates everything else to small helpers:
-/// - <see cref="LessonSetup"/> prepares scene services
-/// - <see cref="LessonUI"/> shows text feedback
-/// - <see cref="RegisterBank"/> handles physical register buttons
-/// - <see cref="LessonChecks"/> validates learner actions
-/// - <see cref="CpuNodeSequenceController"/> highlights datapath nodes
+/// Minimal lesson state machine for the current Testing Ground MVP.
+/// It owns:
+/// - which instruction is active
+/// - which lesson step is active
+/// - register-scanner validation for rs / rt / rd
+/// - simple continue-style progression for non-placement steps
 /// </summary>
+[DisallowMultipleComponent]
 public class CpuLessonFlow : MonoBehaviour
 {
     [SerializeField]
     InstructionDefinition m_CurrentInstruction;
 
     [SerializeField]
-    InstructionRuntimeSelection m_RuntimeSelection = new();
-
-    [SerializeField]
-    CpuNodeSequenceController m_NodeHighlighter;
-
-    [SerializeField]
-    NodeMap m_NodeMap;
-
-    [SerializeField]
-    LessonSetup m_LessonSetup;
-
-    [Header("Auto-Load")]
-
-    [SerializeField]
     string m_DefaultInstructionResourcePath = "InstructionDefinitions/AddInstructionDefinition";
 
     [SerializeField]
-    bool m_AutoLoadInstructionOnStart = true;
+    RegisterBank m_RegisterBank;
 
     [SerializeField]
-    bool m_StartLessonOnPlay = false;
-
-    [Header("Intro UI")]
-
-    [SerializeField]
-    string m_IntroUiObjectName = "Intro UI";
-
-    [SerializeField]
-    string m_IntroStartButtonLabel = "Start Lesson";
+    InstructionRuntimeSelection m_RuntimeSelection = new();
 
     int m_CurrentStepIndex = -1;
     int m_CurrentRegisterSelectionIndex;
-    GameObject m_IntroUiRoot;
-    Button m_IntroStartButton;
 
-    /// <summary>
-    /// True when the lesson runtime is active and the scene advance button
-    /// should route progression through this controller.
-    /// </summary>
-    public bool IsLessonModeActive => enabled && m_CurrentInstruction != null;
+    public event Action<CpuLessonFlow> StepChanged;
+    public event Action<string, bool> FeedbackChanged;
 
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
-    public int CurrentStepIndex => m_CurrentStepIndex;
     public InstructionRuntimeSelection RuntimeSelection => m_RuntimeSelection;
+    public int CurrentStepIndex => m_CurrentStepIndex;
+    public bool HasStarted => m_CurrentStepIndex >= 0;
+
+    public InstructionFlowStep CurrentStep
+    {
+        get
+        {
+            if (m_CurrentInstruction == null ||
+                m_CurrentInstruction.flowSteps == null ||
+                m_CurrentStepIndex < 0 ||
+                m_CurrentStepIndex >= m_CurrentInstruction.flowSteps.Length)
+            {
+                return null;
+            }
+
+            return m_CurrentInstruction.flowSteps[m_CurrentStepIndex];
+        }
+    }
 
     void Awake()
     {
-        m_NodeHighlighter ??= GetComponent<CpuNodeSequenceController>();
-        m_NodeMap ??= GetComponent<NodeMap>();
-        m_LessonSetup ??= GetComponent<LessonSetup>();
-
-        if (m_NodeMap == null)
-            m_NodeMap = gameObject.AddComponent<NodeMap>();
-
-        if (m_LessonSetup == null)
-            m_LessonSetup = gameObject.AddComponent<LessonSetup>();
-    }
-
-    void Start()
-    {
-        if (m_AutoLoadInstructionOnStart && m_CurrentInstruction == null)
-            m_CurrentInstruction = LoadDefaultInstruction();
+        m_RegisterBank ??= FindFirstObjectByType<RegisterBank>();
 
         if (m_CurrentInstruction == null)
+            m_CurrentInstruction = LoadDefaultInstruction();
+    }
+
+    void OnEnable()
+    {
+        RebindRegisterBank();
+    }
+
+    void OnDisable()
+    {
+        if (m_RegisterBank == null)
             return;
 
-        LoadInstruction(m_CurrentInstruction);
-        WireIntroUiStartButton();
-
-        if (m_StartLessonOnPlay)
-            BeginLesson();
+        m_RegisterBank.RegisterPressed -= HandleRegisterPressed;
+        m_RegisterBank.RegisterScanned -= HandleRegisterScanned;
     }
 
-    void OnDestroy()
-    {
-        if (m_LessonSetup?.registerBank == null)
-            return;
-
-        m_LessonSetup.registerBank.RegisterPressed -= HandleRegisterButtonPressed;
-        m_LessonSetup.registerBank.RegisterScanned -= HandleRegisterScannerScanned;
-    }
-
-    /// <summary>
-    /// Loads a new instruction definition and rebuilds lesson-side runtime state.
-    /// </summary>
-    public void LoadInstruction(InstructionDefinition instruction)
-    {
-        m_CurrentInstruction = instruction;
-        m_RuntimeSelection.definition = instruction;
-        m_RuntimeSelection.ResetOperands();
-        m_CurrentStepIndex = -1;
-        m_CurrentRegisterSelectionIndex = 0;
-
-        PrepareSceneForInstruction();
-        m_LessonSetup?.registerBank?.ResetAllRegisters();
-        ClearFeedback();
-        SyncRegisterVisuals();
-    }
-
-    /// <summary>
-    /// Public entry point for future instruction-selection UI.
-    /// </summary>
     public void StartLesson()
     {
-        HideIntroUi();
-        BeginLesson();
-    }
-
-    /// <summary>
-    /// Resets the current lesson back to the first step.
-    /// </summary>
-    [ContextMenu("Reset Lesson")]
-    public void ResetInstructionFlow()
-    {
         if (m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
 
-        if (m_CurrentInstruction == null)
+        if (m_CurrentInstruction == null || m_CurrentInstruction.flowSteps == null || m_CurrentInstruction.flowSteps.Length == 0)
             return;
 
+        RebindRegisterBank();
         m_RuntimeSelection.definition = m_CurrentInstruction;
         m_RuntimeSelection.ResetOperands();
-        m_LessonSetup?.registerBank?.ResetAllRegisters();
-        BeginLesson();
+        m_CurrentRegisterSelectionIndex = 0;
+        m_CurrentStepIndex = 0;
+
+        if (m_RegisterBank != null)
+        {
+            m_RegisterBank.RefreshRegisterCache();
+            m_RegisterBank.RefreshScannerCache();
+            m_RegisterBank.ResetAllRegisters();
+        }
+
+        PresentCurrentStep();
     }
 
-    /// <summary>
-    /// Triggered by the existing scene push button through
-    /// <see cref="CpuNodeSequenceController.AdvanceHighlight"/>.
-    /// </summary>
-    public void HandleAdvanceButtonPressed()
+    public void Advance()
     {
-        // Auto-start is intentionally off during regular scene work, so the
-        if (m_CurrentInstruction != null && m_CurrentStepIndex < 0)
-        {
-            SetFeedback("Press Start Lesson on the intro panel first.", true);
-            return;
-        }
-
-        if (!TryGetCurrentStep(out var step))
+        if (!HasStarted || CurrentStep == null)
             return;
 
-        if (!step.blockProgressUntilValidated)
-        {
-            AdvanceToNextStep();
-            return;
-        }
-
-        switch (step.requiredInteraction)
+        switch (CurrentStep.requiredInteraction)
         {
             case InstructionStepInteractionType.None:
             case InstructionStepInteractionType.ContinueButton:
@@ -173,159 +110,165 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.RegisterSelection:
-                SetFeedback(GetRegisterSelectionPrompt(step), true);
+                SetFeedback(GetRegisterSelectionPrompt(), true);
                 break;
 
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
                 SetFeedback(
-                    m_LessonSetup?.registerBank != null && m_LessonSetup.registerBank.HasRegisterScanners
-                        ? $"Place {m_CurrentInstruction.GetExpectedRegisterName(step.confirmationRegisterRole)} on the {GetScannerLabel(step.confirmationRegisterRole)} scanner."
-                        : $"Use the register bank to confirm write-back to {m_CurrentInstruction.GetExpectedRegisterName(step.confirmationRegisterRole)}.",
+                    $"Place {m_CurrentInstruction.GetExpectedRegisterName(CurrentStep.confirmationRegisterRole)} on the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.",
                     true);
                 break;
 
             case InstructionStepInteractionType.Completion:
-                SetFeedback("Lesson complete. Use Reset to replay the walkthrough.", false);
+                ResetLesson();
                 break;
         }
     }
 
-    /// <summary>
-    /// Called by <see cref="RegisterBank"/> when a register button is pressed.
-    /// </summary>
-    public void HandleRegisterButtonPressed(string registerName)
+    public void ResetLesson()
     {
-        if (string.IsNullOrWhiteSpace(registerName) || !TryGetCurrentStep(out var step))
-            return;
+        if (m_RegisterBank != null)
+            m_RegisterBank.ResetAllRegisters();
 
-        switch (step.requiredInteraction)
-        {
-            case InstructionStepInteractionType.RegisterSelection:
-                ProcessRegisterSelection(step, registerName);
-                break;
-
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                ProcessWriteBackConfirmation(step, registerName);
-                break;
-
-            default:
-                SetFeedback("That register is not needed for the current stage.", true);
-                m_LessonSetup?.registerBank?.FlashFailure(registerName);
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Called by <see cref="RegisterScanner"/> after a register has remained in
-    /// a scan zone long enough to count as a deliberate placement.
-    /// </summary>
-    public void HandleRegisterScannerScanned(InstructionRegisterRole scannedRole, string registerName)
-    {
-        if (string.IsNullOrWhiteSpace(registerName) || !TryGetCurrentStep(out var step))
-            return;
-
-        switch (step.requiredInteraction)
-        {
-            case InstructionStepInteractionType.RegisterSelection:
-                ProcessRegisterScan(step, scannedRole, registerName);
-                break;
-
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                ProcessWriteBackScan(step, scannedRole, registerName);
-                break;
-
-            default:
-                SetFeedback("That scanner is not needed for the current stage.", true);
-                m_LessonSetup?.registerBank?.FlashScannerFailure(scannedRole);
-                m_LessonSetup?.registerBank?.FlashFailure(registerName);
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Called by <see cref="LessonSetup"/> when the reset button is pressed.
-    /// </summary>
-    public void HandleResetButtonPressed(RegisterButton _)
-    {
-        ResetInstructionFlow();
-    }
-
-    /// <summary>
-    /// Returns the currently active flow step.
-    /// </summary>
-    public bool TryGetCurrentStep(out InstructionFlowStep step)
-    {
-        step = null;
-
-        if (m_CurrentInstruction == null || m_CurrentInstruction.flowSteps == null)
-            return false;
-
-        if (m_CurrentStepIndex < 0 || m_CurrentStepIndex >= m_CurrentInstruction.flowSteps.Length)
-            return false;
-
-        step = m_CurrentInstruction.flowSteps[m_CurrentStepIndex];
-        return step != null;
-    }
-
-    void PrepareSceneForInstruction()
-    {
-        if (m_CurrentInstruction == null)
-            return;
-
-        m_LessonSetup?.Prepare(this, m_CurrentInstruction);
-        m_NodeMap?.RebuildRegistry();
-        m_NodeHighlighter?.SetTrackedRenderers(m_NodeMap != null ? m_NodeMap.GetOrderedRenderers() : null);
-
-        if (m_LessonSetup?.registerBank != null)
-        {
-            m_LessonSetup.registerBank.RegisterPressed -= HandleRegisterButtonPressed;
-            m_LessonSetup.registerBank.RegisterPressed += HandleRegisterButtonPressed;
-            m_LessonSetup.registerBank.RegisterScanned -= HandleRegisterScannerScanned;
-            m_LessonSetup.registerBank.RegisterScanned += HandleRegisterScannerScanned;
-        }
-    }
-
-    void BeginLesson()
-    {
-        PrepareSceneForInstruction();
-
-        if (m_CurrentInstruction == null || m_CurrentInstruction.flowSteps == null || m_CurrentInstruction.flowSteps.Length == 0)
-            return;
-
-        m_CurrentStepIndex = 0;
+        m_RuntimeSelection.definition = m_CurrentInstruction;
+        m_RuntimeSelection.ResetOperands();
         m_CurrentRegisterSelectionIndex = 0;
-        HideIntroUi();
-        PresentCurrentStep();
+        m_CurrentStepIndex = -1;
+        StepChanged?.Invoke(this);
+        SetFeedback(string.Empty, false);
     }
 
-    void WireIntroUiStartButton()
+    void RebindRegisterBank()
     {
-        if (m_IntroStartButton != null)
+        m_RegisterBank ??= FindFirstObjectByType<RegisterBank>();
+        if (m_RegisterBank == null)
             return;
 
-        m_IntroUiRoot = GameObject.Find(m_IntroUiObjectName);
-        if (m_IntroUiRoot == null)
-            return;
-
-        var buttons = m_IntroUiRoot.GetComponentsInChildren<Button>(true);
-        if (buttons == null || buttons.Length == 0)
-            return;
-
-        m_IntroStartButton = buttons[0];
-        m_IntroStartButton.onClick.RemoveListener(StartLesson);
-        m_IntroStartButton.onClick.AddListener(StartLesson);
-
-        foreach (var text in m_IntroStartButton.GetComponentsInChildren<TMP_Text>(true))
-            text.text = m_IntroStartButtonLabel;
+        m_RegisterBank.RegisterPressed -= HandleRegisterPressed;
+        m_RegisterBank.RegisterPressed += HandleRegisterPressed;
+        m_RegisterBank.RegisterScanned -= HandleRegisterScanned;
+        m_RegisterBank.RegisterScanned += HandleRegisterScanned;
     }
 
-    void HideIntroUi()
+    void HandleRegisterPressed(string registerName)
     {
-        if (m_IntroUiRoot == null)
-            m_IntroUiRoot = GameObject.Find(m_IntroUiObjectName);
+        if (!HasStarted || string.IsNullOrWhiteSpace(registerName))
+            return;
 
-        if (m_IntroUiRoot != null)
-            m_IntroUiRoot.SetActive(false);
+        if (CurrentStep == null)
+            return;
+
+        switch (CurrentStep.requiredInteraction)
+        {
+            case InstructionStepInteractionType.RegisterSelection:
+                ValidateRegisterSelection(InstructionRegisterRole.None, registerName, false);
+                break;
+
+            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
+                ValidateWriteBack(InstructionRegisterRole.None, registerName, false);
+                break;
+        }
+    }
+
+    void HandleRegisterScanned(InstructionRegisterRole scannedRole, string registerName)
+    {
+        if (!HasStarted || string.IsNullOrWhiteSpace(registerName))
+            return;
+
+        if (CurrentStep == null)
+            return;
+
+        switch (CurrentStep.requiredInteraction)
+        {
+            case InstructionStepInteractionType.RegisterSelection:
+                ValidateRegisterSelection(scannedRole, registerName, true);
+                break;
+
+            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
+                ValidateWriteBack(scannedRole, registerName, true);
+                break;
+        }
+    }
+
+    void ValidateRegisterSelection(InstructionRegisterRole scannedRole, string registerName, bool cameFromScanner)
+    {
+        var result = LessonChecks.ValidateRegisterSelection(
+            m_CurrentInstruction,
+            CurrentStep,
+            m_CurrentRegisterSelectionIndex,
+            registerName);
+
+        var expectedRole = result.expectedRole;
+        if (cameFromScanner && scannedRole != expectedRole)
+        {
+            m_RegisterBank?.FlashScannerFailure(scannedRole);
+            SetFeedback(
+                $"Wrong pedestal. Put {m_CurrentInstruction.GetExpectedRegisterName(expectedRole)} on {GetScannerLabel(expectedRole)}.",
+                true);
+            return;
+        }
+
+        if (!result.isCorrect)
+        {
+            if (cameFromScanner)
+                m_RegisterBank?.FlashScannerFailure(scannedRole);
+            else
+                m_RegisterBank?.FlashFailure(registerName);
+
+            SetFeedback(
+                $"Incorrect. {result.expectedRole} should be {result.expectedRegister}, not {registerName}.",
+                true);
+            return;
+        }
+
+        m_RuntimeSelection.SetSelectedRegister(result.expectedRole, registerName);
+        m_CurrentRegisterSelectionIndex++;
+
+        if (cameFromScanner)
+            m_RegisterBank?.SetScannerSuccess(scannedRole);
+        else
+            m_RegisterBank?.SetSelected(registerName);
+
+        if (result.completesStep)
+        {
+            SetFeedback("Registers placed correctly. Continue to the next stage.", false);
+            AdvanceToNextStep();
+            return;
+        }
+
+        SetFeedback($"Correct. Now place {result.nextRegister} on {GetScannerLabel(result.nextRole)}.", false);
+        StepChanged?.Invoke(this);
+    }
+
+    void ValidateWriteBack(InstructionRegisterRole scannedRole, string registerName, bool cameFromScanner)
+    {
+        if (cameFromScanner && scannedRole != CurrentStep.confirmationRegisterRole)
+        {
+            m_RegisterBank?.FlashScannerFailure(scannedRole);
+            SetFeedback($"Wrong pedestal. Use the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.", true);
+            return;
+        }
+
+        var result = LessonChecks.ValidateWriteBack(m_CurrentInstruction, CurrentStep, registerName);
+        if (!result.isCorrect)
+        {
+            if (cameFromScanner)
+                m_RegisterBank?.FlashScannerFailure(scannedRole);
+            else
+                m_RegisterBank?.FlashFailure(registerName);
+
+            SetFeedback($"Incorrect. The write-back destination should be {result.expectedRegister}.", true);
+            return;
+        }
+
+        m_RuntimeSelection.confirmedWriteBackRegister = registerName;
+        if (cameFromScanner)
+            m_RegisterBank?.SetScannerSuccess(CurrentStep.confirmationRegisterRole);
+        else
+            m_RegisterBank?.SetSelected(registerName);
+
+        SetFeedback("Write-back confirmed.", false);
+        AdvanceToNextStep();
     }
 
     void AdvanceToNextStep()
@@ -333,245 +276,89 @@ public class CpuLessonFlow : MonoBehaviour
         if (m_CurrentInstruction == null || m_CurrentInstruction.flowSteps == null)
             return;
 
-        var nextIndex = m_CurrentStepIndex + 1;
-        if (nextIndex >= m_CurrentInstruction.flowSteps.Length)
+        m_CurrentStepIndex++;
+        m_CurrentRegisterSelectionIndex = 0;
+
+        if (m_CurrentStepIndex >= m_CurrentInstruction.flowSteps.Length)
         {
-            SetFeedback("Lesson complete. Use Reset to replay the walkthrough.", false);
+            m_CurrentStepIndex = m_CurrentInstruction.flowSteps.Length - 1;
+            StepChanged?.Invoke(this);
             return;
         }
 
-        m_CurrentStepIndex = nextIndex;
-        m_CurrentRegisterSelectionIndex = 0;
         PresentCurrentStep();
     }
 
     void PresentCurrentStep()
     {
-        if (!TryGetCurrentStep(out var step))
-            return;
+        ConfigureScannersForCurrentStep();
+        StepChanged?.Invoke(this);
 
-        if (step.advanceVisualHighlight)
-            m_NodeHighlighter?.HighlightNode(step.highlightedNode);
-        else
-            m_NodeHighlighter?.ResetHighlight();
-
-        m_LessonSetup?.lessonUi?.ShowStep(m_CurrentInstruction, step);
-        ConfigureScannersForCurrentStep(step);
-        SyncRegisterVisuals();
-        ShowStepPrompt(step);
-    }
-
-    void ShowStepPrompt(InstructionFlowStep step)
-    {
-        switch (step.requiredInteraction)
+        switch (CurrentStep.requiredInteraction)
         {
-            case InstructionStepInteractionType.None:
-                ClearFeedback();
-                break;
-
             case InstructionStepInteractionType.ContinueButton:
-                SetFeedback("Press the Advance button to continue.", false);
+                SetFeedback("Press Continue when you are ready.", false);
                 break;
 
             case InstructionStepInteractionType.RegisterSelection:
-                SetFeedback(GetRegisterSelectionPrompt(step), false);
+                SetFeedback(GetRegisterSelectionPrompt(), false);
                 break;
 
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
                 SetFeedback(
-                    m_LessonSetup?.registerBank != null && m_LessonSetup.registerBank.HasRegisterScanners
-                        ? $"Place {m_CurrentInstruction.GetExpectedRegisterName(step.confirmationRegisterRole)} on the {GetScannerLabel(step.confirmationRegisterRole)} scanner."
-                        : $"Press the correct register to confirm write-back to {m_CurrentInstruction.GetExpectedRegisterName(step.confirmationRegisterRole)}.",
+                    $"Place {m_CurrentInstruction.GetExpectedRegisterName(CurrentStep.confirmationRegisterRole)} on the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.",
                     false);
                 break;
 
             case InstructionStepInteractionType.Completion:
-                SetFeedback("You finished the add walkthrough. Use Reset to replay it.", false);
-                break;
-        }
-    }
-
-    string GetRegisterSelectionPrompt(InstructionFlowStep step)
-    {
-        var requiredRoles = LessonChecks.GetRequiredRoles(step);
-        if (m_CurrentRegisterSelectionIndex < 0 || m_CurrentRegisterSelectionIndex >= requiredRoles.Length)
-        {
-            return m_LessonSetup?.registerBank != null && m_LessonSetup.registerBank.HasRegisterScanners
-                ? "Place the required registers on the active scanner pedestals."
-                : "Select the required registers using the physical register bank.";
-        }
-
-        var nextRole = requiredRoles[m_CurrentRegisterSelectionIndex];
-        var expectedRegister = m_CurrentInstruction.GetExpectedRegisterName(nextRole);
-        return m_LessonSetup?.registerBank != null && m_LessonSetup.registerBank.HasRegisterScanners
-            ? $"Place {expectedRegister} on the {GetScannerLabel(nextRole)} scanner."
-            : $"Use the physical register bank to choose {nextRole} ({expectedRegister}).";
-    }
-
-    void ProcessRegisterSelection(InstructionFlowStep step, string registerName)
-    {
-        var result = LessonChecks.ValidateRegisterSelection(
-            m_CurrentInstruction,
-            step,
-            m_CurrentRegisterSelectionIndex,
-            registerName);
-
-        if (!result.isCorrect)
-        {
-            SetFeedback(
-                $"Incorrect. {result.expectedRole} should be {result.expectedRegister}, not {registerName}.",
-                true);
-            m_LessonSetup?.registerBank?.FlashFailure(registerName);
-            return;
-        }
-
-        m_RuntimeSelection.SetSelectedRegister(result.expectedRole, registerName);
-        m_LessonSetup?.registerBank?.SetSelected(registerName);
-        m_CurrentRegisterSelectionIndex++;
-
-        if (result.completesStep)
-        {
-            SetFeedback("Correct. The register operands are ready. Moving on to the ALU stage.", false);
-            AdvanceToNextStep();
-            return;
-        }
-
-        SetFeedback($"Correct. Now choose {result.nextRole} ({result.nextRegister}).", false);
-    }
-
-    void ProcessWriteBackConfirmation(InstructionFlowStep step, string registerName)
-    {
-        var result = LessonChecks.ValidateWriteBack(m_CurrentInstruction, step, registerName);
-        if (!result.isCorrect)
-        {
-            SetFeedback($"Incorrect. The ALU result should write back to {result.expectedRegister}.", true);
-            m_LessonSetup?.registerBank?.FlashFailure(registerName);
-            return;
-        }
-
-        m_RuntimeSelection.confirmedWriteBackRegister = registerName;
-        m_LessonSetup?.registerBank?.SetSelected(registerName);
-        SetFeedback("Correct. The result writes back to rd.", false);
-        AdvanceToNextStep();
-    }
-
-    void ProcessRegisterScan(InstructionFlowStep step, InstructionRegisterRole scannedRole, string registerName)
-    {
-        var requiredRoles = LessonChecks.GetRequiredRoles(step);
-        if (m_CurrentRegisterSelectionIndex < 0 || m_CurrentRegisterSelectionIndex >= requiredRoles.Length)
-            return;
-
-        var expectedRole = requiredRoles[m_CurrentRegisterSelectionIndex];
-        if (scannedRole != expectedRole)
-        {
-            SetFeedback(
-                $"Wrong pedestal. Place {m_CurrentInstruction.GetExpectedRegisterName(expectedRole)} on {GetScannerLabel(expectedRole)}.",
-                true);
-            m_LessonSetup?.registerBank?.FlashScannerFailure(scannedRole);
-            return;
-        }
-
-        var result = LessonChecks.ValidateRegisterSelection(
-            m_CurrentInstruction,
-            step,
-            m_CurrentRegisterSelectionIndex,
-            registerName);
-
-        if (!result.isCorrect)
-        {
-            SetFeedback(
-                $"Incorrect. {result.expectedRole} should be {result.expectedRegister}, not {registerName}.",
-                true);
-            m_LessonSetup?.registerBank?.FlashScannerFailure(scannedRole);
-            return;
-        }
-
-        m_RuntimeSelection.SetSelectedRegister(result.expectedRole, registerName);
-        m_LessonSetup?.registerBank?.SetScannerSuccess(scannedRole);
-        m_CurrentRegisterSelectionIndex++;
-
-        if (result.completesStep)
-        {
-            SetFeedback("Correct. The register operands are ready. Moving on to the ALU stage.", false);
-            AdvanceToNextStep();
-            return;
-        }
-
-        SetFeedback($"Correct. Now place {result.nextRegister} on the {GetScannerLabel(result.nextRole)} scanner.", false);
-    }
-
-    void ProcessWriteBackScan(InstructionFlowStep step, InstructionRegisterRole scannedRole, string registerName)
-    {
-        if (scannedRole != step.confirmationRegisterRole)
-        {
-            SetFeedback($"Wrong pedestal. Use the {GetScannerLabel(step.confirmationRegisterRole)} scanner for write-back.", true);
-            m_LessonSetup?.registerBank?.FlashScannerFailure(scannedRole);
-            return;
-        }
-
-        var result = LessonChecks.ValidateWriteBack(m_CurrentInstruction, step, registerName);
-        if (!result.isCorrect)
-        {
-            SetFeedback($"Incorrect. The ALU result should write back to {result.expectedRegister}.", true);
-            m_LessonSetup?.registerBank?.FlashScannerFailure(scannedRole);
-            return;
-        }
-
-        m_RuntimeSelection.confirmedWriteBackRegister = registerName;
-        m_LessonSetup?.registerBank?.SetScannerSuccess(scannedRole);
-        SetFeedback("Correct. The result writes back to rd.", false);
-        AdvanceToNextStep();
-    }
-
-    void SyncRegisterVisuals()
-    {
-        var bank = m_LessonSetup?.registerBank;
-        if (bank == null)
-            return;
-
-        bank.ResetVisuals();
-
-        // During operand selection, keep already-correct picks visible so the
-        // learner can see progress instead of starting from a blank board.
-        if (TryGetCurrentStep(out var step) &&
-            step.requiredInteraction == InstructionStepInteractionType.RegisterSelection)
-        {
-            if (bank.HasRegisterScanners)
-                return;
-
-            bank.SetSelected(m_RuntimeSelection.selectedRs);
-            bank.SetSelected(m_RuntimeSelection.selectedRt);
-            bank.SetSelected(m_RuntimeSelection.selectedRd);
-            return;
-        }
-
-        if (bank.HasRegisterScanners)
-            return;
-
-        if (!string.IsNullOrWhiteSpace(m_RuntimeSelection.confirmedWriteBackRegister))
-            bank.SetSelected(m_RuntimeSelection.confirmedWriteBackRegister);
-    }
-
-    void ConfigureScannersForCurrentStep(InstructionFlowStep step)
-    {
-        var registerBank = m_LessonSetup?.registerBank;
-        if (registerBank == null)
-            return;
-
-        switch (step.requiredInteraction)
-        {
-            case InstructionStepInteractionType.RegisterSelection:
-                registerBank.ConfigureScannerRoles(LessonChecks.GetRequiredRoles(step));
-                break;
-
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                registerBank.ConfigureScannerRoles(new[] { step.confirmationRegisterRole });
+                SetFeedback("Lesson complete. Press Restart to play it again.", false);
                 break;
 
             default:
-                registerBank.ConfigureScannerRoles(System.Array.Empty<InstructionRegisterRole>());
+                SetFeedback(string.Empty, false);
                 break;
         }
+    }
+
+    void ConfigureScannersForCurrentStep()
+    {
+        if (m_RegisterBank == null)
+            return;
+
+        if (CurrentStep == null)
+        {
+            m_RegisterBank.ConfigureScannerRoles(Array.Empty<InstructionRegisterRole>());
+            return;
+        }
+
+        switch (CurrentStep.requiredInteraction)
+        {
+            case InstructionStepInteractionType.RegisterSelection:
+                m_RegisterBank.ConfigureScannerRoles(LessonChecks.GetRequiredRoles(CurrentStep));
+                break;
+
+            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
+                m_RegisterBank.ConfigureScannerRoles(new[] { CurrentStep.confirmationRegisterRole });
+                break;
+
+            default:
+                m_RegisterBank.ConfigureScannerRoles(Array.Empty<InstructionRegisterRole>());
+                break;
+        }
+    }
+
+    string GetRegisterSelectionPrompt()
+    {
+        if (CurrentStep == null)
+            return string.Empty;
+
+        var requiredRoles = LessonChecks.GetRequiredRoles(CurrentStep);
+        if (m_CurrentRegisterSelectionIndex < 0 || m_CurrentRegisterSelectionIndex >= requiredRoles.Length)
+            return "Place the required registers on the active scanners.";
+
+        var currentRole = requiredRoles[m_CurrentRegisterSelectionIndex];
+        var expectedRegister = m_CurrentInstruction.GetExpectedRegisterName(currentRole);
+        return $"Place {expectedRegister} on {GetScannerLabel(currentRole)}.";
     }
 
     static string GetScannerLabel(InstructionRegisterRole registerRole)
@@ -581,26 +368,18 @@ public class CpuLessonFlow : MonoBehaviour
             InstructionRegisterRole.Rs => "Read Register 1",
             InstructionRegisterRole.Rt => "Read Register 2",
             InstructionRegisterRole.Rd => "Write Register",
-            _ => "scanner",
+            _ => "the correct",
         };
     }
 
     void SetFeedback(string message, bool isFailure)
     {
-        m_LessonSetup?.lessonUi?.SetFeedback(message, isFailure);
-    }
-
-    void ClearFeedback()
-    {
-        m_LessonSetup?.lessonUi?.ClearFeedback();
+        FeedbackChanged?.Invoke(message, isFailure);
     }
 
     InstructionDefinition LoadDefaultInstruction()
     {
         var loadedInstruction = Resources.Load<InstructionDefinition>(m_DefaultInstructionResourcePath);
-        if (loadedInstruction != null)
-            return loadedInstruction;
-
-        return InstructionDefaults.CreateFallbackAdd();
+        return loadedInstruction != null ? loadedInstruction : InstructionDefaults.CreateFallbackAdd();
     }
 }
