@@ -87,6 +87,7 @@ public class RegisterToken : MonoBehaviour
 
     public string RegisterId => m_RegisterId;
     public string DisplayLabel => m_DisplayLabel;
+    public bool IsGrabbed => m_GrabInteractable != null && m_GrabInteractable.isSelected;
 
     void Awake()
     {

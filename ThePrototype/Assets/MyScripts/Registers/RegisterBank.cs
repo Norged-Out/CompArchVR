@@ -14,17 +14,27 @@ public class RegisterBank : MonoBehaviour
 {
     readonly Dictionary<string, RegisterToken> m_RegisterTokens =
         new(StringComparer.OrdinalIgnoreCase);
+    readonly Dictionary<InstructionRegisterRole, RegisterScanner> m_RegisterScanners =
+        new();
 
     public event Action<string> RegisterPressed;
+    public event Action<InstructionRegisterRole, string> RegisterScanned;
+
+    public bool HasRegisterScanners =>
+        m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rs) &&
+        m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rt) &&
+        m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rd);
 
     void Awake()
     {
         RefreshRegisterCache();
+        RefreshScannerCache();
     }
 
     void OnEnable()
     {
         RefreshRegisterCache();
+        RefreshScannerCache();
     }
 
     /// <summary>
@@ -37,6 +47,7 @@ public class RegisterBank : MonoBehaviour
     public void BuildButtons(string[] _registerChoices)
     {
         RefreshRegisterCache();
+        RefreshScannerCache();
     }
 
     /// <summary>
@@ -58,6 +69,32 @@ public class RegisterBank : MonoBehaviour
     }
 
     /// <summary>
+    /// Re-scans authored register scanners in the current scene.
+    /// These scanners are not children of the bank, so we scene-filter them.
+    /// </summary>
+    public void RefreshScannerCache()
+    {
+        m_RegisterScanners.Clear();
+
+        foreach (var registerScanner in Resources.FindObjectsOfTypeAll<RegisterScanner>())
+        {
+            if (registerScanner == null)
+                continue;
+
+            if (!registerScanner.gameObject.scene.IsValid() || !registerScanner.gameObject.scene.isLoaded)
+                continue;
+
+            if (registerScanner.gameObject.scene != gameObject.scene)
+                continue;
+
+            if (registerScanner.RegisterRole == InstructionRegisterRole.None)
+                continue;
+
+            m_RegisterScanners[registerScanner.RegisterRole] = registerScanner;
+        }
+    }
+
+    /// <summary>
     /// Restores every register's lesson visual state without moving them.
     /// Useful when the lesson changes stages but the player is still physically
     /// holding or repositioning objects.
@@ -75,12 +112,16 @@ public class RegisterBank : MonoBehaviour
     public void ResetAllRegisters()
     {
         RefreshRegisterCache();
+        RefreshScannerCache();
 
         foreach (var registerToken in m_RegisterTokens.Values)
         {
             registerToken.ResetVisualState();
             registerToken.ResetToHome();
         }
+
+        foreach (var registerScanner in m_RegisterScanners.Values)
+            registerScanner.ResetScanner();
     }
 
     /// <summary>
@@ -108,12 +149,74 @@ public class RegisterBank : MonoBehaviour
     }
 
     /// <summary>
+    /// Enables only the scanners that the current lesson step actually uses.
+    /// </summary>
+    public void ConfigureScannerRoles(InstructionRegisterRole[] activeRoles)
+    {
+        RefreshScannerCache();
+
+        foreach (var scannerPair in m_RegisterScanners)
+        {
+            var isActive = false;
+            if (activeRoles != null)
+            {
+                foreach (var activeRole in activeRoles)
+                {
+                    if (activeRole == scannerPair.Key)
+                    {
+                        isActive = true;
+                        break;
+                    }
+                }
+            }
+
+            scannerPair.Value.SetStepActive(isActive);
+        }
+    }
+
+    /// <summary>
+    /// Keeps the matching scanner green after successful validation.
+    /// </summary>
+    public void SetScannerSuccess(InstructionRegisterRole role)
+    {
+        RefreshScannerCache();
+
+        if (m_RegisterScanners.TryGetValue(role, out var registerScanner))
+            registerScanner.MarkSuccess();
+    }
+
+    /// <summary>
+    /// Briefly flashes the matching scanner red for wrong pedestal / wrong token.
+    /// </summary>
+    public void FlashScannerFailure(InstructionRegisterRole role)
+    {
+        RefreshScannerCache();
+
+        if (m_RegisterScanners.TryGetValue(role, out var registerScanner))
+            registerScanner.FlashFailure();
+    }
+
+    /// <summary>
+    /// Called by a scanner after a token has sat in its zone long enough.
+    /// </summary>
+    public void NotifyRegisterScanned(InstructionRegisterRole role, RegisterToken registerToken)
+    {
+        if (registerToken == null || string.IsNullOrWhiteSpace(registerToken.RegisterId))
+            return;
+
+        RegisterScanned?.Invoke(role, registerToken.RegisterId);
+    }
+
+    /// <summary>
     /// Called by a register token when the player first grabs it.
     /// The lesson system reuses this as the current "selection" signal.
     /// </summary>
     public void NotifyRegisterGrabbed(RegisterToken registerToken)
     {
         if (registerToken == null || string.IsNullOrWhiteSpace(registerToken.RegisterId))
+            return;
+
+        if (HasRegisterScanners)
             return;
 
         RegisterPressed?.Invoke(registerToken.RegisterId);
