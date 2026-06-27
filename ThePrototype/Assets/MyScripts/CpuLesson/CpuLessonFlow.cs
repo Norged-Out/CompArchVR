@@ -1,4 +1,6 @@
+using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 /// <summary>
 /// Runtime orchestrator for the current CPU lesson slice.
@@ -37,8 +39,18 @@ public class CpuLessonFlow : MonoBehaviour
     [SerializeField]
     bool m_StartLessonOnPlay = false;
 
+    [Header("Intro UI")]
+
+    [SerializeField]
+    string m_IntroUiObjectName = "Intro UI";
+
+    [SerializeField]
+    string m_IntroStartButtonLabel = "Start Lesson";
+
     int m_CurrentStepIndex = -1;
     int m_CurrentRegisterSelectionIndex;
+    GameObject m_IntroUiRoot;
+    Button m_IntroStartButton;
 
     /// <summary>
     /// True when the lesson runtime is active and the scene advance button
@@ -72,6 +84,7 @@ public class CpuLessonFlow : MonoBehaviour
             return;
 
         LoadInstruction(m_CurrentInstruction);
+        WireIntroUiStartButton();
 
         if (m_StartLessonOnPlay)
             BeginLesson();
@@ -108,6 +121,7 @@ public class CpuLessonFlow : MonoBehaviour
     /// </summary>
     public void StartLesson()
     {
+        HideIntroUi();
         BeginLesson();
     }
 
@@ -136,10 +150,9 @@ public class CpuLessonFlow : MonoBehaviour
     public void HandleAdvanceButtonPressed()
     {
         // Auto-start is intentionally off during regular scene work, so the
-        // first advance press doubles as the manual lesson start trigger.
         if (m_CurrentInstruction != null && m_CurrentStepIndex < 0)
         {
-            BeginLesson();
+            SetFeedback("Press Start Lesson on the intro panel first.", true);
             return;
         }
 
@@ -281,7 +294,38 @@ public class CpuLessonFlow : MonoBehaviour
 
         m_CurrentStepIndex = 0;
         m_CurrentRegisterSelectionIndex = 0;
+        HideIntroUi();
         PresentCurrentStep();
+    }
+
+    void WireIntroUiStartButton()
+    {
+        if (m_IntroStartButton != null)
+            return;
+
+        m_IntroUiRoot = GameObject.Find(m_IntroUiObjectName);
+        if (m_IntroUiRoot == null)
+            return;
+
+        var buttons = m_IntroUiRoot.GetComponentsInChildren<Button>(true);
+        if (buttons == null || buttons.Length == 0)
+            return;
+
+        m_IntroStartButton = buttons[0];
+        m_IntroStartButton.onClick.RemoveListener(StartLesson);
+        m_IntroStartButton.onClick.AddListener(StartLesson);
+
+        foreach (var text in m_IntroStartButton.GetComponentsInChildren<TMP_Text>(true))
+            text.text = m_IntroStartButtonLabel;
+    }
+
+    void HideIntroUi()
+    {
+        if (m_IntroUiRoot == null)
+            m_IntroUiRoot = GameObject.Find(m_IntroUiObjectName);
+
+        if (m_IntroUiRoot != null)
+            m_IntroUiRoot.SetActive(false);
     }
 
     void AdvanceToNextStep()
