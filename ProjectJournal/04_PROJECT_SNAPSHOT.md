@@ -47,8 +47,10 @@ Current prototype features:
   - start from `Intro UI`
   - present instruction / fetch framing
   - use `Control Decode UI` to set/check control signals
+  - use one final continue press after a correct decode result
   - hand off to `Register Setup UI`
   - validate register placement through the authored scanners
+- authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
 - planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
 - slim lesson scripts now reduced to:
@@ -122,12 +124,16 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
+- branch from `main` into `ALU_V1`
 - extend the now-working intro-to-register MVP:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
 - keep `Control Decode UI` and the authored `Control Unit` buttons as the decode-phase baseline
 - keep the flow order fixed as intro -> control decode -> register setup unless the user explicitly changes it
-- polish their layout and wording
-- add the next authored lesson panel for the next zone
+- keep the current lesson UI layout approach:
+  - authored in scene
+  - updated by code
+  - not generated at runtime
+- add the next authored lesson panel / interaction zone for `ALU`
 - reuse the scanner / register / lesson state pattern for `addi` and `lw`
 
 ## Personal Reminder

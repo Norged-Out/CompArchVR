@@ -316,6 +316,45 @@ Implication:
 - future work should polish and extend this exact path
 - `addi` and `lw` should grow from this verified baseline, not replace it
 
+## 2026-06-28 - Authored Lesson Panels Must Use Layout Components, Not Fixed Runtime Text Assumptions
+
+Decision:
+- keep `Intro UI` and `Register Setup UI` as authored scroll-panel layouts whose content is resized by Unity layout components
+- let code update existing text/button content and force layout rebuilds after changes
+
+Why:
+- the earlier issue was not the panel concept itself, but the mismatch between runtime text updates and authored layout sizing
+- the user has now verified that this scene-authored + code-rebuild approach works
+
+Implication:
+- future lesson panels should follow the same pattern
+- if a panel text changes at runtime, code should rebuild the layout instead of assuming the authored size will update itself
+
+## 2026-06-28 - Control Decode Success Should Require One Explicit Continue Press
+
+Decision:
+- after the learner sets the correct control signals, the decode step should show success feedback and require one more button press to proceed
+
+Why:
+- this is clearer pedagogically than auto-advancing the moment the answer becomes correct
+- it gives the learner a visible sense of completion before moving on
+
+Implication:
+- future gated lesson steps can reuse this interaction rhythm when immediate auto-progression feels too abrupt
+
+## 2026-06-28 - ALU_V1 Is The Next Focus Branch
+
+Decision:
+- the next dedicated implementation branch should focus on the `ALU` / execution step for the current lesson flow
+
+Why:
+- `Intro UI`, `Control Decode UI`, and `Register Setup UI` now form a workable MVP baseline
+- the biggest missing instructional piece in the current `add` walkthrough is the execution step itself
+
+Implication:
+- the next extension should add an authored `ALU` zone before trying to build out memory behavior
+- `Data Memory` should remain unused for `add` while the ALU interaction is being stabilized
+
 ## Open Questions
 
 - how much instruction decoding should be interactive in V1

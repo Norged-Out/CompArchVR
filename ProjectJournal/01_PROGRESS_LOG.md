@@ -202,6 +202,37 @@ Risks / Notes:
   - `Control Decode UI`
   - `Register Setup UI`
 
+### 2026-06-28 - Intro/Register UI Layout Stabilized And Decode Continue Added
+
+Completed:
+- fixed the lesson-guide panel layout issue by treating `Intro UI` and `Register Setup UI` as authored layout panels whose content is rebuilt after runtime text changes
+- updated the lesson guide controller so authored text and action buttons no longer rely on runtime-generated panel content
+- confirmed the `Intro UI` panel now works as the real lesson entry point for the current MVP
+- confirmed the `Register Setup UI` panel follows the same authored layout pattern
+- updated control decode so a correct control-signal setup no longer advances immediately
+- added the intended decode rhythm:
+  - first press validates signals
+  - success feedback appears
+  - a final press continues to the next phase
+- verified that the current flow works through:
+  - `Intro UI`
+  - `Control Decode UI`
+  - `Register Setup UI`
+  - immediate transition into the next lesson phases already scaffolded in code
+
+Changed:
+- lesson panel text is now expected to be resized through authored Unity layout components plus forced rebuilds in code
+- `Control Decode UI` now behaves more clearly as a gated teaching step instead of auto-jumping the moment the answer is correct
+
+Next:
+- create branch `ALU_V1` from `main`
+- build the first authored `ALU` execution step for `add`
+- keep `Data Memory` out of the `add` route while making the ALU system reusable for `addi` and later `lw`
+
+Risks / Notes:
+- during register selection, success text currently stays minimal while failure text is more explicit; this is acceptable for now
+- after the third correct register, later-step auto-satisfaction is still possible if a reused scanner is already holding the expected register; this should be cleaned up in the ALU/write-back pass
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
