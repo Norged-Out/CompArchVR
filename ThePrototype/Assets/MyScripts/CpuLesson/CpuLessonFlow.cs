@@ -105,11 +105,18 @@ public class CpuLessonFlow : MonoBehaviour
         {
             case InstructionStepInteractionType.None:
             case InstructionStepInteractionType.ContinueButton:
+                if (IsWriteBackStep(CurrentStep))
+                    ApplyWriteBackResult();
+
                 AdvanceToNextStep();
                 break;
 
             case InstructionStepInteractionType.RegisterSelection:
                 SetFeedback(GetRegisterSelectionPrompt(), true);
+                break;
+
+            case InstructionStepInteractionType.AluExecution:
+                SetFeedback("Configure the ALU, place the packets on both inputs, then execute the operation.", false);
                 break;
 
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
@@ -138,6 +145,20 @@ public class CpuLessonFlow : MonoBehaviour
         m_CurrentStepIndex = -1;
         StepChanged?.Invoke(this);
         SetFeedback(string.Empty, false);
+    }
+
+    public void CompleteAluExecution(int resultValue)
+    {
+        if (!HasStarted || CurrentStep == null)
+            return;
+
+        if (CurrentStep.requiredInteraction != InstructionStepInteractionType.AluExecution)
+            return;
+
+        m_RuntimeSelection.aluResultValue = resultValue;
+        m_RuntimeSelection.hasAluResult = true;
+        SetFeedback($"ALU result produced: {resultValue}. Continue to write back.", false);
+        AdvanceToNextStep();
     }
 
     void RebindRegisterBank()
@@ -226,7 +247,9 @@ public class CpuLessonFlow : MonoBehaviour
         m_CurrentRegisterSelectionIndex++;
 
         var scannedValue = m_RegisterBank != null ? m_RegisterBank.GetRegisterValue(registerName) : 0;
-        var successMessage = $"Spawning {GetPacketLabel(result.expectedRole)} packet with value {scannedValue}.";
+        var successMessage = ShouldSpawnPacket(result.expectedRole)
+            ? $"Spawning {GetPacketLabel(result.expectedRole)} packet with value {scannedValue}."
+            : $"{registerName} confirmed for {GetScannerLabel(result.expectedRole)}.";
 
         if (cameFromScanner)
             m_RegisterBank?.SetScannerSuccess(scannedRole);
@@ -308,6 +331,10 @@ public class CpuLessonFlow : MonoBehaviour
                 SetFeedback(GetRegisterSelectionPrompt(), false);
                 break;
 
+            case InstructionStepInteractionType.AluExecution:
+                SetFeedback("Configure the ALU, place the packets on both inputs, then execute the operation.", false);
+                break;
+
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
                 SetFeedback(
                     $"Place {m_CurrentInstruction.GetExpectedRegisterName(CurrentStep.confirmationRegisterRole)} on the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.",
@@ -351,6 +378,19 @@ public class CpuLessonFlow : MonoBehaviour
         }
     }
 
+    void ApplyWriteBackResult()
+    {
+        if (m_RegisterBank == null || m_CurrentInstruction == null || !m_RuntimeSelection.hasAluResult)
+            return;
+
+        var destinationRegister = m_CurrentInstruction.expectedRd;
+        if (string.IsNullOrWhiteSpace(destinationRegister))
+            return;
+
+        m_RegisterBank.SetRegisterValue(destinationRegister, m_RuntimeSelection.aluResultValue);
+        m_RuntimeSelection.confirmedWriteBackRegister = destinationRegister;
+    }
+
     string GetRegisterSelectionPrompt()
     {
         if (CurrentStep == null)
@@ -382,9 +422,19 @@ public class CpuLessonFlow : MonoBehaviour
         {
             InstructionRegisterRole.Rs => "Read Data 1",
             InstructionRegisterRole.Rt => "Read Data 2",
-            InstructionRegisterRole.Rd => "Write Data",
             _ => "data",
         };
+    }
+
+    static bool ShouldSpawnPacket(InstructionRegisterRole registerRole)
+    {
+        return registerRole == InstructionRegisterRole.Rs ||
+               registerRole == InstructionRegisterRole.Rt;
+    }
+
+    static bool IsWriteBackStep(InstructionFlowStep step)
+    {
+        return step != null && step.highlightedNode == DatapathNodeId.WriteBack;
     }
 
     void SetFeedback(string message, bool isFailure)

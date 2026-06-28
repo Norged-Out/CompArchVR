@@ -82,6 +82,7 @@ public enum InstructionStepInteractionType
     RegisterSelection,
     WriteBackRegisterConfirmation,
     Completion,
+    AluExecution,
 }
 
 /// <summary>

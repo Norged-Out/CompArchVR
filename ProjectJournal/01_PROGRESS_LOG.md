@@ -14,7 +14,7 @@ Current prototype focus:
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
 - register scanner validation path for `rs`, `rt`, and destination register
-- first-pass ALU data-packet groundwork in code
+- first-pass ALU execution phase now wired with authored ALU UI, physical ALU buttons, and result spawning
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
 
 Current milestone:
@@ -35,9 +35,15 @@ The project now has:
 - register scanner pedestals for `Read Register 1`, `Read Register 2`, and `Write Register`
 - logical register values stored on register tokens, with lesson-time value seeding from instruction assets
 - a working MVP lesson flow that starts from `Intro UI`, gates through `Control Decode UI`, then hands off to `Register Setup UI` for scanner validation
+- control decode now validates only the 6 non-ALU signals; `ALUOp` and `ALUSrc` now belong to the execution phase
 - a smaller lesson architecture centered on focused lesson and register scripts
 - cleaned instruction assets for `add`, `addi`, and `lw`
-- first-pass `ALU` packet and scanner scripts ready for scene hookup
+- a working first-pass `ALU` execution loop for `add`:
+  - register scanners emit `Read Data 1` / `Read Data 2` packets
+  - authored ALU input zones accept the correct packet types through child trigger scanners
+  - physical `ALUOp` / `ALUSrc` buttons drive execution setup
+  - the authored `ALU UI` validates execution and gates the continue into write-back
+  - the ALU emits an `ALU Result` packet with the computed value
 
 ## Chronological Entries
 
@@ -271,6 +277,51 @@ Next:
 Risks / Notes:
 - the ALU groundwork is code-first right now; the Unity scene hookup is still required
 - `Testing Ground.unity` and the register scanner prefab already had live scene/prefab edits during this pass and should be treated carefully in follow-up work
+
+### 2026-06-29 - ALU Execution Phase Wired For add
+
+Completed:
+- moved `ALUOp` and `ALUSrc` responsibility out of control decode and into the ALU phase
+- kept register data packets alive after the register-selection step so execution can consume them
+- wired the ALU execution loop around authored scene objects:
+  - authored `ALU UI`
+  - physical `ALUOp` button
+  - physical `ALUSrc` button
+  - authored ALU input trigger zones
+  - authored ALU result spawn
+- made `ALUSrc` control what `Input 2` accepts:
+  - `0` -> `Read Data 2`
+  - `1` -> `Immediate`
+- made the ALU operation label use plain operation names:
+  - `Add`
+  - `Sub`
+  - `And`
+  - `Or`
+  - `Slt`
+- made the ALU emit a result packet of role `ALU Result`
+- changed the ALU success flow so the UI shows the resulting value and requires one extra continue press before handing off to write-back
+- changed the local register reset button so it now only restores moved register pieces to their home poses
+
+Changed:
+- the current `add` walkthrough order is now:
+  - `Intro UI`
+  - `Control Decode UI`
+  - `Register Setup UI`
+  - `ALU UI`
+  - temporary `Intro UI` write-back explanation
+- local register reset no longer:
+  - destroys data packets
+  - resets successful scanner colors
+  - turns active scanners inactive
+
+Next:
+- build the actual ALU control sub-step later if desired
+- extend the same execution pattern into `addi`
+- then build the memory-path variation for `lw`
+
+Risks / Notes:
+- the current write-back is still a temporary explanation/continue step, not yet its own physical datapath interaction
+- `Write Register` / `rd` is confirmed during the register phase and does not emit a data packet
 
 ## Current Working Baseline
 

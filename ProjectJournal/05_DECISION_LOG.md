@@ -355,6 +355,36 @@ Implication:
 - the next extension should add an authored `ALU` zone before trying to build out memory behavior
 - `Data Memory` should remain unused for `add` while the ALU interaction is being stabilized
 
+## 2026-06-29 - Control Decode Stops Before ALU-Specific Signals
+
+Decision:
+- `Control Decode UI` should validate only the 6 non-ALU signals for now
+- `ALUOp` and `ALUSrc` belong to the execution phase
+
+Why:
+- the user explicitly moved those responsibilities onto the ALU itself
+- this keeps decode focused and lets execution teach ALU-specific configuration in the right place
+
+Implication:
+- `ControlDecodeController` should not gate on `ALUOp` / `ALUSrc`
+- `AluExecutionController` and the authored `ALU UI` now own those checks
+
+## 2026-06-29 - Local Register Reset Must Be Pose-Only
+
+Decision:
+- the register-bank reset button should only restore register piece positions
+
+Why:
+- the user explicitly wants it to recover moved props without disturbing lesson state
+- clearing packets or successful scans made the interaction feel wrong mid-lesson
+
+Implication:
+- local register reset should not:
+  - destroy data packets
+  - clear successful scanner colors
+  - deactivate scanners
+  - wipe logical values
+
 ## 2026-06-28 - Register Values Should Be Separate From Physical Reset
 
 Decision:

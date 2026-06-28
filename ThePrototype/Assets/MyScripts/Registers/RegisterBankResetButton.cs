@@ -49,7 +49,7 @@ public class RegisterBankResetButton : MonoBehaviour
 
     void OnFirstSelectEntered(SelectEnterEventArgs _)
     {
-        m_RegisterBank?.ResetAllRegisters();
+        m_RegisterBank?.ResetRegisterPositionsOnly();
     }
 
     void CacheReferences()

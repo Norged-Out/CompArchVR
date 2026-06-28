@@ -17,9 +17,7 @@ public class ControlDecodeController : MonoBehaviour
         Branch,
         MemRead,
         MemtoReg,
-        ALUOp,
         MemWrite,
-        ALUSrc,
         RegWrite,
     }
 
@@ -40,13 +38,7 @@ public class ControlDecodeController : MonoBehaviour
     Transform m_MemtoRegButtonRoot;
 
     [SerializeField]
-    Transform m_ALUOpButtonRoot;
-
-    [SerializeField]
     Transform m_MemWriteButtonRoot;
-
-    [SerializeField]
-    Transform m_ALUSrcButtonRoot;
 
     [SerializeField]
     Transform m_RegWriteButtonRoot;
@@ -71,13 +63,7 @@ public class ControlDecodeController : MonoBehaviour
     TMP_Text m_MemtoRegText;
 
     [SerializeField]
-    TMP_Text m_ALUOpText;
-
-    [SerializeField]
     TMP_Text m_MemWriteText;
-
-    [SerializeField]
-    TMP_Text m_ALUSrcText;
 
     [SerializeField]
     TMP_Text m_RegWriteText;
@@ -110,16 +96,11 @@ public class ControlDecodeController : MonoBehaviour
     string m_BranchValue = "0";
     string m_MemReadValue = "0";
     string m_MemtoRegValue = "0";
-    string m_ALUOpValue = "00";
     string m_MemWriteValue = "0";
-    string m_ALUSrcValue = "0";
     string m_RegWriteValue = "0";
     bool m_IsPhaseActive;
     bool m_IsSolvedAwaitingContinue;
     InstructionDefinition m_CurrentInstruction;
-
-    public string CurrentALUSrcValue => m_ALUSrcValue;
-    public string CurrentALUOpValue => m_ALUOpValue;
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
 
     void Awake()
@@ -135,9 +116,7 @@ public class ControlDecodeController : MonoBehaviour
         HookButton(m_BranchButtonRoot, HandleBranchPressed, true);
         HookButton(m_MemReadButtonRoot, HandleMemReadPressed, true);
         HookButton(m_MemtoRegButtonRoot, HandleMemtoRegPressed, true);
-        HookButton(m_ALUOpButtonRoot, HandleALUOpPressed, true);
         HookButton(m_MemWriteButtonRoot, HandleMemWritePressed, true);
-        HookButton(m_ALUSrcButtonRoot, HandleALUSrcPressed, true);
         HookButton(m_RegWriteButtonRoot, HandleRegWritePressed, true);
 
         if (m_CheckButton != null)
@@ -153,9 +132,7 @@ public class ControlDecodeController : MonoBehaviour
         HookButton(m_BranchButtonRoot, HandleBranchPressed, false);
         HookButton(m_MemReadButtonRoot, HandleMemReadPressed, false);
         HookButton(m_MemtoRegButtonRoot, HandleMemtoRegPressed, false);
-        HookButton(m_ALUOpButtonRoot, HandleALUOpPressed, false);
         HookButton(m_MemWriteButtonRoot, HandleMemWritePressed, false);
-        HookButton(m_ALUSrcButtonRoot, HandleALUSrcPressed, false);
         HookButton(m_RegWriteButtonRoot, HandleRegWritePressed, false);
 
         if (m_CheckButton != null)
@@ -208,29 +185,9 @@ public class ControlDecodeController : MonoBehaviour
         ToggleBinarySignal(ControlSignal.MemtoReg);
     }
 
-    void HandleALUOpPressed(SelectEnterEventArgs _)
-    {
-        if (!m_IsPhaseActive)
-            return;
-
-        m_ALUOpValue = m_ALUOpValue switch
-        {
-            "00" => "01",
-            "01" => "10",
-            _ => "00",
-        };
-
-        HandleSignalChanged();
-    }
-
     void HandleMemWritePressed(SelectEnterEventArgs _)
     {
         ToggleBinarySignal(ControlSignal.MemWrite);
-    }
-
-    void HandleALUSrcPressed(SelectEnterEventArgs _)
-    {
-        ToggleBinarySignal(ControlSignal.ALUSrc);
     }
 
     void HandleRegWritePressed(SelectEnterEventArgs _)
@@ -255,27 +212,21 @@ public class ControlDecodeController : MonoBehaviour
         var expectedBranch = "0";
         var expectedMemRead = m_CurrentInstruction.mnemonic == InstructionMnemonic.Lw ? "1" : "0";
         var expectedMemtoReg = m_CurrentInstruction.mnemonic == InstructionMnemonic.Lw ? "1" : "0";
-        var expectedALUOp = m_CurrentInstruction.mnemonic == InstructionMnemonic.Add ? "10" : "00";
         var expectedMemWrite = "0";
-        var expectedALUSrc = m_CurrentInstruction.usesImmediate ? "1" : "0";
         var expectedRegWrite = m_CurrentInstruction.writesRegisterFile ? "1" : "0";
 
         var isRegDstCorrect = ValidateSignal(m_RegDstText, m_RegDstValue, expectedRegDst);
         var isBranchCorrect = ValidateSignal(m_BranchText, m_BranchValue, expectedBranch);
         var isMemReadCorrect = ValidateSignal(m_MemReadText, m_MemReadValue, expectedMemRead);
         var isMemtoRegCorrect = ValidateSignal(m_MemtoRegText, m_MemtoRegValue, expectedMemtoReg);
-        var isALUOpCorrect = ValidateSignal(m_ALUOpText, m_ALUOpValue, expectedALUOp);
         var isMemWriteCorrect = ValidateSignal(m_MemWriteText, m_MemWriteValue, expectedMemWrite);
-        var isALUSrcCorrect = ValidateSignal(m_ALUSrcText, m_ALUSrcValue, expectedALUSrc);
         var isRegWriteCorrect = ValidateSignal(m_RegWriteText, m_RegWriteValue, expectedRegWrite);
 
         var isCorrect = isRegDstCorrect &&
                         isBranchCorrect &&
                         isMemReadCorrect &&
                         isMemtoRegCorrect &&
-                        isALUOpCorrect &&
                         isMemWriteCorrect &&
-                        isALUSrcCorrect &&
                         isRegWriteCorrect;
 
         SetCheckButtonLabel(isCorrect ? m_SuccessCheckLabel : m_FailureCheckLabel);
@@ -315,9 +266,6 @@ public class ControlDecodeController : MonoBehaviour
             case ControlSignal.MemWrite:
                 m_MemWriteValue = m_MemWriteValue == "1" ? "0" : "1";
                 break;
-            case ControlSignal.ALUSrc:
-                m_ALUSrcValue = m_ALUSrcValue == "1" ? "0" : "1";
-                break;
             case ControlSignal.RegWrite:
                 m_RegWriteValue = m_RegWriteValue == "1" ? "0" : "1";
                 break;
@@ -342,9 +290,7 @@ public class ControlDecodeController : MonoBehaviour
         m_BranchValue = "0";
         m_MemReadValue = "0";
         m_MemtoRegValue = "0";
-        m_ALUOpValue = "00";
         m_MemWriteValue = "0";
-        m_ALUSrcValue = "0";
         m_RegWriteValue = "0";
 
         ResetSignalColors();
@@ -359,9 +305,7 @@ public class ControlDecodeController : MonoBehaviour
         SetSignalText(m_BranchText, "Branch", m_BranchValue);
         SetSignalText(m_MemReadText, "MemRead", m_MemReadValue);
         SetSignalText(m_MemtoRegText, "MemtoReg", m_MemtoRegValue);
-        SetSignalText(m_ALUOpText, "ALUOp", m_ALUOpValue);
         SetSignalText(m_MemWriteText, "MemWrite", m_MemWriteValue);
-        SetSignalText(m_ALUSrcText, "ALUSrc", m_ALUSrcValue);
         SetSignalText(m_RegWriteText, "RegWrite", m_RegWriteValue);
     }
 
@@ -380,9 +324,7 @@ public class ControlDecodeController : MonoBehaviour
         SetSignalColor(m_BranchText, m_DefaultTextColor);
         SetSignalColor(m_MemReadText, m_DefaultTextColor);
         SetSignalColor(m_MemtoRegText, m_DefaultTextColor);
-        SetSignalColor(m_ALUOpText, m_DefaultTextColor);
         SetSignalColor(m_MemWriteText, m_DefaultTextColor);
-        SetSignalColor(m_ALUSrcText, m_DefaultTextColor);
         SetSignalColor(m_RegWriteText, m_DefaultTextColor);
     }
 

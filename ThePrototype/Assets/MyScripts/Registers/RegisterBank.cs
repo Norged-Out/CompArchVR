@@ -163,6 +163,18 @@ public class RegisterBank : MonoBehaviour
     }
 
     /// <summary>
+    /// Snaps moved register tokens back home without disturbing lesson state,
+    /// scanner state, or any already spawned data packets.
+    /// </summary>
+    public void ResetRegisterPositionsOnly()
+    {
+        RefreshRegisterCache();
+
+        foreach (var registerToken in m_RegisterTokens.Values)
+            registerToken.ResetToHome();
+    }
+
+    /// <summary>
     /// Keeps successful lesson selections visible.
     /// </summary>
     public void SetSelected(string registerName)

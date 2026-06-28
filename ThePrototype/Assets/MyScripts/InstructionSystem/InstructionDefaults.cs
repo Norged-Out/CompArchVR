@@ -71,17 +71,16 @@ public static class InstructionDefaults
                 stepName = "ALU Execute",
                 highlightedNode = DatapathNodeId.ALU,
                 explanation = "The ALU adds the values read from rs and rt. Because add is an R-type instruction, it does not use an immediate value and it does not touch Data Memory.",
-                requiredInteraction = InstructionStepInteractionType.ContinueButton,
+                requiredInteraction = InstructionStepInteractionType.AluExecution,
                 blockProgressUntilValidated = true,
             },
             new InstructionFlowStep
             {
                 stepName = "Write Back",
                 highlightedNode = DatapathNodeId.WriteBack,
-                explanation = "The ALU result is written back to the destination register rd. Confirm the correct write-back target using the physical register bank.",
-                requiredInteraction = InstructionStepInteractionType.WriteBackRegisterConfirmation,
+                explanation = "The ALU result is written back to the destination register rd. Use the lesson guide to confirm the destination and final value before continuing.",
+                requiredInteraction = InstructionStepInteractionType.ContinueButton,
                 blockProgressUntilValidated = true,
-                confirmationRegisterRole = InstructionRegisterRole.Rd,
             },
             new InstructionFlowStep
             {

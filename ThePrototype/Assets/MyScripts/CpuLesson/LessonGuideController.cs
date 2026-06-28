@@ -62,8 +62,16 @@ public class LessonGuideController : MonoBehaviour
     [SerializeField]
     TMP_Text m_RegisterActionLabel;
 
+    [Header("ALU UI")]
+    [SerializeField]
+    GameObject m_AluRoot;
+
+    [SerializeField]
+    AluExecutionController m_AluController;
+
     void Awake()
     {
+        CacheReferences();
         HookButtons();
         EnsureButtonLayout(m_IntroActionButton);
         EnsureButtonLayout(m_RegisterActionButton);
@@ -72,6 +80,11 @@ public class LessonGuideController : MonoBehaviour
 
     void OnEnable()
     {
+        CacheReferences();
+
+        if (m_AluController != null)
+            m_AluController.ExecutionCompleted += HandleAluExecutionCompleted;
+
         if (m_LessonFlow == null)
             return;
 
@@ -82,6 +95,9 @@ public class LessonGuideController : MonoBehaviour
 
     void OnDisable()
     {
+        if (m_AluController != null)
+            m_AluController.ExecutionCompleted -= HandleAluExecutionCompleted;
+
         if (m_LessonFlow == null)
             return;
 
@@ -131,6 +147,11 @@ public class LessonGuideController : MonoBehaviour
         RefreshView();
     }
 
+    void HandleAluExecutionCompleted(int resultValue)
+    {
+        m_LessonFlow?.CompleteAluExecution(resultValue);
+    }
+
     void HandleFeedbackChanged(string message, bool isFailure)
     {
         var feedbackColor = isFailure
@@ -150,6 +171,9 @@ public class LessonGuideController : MonoBehaviour
             return;
         }
 
+        if (ShouldShowAluPanel())
+            return;
+
         if (ShouldShowControlDecodePanel())
             return;
 
@@ -165,11 +189,14 @@ public class LessonGuideController : MonoBehaviour
 
     void RefreshView()
     {
+        CacheReferences();
+
         if (m_LessonFlow == null || m_IntroRoot == null)
             return;
 
         var showControlDecode = ShouldShowControlDecodePanel();
         var showRegisterPanel = ShouldShowRegisterPanel();
+        var showAluPanel = ShouldShowAluPanel();
 
         if (m_ControlDecodeRoot != null)
             m_ControlDecodeRoot.SetActive(showControlDecode);
@@ -179,10 +206,16 @@ public class LessonGuideController : MonoBehaviour
         if (m_RegisterRoot != null)
             m_RegisterRoot.SetActive(showRegisterPanel);
 
-        m_IntroRoot.SetActive(!showControlDecode && (!showRegisterPanel || !m_LessonFlow.HasStarted));
+        if (m_AluRoot != null)
+            m_AluRoot.SetActive(showAluPanel);
+
+        m_AluController?.SetPhaseState(showAluPanel, m_LessonFlow.CurrentInstruction);
+
+        m_IntroRoot.SetActive(!showControlDecode && !showRegisterPanel && !showAluPanel);
 
         if (!m_LessonFlow.HasStarted)
         {
+            m_AluController?.ResetExecutionState();
             SetText(
                 m_IntroBody,
                 $"Lesson Introduction\n\nSelected instruction: {m_LessonFlow.CurrentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin the walkthrough.");
@@ -199,6 +232,15 @@ public class LessonGuideController : MonoBehaviour
             return;
 
         if (showControlDecode)
+        {
+            SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            return;
+        }
+
+        if (showAluPanel)
         {
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
@@ -246,15 +288,23 @@ public class LessonGuideController : MonoBehaviour
 
     bool ShouldShowRegisterPanel()
     {
-        if (ShouldShowControlDecodePanel())
+        if (ShouldShowControlDecodePanel() || ShouldShowAluPanel())
             return false;
 
         var step = m_LessonFlow?.CurrentStep;
         if (step == null)
             return false;
 
-        return step.requiredInteraction == InstructionStepInteractionType.RegisterSelection ||
-               step.requiredInteraction == InstructionStepInteractionType.WriteBackRegisterConfirmation;
+        return step.requiredInteraction == InstructionStepInteractionType.RegisterSelection;
+    }
+
+    bool ShouldShowAluPanel()
+    {
+        var step = m_LessonFlow?.CurrentStep;
+        if (step == null)
+            return false;
+
+        return step.requiredInteraction == InstructionStepInteractionType.AluExecution;
     }
 
     string BuildIntroBody(InstructionFlowStep step)
@@ -268,6 +318,14 @@ public class LessonGuideController : MonoBehaviour
 
         if (step.stepName.IndexOf("Fetch", System.StringComparison.OrdinalIgnoreCase) >= 0)
             body += "\n\nPress Continue when you are ready to move into instruction decode.";
+
+        if (step.highlightedNode == DatapathNodeId.WriteBack && m_LessonFlow.RuntimeSelection.hasAluResult)
+        {
+            body +=
+                $"\n\nWrite-back target: {instruction.expectedRd}" +
+                $"\nALU result value: {m_LessonFlow.RuntimeSelection.aluResultValue}" +
+                "\n\nPress Continue to complete write-back.";
+        }
 
         return body;
     }
@@ -302,6 +360,17 @@ public class LessonGuideController : MonoBehaviour
             $"Assembly: {instruction.assemblyInstructionText}\n\n" +
             $"Stage: {step.stepName}\n\n" +
             $"{step.explanation}";
+    }
+
+    void CacheReferences()
+    {
+        m_AluController ??= FindFirstSceneObject<AluExecutionController>();
+
+        if (m_AluRoot == null)
+        {
+            var aluRootTransform = FindSceneTransform("ALU UI");
+            m_AluRoot = aluRootTransform != null ? aluRootTransform.gameObject : null;
+        }
     }
 
     static void SetText(TMP_Text target, string text)
@@ -366,5 +435,37 @@ public class LessonGuideController : MonoBehaviour
             LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
 
         Canvas.ForceUpdateCanvases();
+    }
+
+    static Transform FindSceneTransform(string objectName)
+    {
+        foreach (var sceneTransform in Resources.FindObjectsOfTypeAll<Transform>())
+        {
+            if (sceneTransform == null || sceneTransform.name != objectName)
+                continue;
+
+            if (!sceneTransform.gameObject.scene.IsValid() || !sceneTransform.gameObject.scene.isLoaded)
+                continue;
+
+            return sceneTransform;
+        }
+
+        return null;
+    }
+
+    static T FindFirstSceneObject<T>() where T : Component
+    {
+        foreach (var component in Resources.FindObjectsOfTypeAll<T>())
+        {
+            if (component == null)
+                continue;
+
+            if (!component.gameObject.scene.IsValid() || !component.gameObject.scene.isLoaded)
+                continue;
+
+            return component;
+        }
+
+        return null;
     }
 }

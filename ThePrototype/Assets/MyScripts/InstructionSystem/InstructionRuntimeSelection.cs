@@ -29,6 +29,10 @@ public class InstructionRuntimeSelection
     // First-pass write-back confirmation used by the final add lesson stage.
     public string confirmedWriteBackRegister = string.Empty;
 
+    // The ALU result produced during the execution phase.
+    public int aluResultValue;
+    public bool hasAluResult;
+
     /// <summary>
     /// Clears player-entered operand values while keeping the selected instruction.
     /// Useful when the same instruction should be replayed from a clean state.
@@ -41,6 +45,8 @@ public class InstructionRuntimeSelection
         immediateValue = 0;
         immediateIsHex = false;
         confirmedWriteBackRegister = string.Empty;
+        aluResultValue = 0;
+        hasAluResult = false;
     }
 
     /// <summary>

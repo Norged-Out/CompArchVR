@@ -38,11 +38,13 @@ Current prototype features:
 - register tokens now support persistent logical values in code
 - reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - local register-bank reset button path separate from lesson reset
+- local register-bank reset now restores only register poses and does not clear lesson progress, scanner success state, or emitted packets
 - authored register placement validation in the register zone
 - first-pass control decode validation now lives in `ControlDecodeController`:
   - button presses cycle signal values
   - `Control Decode UI` mirrors the current signal states
   - the panel action button checks the full signal combination against the active instruction
+- control decode now intentionally ignores `ALUOp` and `ALUSrc`; those controls now belong to the execution phase
 - authored lesson panels are now expected to be wired through serialized scene references, not found dynamically at runtime
 - working MVP path:
   - start from `Intro UI`
@@ -51,6 +53,13 @@ Current prototype features:
   - use one final continue press after a correct decode result
   - hand off to `Register Setup UI`
   - validate register placement through the authored scanners
+- authored `ALU` execution pass now exists:
+  - physical `ALUOp` and `ALUSrc` buttons on the ALU prefab
+  - authored `ALU UI` for execution validation
+  - ALU input trigger zones that accept datapackets
+  - input 2 role switching based on `ALUSrc`
+  - result packet spawning with role `ALU Result`
+  - one extra continue click after success before write-back
 - authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
@@ -145,9 +154,9 @@ The cleanest next work item is:
   - updated by code
   - not generated at runtime
 - author the next physical interaction layer for `ALU`:
-  - pyramid-based data packets
-  - torus-based ALU input scanners
-  - ALU result handoff into later write-back / memory work
+  - keep the current ALU execution loop and polish it
+  - add a future ALU-control teaching step if needed
+  - extend the result handoff into later write-back / memory work
 - reuse the scanner / register / lesson state pattern for `addi` and `lw`
 
 ## Personal Reminder
