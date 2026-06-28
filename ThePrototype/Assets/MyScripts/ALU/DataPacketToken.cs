@@ -28,10 +28,10 @@ public class DataPacketToken : MonoBehaviour
     TMP_Text m_LabelText;
 
     [SerializeField]
-    TMP_Text m_ValueText;
+    XRGrabInteractable m_GrabInteractable;
 
     [SerializeField]
-    XRGrabInteractable m_GrabInteractable;
+    Rigidbody m_Rigidbody;
 
     public DataPacketRole PacketRole => m_PacketRole;
     public string SourceRegisterId => m_SourceRegisterId;
@@ -67,45 +67,49 @@ public class DataPacketToken : MonoBehaviour
     void CacheReferences()
     {
         m_GrabInteractable ??= GetComponent<XRGrabInteractable>();
-
-        if (m_LabelText == null || m_ValueText == null)
-        {
-            foreach (var textMesh in GetComponentsInChildren<TMP_Text>(true))
-            {
-                if (textMesh == null)
-                    continue;
-
-                if (m_LabelText == null)
-                {
-                    m_LabelText = textMesh;
-                    continue;
-                }
-
-                if (m_ValueText == null && textMesh != m_LabelText)
-                    m_ValueText = textMesh;
-            }
-        }
+        m_Rigidbody ??= GetComponent<Rigidbody>();
+        m_LabelText ??= GetComponentInChildren<TMP_Text>(true);
     }
 
     void RefreshText()
     {
         if (m_LabelText != null)
             m_LabelText.text = BuildLabel();
-
-        if (m_ValueText != null)
-            m_ValueText.text = m_Value.ToString();
     }
 
     string BuildLabel()
     {
-        return m_PacketRole switch
+        var baseLabel = m_PacketRole switch
         {
-            DataPacketRole.ReadData1 => $"RD1 {m_SourceDisplayLabel}",
-            DataPacketRole.ReadData2 => $"RD2 {m_SourceDisplayLabel}",
-            DataPacketRole.Immediate => "IMM",
-            DataPacketRole.AluResult => "ALU",
-            DataPacketRole.MemoryData => "MEM",
+            DataPacketRole.ReadData1 => "Read Data 1",
+            DataPacketRole.ReadData2 => "Read Data 2",
+            DataPacketRole.Immediate => "Immediate",
+            DataPacketRole.AluResult => "ALU Result",
+            DataPacketRole.MemoryData => "Memory Data",
             _ => m_SourceDisplayLabel,
         };
+
+        // Keep the packet label to a single line for now.
+        // return $"{baseLabel}\n{m_Value}";
+        return baseLabel;
+    }
+
+    public void LatchInPlace(Transform parentTransform)
+    {
+        CacheReferences();
+
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.linearVelocity = Vector3.zero;
+            m_Rigidbody.angularVelocity = Vector3.zero;
+            m_Rigidbody.isKinematic = true;
+            m_Rigidbody.useGravity = false;
+        }
+
+        if (m_GrabInteractable != null)
+            m_GrabInteractable.enabled = false;
+
+        if (parentTransform != null)
+            transform.SetParent(parentTransform, true);
     }
 }

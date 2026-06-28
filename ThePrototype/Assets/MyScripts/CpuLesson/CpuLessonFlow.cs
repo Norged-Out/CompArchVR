@@ -225,6 +225,9 @@ public class CpuLessonFlow : MonoBehaviour
         m_RuntimeSelection.SetSelectedRegister(result.expectedRole, registerName);
         m_CurrentRegisterSelectionIndex++;
 
+        var scannedValue = m_RegisterBank != null ? m_RegisterBank.GetRegisterValue(registerName) : 0;
+        var successMessage = $"Spawning {GetPacketLabel(result.expectedRole)} packet with value {scannedValue}.";
+
         if (cameFromScanner)
             m_RegisterBank?.SetScannerSuccess(scannedRole);
         else
@@ -232,12 +235,12 @@ public class CpuLessonFlow : MonoBehaviour
 
         if (result.completesStep)
         {
-            SetFeedback("Registers placed correctly. Continue to the next stage.", false);
+            SetFeedback($"{successMessage} Registers placed correctly. Continue to the next stage.", false);
             AdvanceToNextStep();
             return;
         }
 
-        SetFeedback($"Correct. Now place {result.nextRegister} on {GetScannerLabel(result.nextRole)}.", false);
+        SetFeedback($"{successMessage} Now place {result.nextRegister} on {GetScannerLabel(result.nextRole)}.", false);
         StepChanged?.Invoke(this);
     }
 
@@ -370,6 +373,17 @@ public class CpuLessonFlow : MonoBehaviour
             InstructionRegisterRole.Rt => "Read Register 2",
             InstructionRegisterRole.Rd => "Write Register",
             _ => "the correct",
+        };
+    }
+
+    static string GetPacketLabel(InstructionRegisterRole registerRole)
+    {
+        return registerRole switch
+        {
+            InstructionRegisterRole.Rs => "Read Data 1",
+            InstructionRegisterRole.Rt => "Read Data 2",
+            InstructionRegisterRole.Rd => "Write Data",
+            _ => "data",
         };
     }
 

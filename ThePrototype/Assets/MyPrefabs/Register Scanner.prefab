@@ -1,5 +1,36 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1588960891100012516
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1158355636761020559}
+  m_Layer: 0
+  m_Name: Data Packet Spawn
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1158355636761020559
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588960891100012516}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: -0.7}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3216959825443256955}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3361981678393389348
 GameObject:
   m_ObjectHideFlags: 0
@@ -731,6 +762,7 @@ Transform:
   - {fileID: 6768681132283165084}
   - {fileID: 2127858430573488158}
   - {fileID: 9182738204682900977}
+  - {fileID: 1158355636761020559}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!54 &4708226339509877080
@@ -801,6 +833,9 @@ MonoBehaviour:
   m_LabelText: {fileID: 1890001456753033952}
   m_ValueText: {fileID: 4569443550285306970}
   m_ScanZone: {fileID: 8222810023871308504}
+  m_DataPacketPrefab: {fileID: 2850044229737508648, guid: 2874c88f5adc40788d4b1d6bb0a6c80f, type: 3}
+  m_DataPacketSpawnAnchor: {fileID: 1158355636761020559}
+  m_OutputPacketRole: 0
   m_BaseMaterialTemplate: {fileID: 2100000, guid: b1c2d3e4f5674890a1b2c3d4e5f67890, type: 2}
   m_BodyMaterialTemplate: {fileID: 2100000, guid: c1d2e3f4a5674890b1c2d3e4f5a67890, type: 2}
   m_ScanDurationSeconds: 1

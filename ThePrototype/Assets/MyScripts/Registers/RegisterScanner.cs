@@ -62,9 +62,6 @@ public class RegisterScanner : MonoBehaviour
     DataPacketToken m_DataPacketPrefab;
 
     [SerializeField]
-    Vector3 m_DataPacketSpawnOffset = new(0f, 0.1f, 0.45f);
-
-    [SerializeField]
     Transform m_DataPacketSpawnAnchor;
 
     [SerializeField]
@@ -129,6 +126,7 @@ public class RegisterScanner : MonoBehaviour
     bool m_IsLatchedSuccessful;
     ScannerVisualState m_VisualState = ScannerVisualState.Inactive;
     DataPacketToken m_SpawnedPacket;
+    int m_LastResolvedValue;
 
     public InstructionRegisterRole RegisterRole => m_RegisterRole;
     public DataPacketToken SpawnedPacket => m_SpawnedPacket;
@@ -166,8 +164,6 @@ public class RegisterScanner : MonoBehaviour
 
     void Update()
     {
-        UpdateValueText();
-
         if (!m_IsStepActive || m_IsAwaitingValidation || m_IsLatchedSuccessful)
             return;
 
@@ -209,6 +205,7 @@ public class RegisterScanner : MonoBehaviour
         m_IsLatchedSuccessful = false;
         m_CurrentCandidate = null;
         m_CurrentScanTime = 0f;
+        m_LastResolvedValue = 0;
 
         if (m_FailureRoutine != null)
         {
@@ -241,6 +238,7 @@ public class RegisterScanner : MonoBehaviour
     {
         m_IsAwaitingValidation = false;
         m_IsLatchedSuccessful = true;
+        m_LastResolvedValue = m_CurrentCandidate != null ? m_CurrentCandidate.RegisterValue : 0;
         SpawnDataPacketFromCurrentCandidate();
         SetVisualState(ScannerVisualState.Success);
     }
@@ -263,8 +261,6 @@ public class RegisterScanner : MonoBehaviour
     {
         if (registerToken != null)
             m_TokensInZone.Add(registerToken);
-
-        UpdateValueText();
     }
 
     /// <summary>
@@ -286,7 +282,6 @@ public class RegisterScanner : MonoBehaviour
                 SetVisualState(ScannerVisualState.Idle);
         }
 
-        UpdateValueText();
     }
 
     IEnumerator FlashFailureRoutine()
@@ -299,6 +294,7 @@ public class RegisterScanner : MonoBehaviour
         m_FailureRoutine = null;
         m_CurrentCandidate = null;
         m_CurrentScanTime = 0f;
+        m_LastResolvedValue = 0;
 
         if (!m_IsStepActive)
             SetVisualState(ScannerVisualState.Inactive);
@@ -566,9 +562,8 @@ public class RegisterScanner : MonoBehaviour
         if (m_ValueText == null)
             return;
 
-        var stableCandidate = GetStableCandidate();
-        m_ValueText.text = stableCandidate != null
-            ? stableCandidate.RegisterValue.ToString()
+        m_ValueText.text = m_IsLatchedSuccessful
+            ? m_LastResolvedValue.ToString()
             : "0";
     }
 
@@ -576,16 +571,17 @@ public class RegisterScanner : MonoBehaviour
     {
         ClearSpawnedPacket();
 
-        if (m_DataPacketPrefab == null)
+        if (m_DataPacketPrefab == null || m_DataPacketSpawnAnchor == null)
             return;
 
         var sourceToken = m_CurrentCandidate != null ? m_CurrentCandidate : GetStableCandidate();
         if (sourceToken == null)
             return;
 
-        var spawnTransform = m_DataPacketSpawnAnchor != null ? m_DataPacketSpawnAnchor : transform;
-        var spawnPosition = spawnTransform.TransformPoint(m_DataPacketSpawnOffset);
-        var spawnedPacket = Instantiate(m_DataPacketPrefab, spawnPosition, spawnTransform.rotation);
+        var spawnedPacket = Instantiate(
+            m_DataPacketPrefab,
+            m_DataPacketSpawnAnchor.position,
+            m_DataPacketSpawnAnchor.rotation);
         spawnedPacket.Configure(
             m_OutputPacketRole,
             sourceToken.RegisterId,

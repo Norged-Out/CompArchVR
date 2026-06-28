@@ -223,7 +223,6 @@ public class LessonGuideController : MonoBehaviour
         }
 
         SetText(m_RegisterBody, BuildRegisterBody(step));
-        SetText(m_RegisterFeedback, string.Empty);
         var showContinue = step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
                            step.requiredInteraction == InstructionStepInteractionType.Completion;
         SetButtonState(
