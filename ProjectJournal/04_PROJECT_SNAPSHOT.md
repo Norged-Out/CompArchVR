@@ -73,6 +73,7 @@ Current prototype features:
   - `LessonChecks`
   - register bank / token / scanner scripts
   - ALU packet / scanner / controller scripts
+- `Assets/MyScripts` has now had an additional pre-demo cleanup pass to remove obvious leftovers and improve code comments without changing the validated MVP flow
 
 ## Most Important Scripts Right Now
 

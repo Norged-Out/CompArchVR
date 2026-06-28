@@ -87,6 +87,8 @@ public class CpuLessonFlow : MonoBehaviour
 
         if (m_RegisterBank != null)
         {
+            // A fresh run resets authored register poses, then reapplies the
+            // instruction's starting register values for the current lesson.
             m_RegisterBank.RefreshRegisterCache();
             m_RegisterBank.RefreshScannerCache();
             m_RegisterBank.ResetAllRegisters();
@@ -105,6 +107,9 @@ public class CpuLessonFlow : MonoBehaviour
         {
             case InstructionStepInteractionType.None:
             case InstructionStepInteractionType.ContinueButton:
+                // The current MVP uses a continue step for write-back. We apply
+                // the ALU result right before moving on so the updated register
+                // value is already visible during recap.
                 if (IsWriteBackStep(CurrentStep))
                     ApplyWriteBackResult();
 
@@ -246,6 +251,8 @@ public class CpuLessonFlow : MonoBehaviour
         m_RuntimeSelection.SetSelectedRegister(result.expectedRole, registerName);
         m_CurrentRegisterSelectionIndex++;
 
+        // Only rs / rt produce packets in the current datapath slice. The write
+        // register is still validated here, but it should never spawn output.
         var scannedValue = m_RegisterBank != null ? m_RegisterBank.GetRegisterValue(registerName) : 0;
         var successMessage = ShouldSpawnPacket(result.expectedRole)
             ? $"Spawning {GetPacketLabel(result.expectedRole)} packet with value {scannedValue}."
@@ -365,6 +372,8 @@ public class CpuLessonFlow : MonoBehaviour
         switch (CurrentStep.requiredInteraction)
         {
             case InstructionStepInteractionType.RegisterSelection:
+                // The authored register zone keeps three scanners in the scene
+                // at all times; we only toggle which roles are "live" per step.
                 m_RegisterBank.ConfigureScannerRoles(LessonChecks.GetRequiredRoles(CurrentStep));
                 break;
 

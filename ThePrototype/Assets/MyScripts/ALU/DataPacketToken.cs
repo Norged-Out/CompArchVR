@@ -98,6 +98,8 @@ public class DataPacketToken : MonoBehaviour
     {
         CacheReferences();
 
+        // A latched packet becomes part of a datapath node, so it stops
+        // behaving like a loose grabbable object.
         if (m_Rigidbody != null)
         {
             m_Rigidbody.linearVelocity = Vector3.zero;

@@ -4,10 +4,8 @@ using UnityEngine;
 
 /// <summary>
 /// Scene-owned register bank manager.
-///
-/// The original version built temporary runtime buttons.
-/// This version treats authored grabbable register pieces as the source of truth
-/// and exposes the same selection-style callbacks the lesson flow already uses.
+/// Authored grabbable register pieces are the source of truth for both lesson
+/// validation and value storage.
 /// </summary>
 [DisallowMultipleComponent]
 public class RegisterBank : MonoBehaviour
@@ -76,19 +74,6 @@ public class RegisterBank : MonoBehaviour
     }
 
     /// <summary>
-    /// Legacy lesson entrypoint kept for compatibility.
-    ///
-    /// We no longer destroy and rebuild the bank here. Instead, we refresh the
-    /// authored register cache and keep the full 32-register bank available so
-    /// the user can work with real scene objects.
-    /// </summary>
-    public void BuildButtons(string[] _registerChoices)
-    {
-        RefreshRegisterCache();
-        RefreshScannerCache();
-    }
-
-    /// <summary>
     /// Re-scans authored register tokens and wires them back to this bank.
     /// Call this after edit-time authoring or if scene children change.
     /// </summary>
@@ -130,17 +115,6 @@ public class RegisterBank : MonoBehaviour
 
             m_RegisterScanners[registerScanner.RegisterRole] = registerScanner;
         }
-    }
-
-    /// <summary>
-    /// Restores every register's lesson visual state without moving them.
-    /// Useful when the lesson changes stages but the player is still physically
-    /// holding or repositioning objects.
-    /// </summary>
-    public void ResetVisuals()
-    {
-        foreach (var registerToken in m_RegisterTokens.Values)
-            registerToken.ResetVisualState();
     }
 
     /// <summary>

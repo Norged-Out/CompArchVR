@@ -189,6 +189,8 @@ public class RegisterScanner : MonoBehaviour
         if (m_CurrentScanTime < m_ScanDurationSeconds)
             return;
 
+        // Reaching the scan duration only means "candidate is stable".
+        // The lesson flow still decides whether the scanned register is correct.
         m_IsAwaitingValidation = true;
         m_CurrentScanTime = 0f;
         m_OwningBank?.NotifyRegisterScanned(m_RegisterRole, candidate);
@@ -400,6 +402,9 @@ public class RegisterScanner : MonoBehaviour
         if (supportCollider == null || !m_BaseRenderer || !m_BodyRenderer)
             return;
 
+        // The solid collider matches the scanner footprint, not the trigger.
+        // That keeps dropped tokens resting on the pedestal instead of sinking
+        // into the moving body mesh.
         var baseBounds = GetRendererBoundsInRootSpace(m_BaseRenderer);
         var bodyBounds = GetRendererBoundsInRootSpace(m_BodyRenderer);
         var pressedBodyCenterY = bodyBounds.center.y + m_PressedOffsetY;
@@ -415,6 +420,8 @@ public class RegisterScanner : MonoBehaviour
         if (m_ScanZone == null || !m_BodyRenderer)
             return;
 
+        // The trigger extends a little above the pressed surface so packets can
+        // settle naturally before the timer starts.
         var bodyBounds = GetRendererBoundsInRootSpace(m_BodyRenderer);
         var pressedBodyTopY = bodyBounds.max.y + m_PressedOffsetY;
         var scanHeight = Mathf.Max(0.12f, bodyBounds.size.y + m_ScanZonePadding.y);
@@ -576,6 +583,8 @@ public class RegisterScanner : MonoBehaviour
         if (sourceToken == null)
             return;
 
+        // Packet data is copied at scan success time so later register resets
+        // or value changes do not mutate an already emitted datapath packet.
         var spawnedPacket = Instantiate(
             m_DataPacketPrefab,
             m_DataPacketSpawnAnchor.position,

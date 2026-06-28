@@ -158,6 +158,7 @@ public class LessonGuideController : MonoBehaviour
             ? new Color(1f, 0.55f, 0.55f, 1f)
             : new Color(0.78f, 0.96f, 0.82f, 1f);
 
+        // Only the currently visible panel owns the live feedback surface.
         if (ShouldShowRegisterPanel())
         {
             if (m_RegisterFeedback != null)
@@ -198,6 +199,8 @@ public class LessonGuideController : MonoBehaviour
         var showRegisterPanel = ShouldShowRegisterPanel();
         var showAluPanel = ShouldShowAluPanel();
 
+        // Panels are authored in the scene and simply toggled on/off as the
+        // lesson advances. That keeps layout work in edit mode instead of runtime.
         if (m_ControlDecodeRoot != null)
             m_ControlDecodeRoot.SetActive(showControlDecode);
 
@@ -421,6 +424,9 @@ public class LessonGuideController : MonoBehaviour
 
         Canvas.ForceUpdateCanvases();
 
+        // The guide uses scroll-view content that grows with variable text.
+        // Force-rebuilding both content and viewport keeps long descriptions
+        // from overlapping the action button during play mode.
         var scrollRect = root.GetComponentInChildren<ScrollRect>(true);
         if (scrollRect != null && scrollRect.content != null)
         {

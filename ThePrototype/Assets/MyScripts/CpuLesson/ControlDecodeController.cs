@@ -101,7 +101,6 @@ public class ControlDecodeController : MonoBehaviour
     bool m_IsPhaseActive;
     bool m_IsSolvedAwaitingContinue;
     InstructionDefinition m_CurrentInstruction;
-    public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
 
     void Awake()
     {
@@ -200,6 +199,8 @@ public class ControlDecodeController : MonoBehaviour
         if (!m_IsPhaseActive || m_CurrentInstruction == null)
             return;
 
+        // A correct solution uses the same button as an explicit "continue"
+        // acknowledgement so the learner sees the success state before moving on.
         if (m_IsSolvedAwaitingContinue)
         {
             m_IsSolvedAwaitingContinue = false;
@@ -276,6 +277,8 @@ public class ControlDecodeController : MonoBehaviour
 
     void HandleSignalChanged()
     {
+        // Any manual change invalidates the previous check result until the
+        // learner asks for validation again.
         m_IsSolvedAwaitingContinue = false;
         RefreshSignalText();
         ResetSignalColors();

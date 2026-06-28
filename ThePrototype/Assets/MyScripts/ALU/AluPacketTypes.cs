@@ -1,3 +1,7 @@
+/// <summary>
+/// Logical packet kinds that can move between datapath stages in the current
+/// prototype.
+/// </summary>
 public enum DataPacketRole
 {
     None,

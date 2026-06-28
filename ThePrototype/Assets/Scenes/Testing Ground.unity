@@ -844,6 +844,38 @@ PrefabInstance:
       propertyPath: m_LocalPosition.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_AluUiRoot
+      value: 
+      objectReference: {fileID: 2121333926}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_FeedbackText
+      value: 
+      objectReference: {fileID: 2098762590}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_ExecuteButton
+      value: 
+      objectReference: {fileID: 782653814}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_AluOpStatusText
+      value: 
+      objectReference: {fileID: 1291705635}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_AluSrcStatusText
+      value: 
+      objectReference: {fileID: 1342993291}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_Input1StatusText
+      value: 
+      objectReference: {fileID: 2131422409}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_Input2StatusText
+      value: 
+      objectReference: {fileID: 918720520}
+    - target: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+      propertyPath: m_ExecuteButtonLabel
+      value: 
+      objectReference: {fileID: 1555705350}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1332,7 +1364,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4889826007080320566, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.0000009536743
+      value: 0.00000023841858
       objectReference: {fileID: 0}
     - target: {fileID: 4889826007080320566, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1340,7 +1372,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4889826007080320566, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.0000009536743
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
       propertyPath: m_LocalScale.x
@@ -5345,6 +5377,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1035790433963668018, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
   m_PrefabInstance: {fileID: 896451070}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &904400269 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 7777000000000000001, guid: 6f57dd34ac09c4a4e976f8b5a008fbd0, type: 3}
+  m_PrefabInstance: {fileID: 194104003}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b7bb611afe271234b8955fcdc9c729de, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &915248545
 GameObject:
   m_ObjectHideFlags: 0
@@ -10400,9 +10443,7 @@ MonoBehaviour:
   m_BranchButtonRoot: {fileID: 1226897560}
   m_MemReadButtonRoot: {fileID: 93525965}
   m_MemtoRegButtonRoot: {fileID: 880154462}
-  m_ALUOpButtonRoot: {fileID: 966403337}
   m_MemWriteButtonRoot: {fileID: 784095354}
-  m_ALUSrcButtonRoot: {fileID: 67545694}
   m_RegWriteButtonRoot: {fileID: 188793907}
   m_CheckButton: {fileID: 653361221}
   m_CheckButtonLabel: {fileID: 600421269}
@@ -10410,9 +10451,7 @@ MonoBehaviour:
   m_BranchText: {fileID: 1106339516}
   m_MemReadText: {fileID: 963831338}
   m_MemtoRegText: {fileID: 696660553}
-  m_ALUOpText: {fileID: 915248547}
   m_MemWriteText: {fileID: 1019199317}
-  m_ALUSrcText: {fileID: 1753367813}
   m_RegWriteText: {fileID: 1669876796}
   m_ProgressFeedbackText: {fileID: 1807072697}
   m_DefaultCheckLabel: Check Signals
@@ -11931,6 +11970,8 @@ MonoBehaviour:
     immediateValue: 0
     immediateIsHex: 0
     confirmedWriteBackRegister: 
+    aluResultValue: 0
+    hasAluResult: 0
 --- !u!114 &1621409677001
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11959,6 +12000,8 @@ MonoBehaviour:
   m_RegisterFeedback: {fileID: 1782875552}
   m_RegisterActionButton: {fileID: 1759733884}
   m_RegisterActionLabel: {fileID: 359015012}
+  m_AluRoot: {fileID: 2121333926}
+  m_AluController: {fileID: 904400269}
 --- !u!1 &346822598817615324
 GameObject:
   m_ObjectHideFlags: 0

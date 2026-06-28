@@ -78,9 +78,6 @@ public class AluExecutionController : MonoBehaviour
     string m_ResultReadyButtonText = "Continue";
 
     [SerializeField]
-    Color m_DefaultFeedbackColor = Color.white;
-
-    [SerializeField]
     Color m_SuccessFeedbackColor = new(0.78f, 0.96f, 0.82f, 1f);
 
     [SerializeField]
@@ -99,8 +96,6 @@ public class AluExecutionController : MonoBehaviour
     public event System.Action<int> ExecutionCompleted;
 
     public bool IsPhaseActive => m_IsPhaseActive;
-    public string CurrentAluOpValue => m_CurrentAluOpValue;
-    public string CurrentAluSrcValue => m_CurrentAluSrcValue;
 
     void Awake()
     {
@@ -133,6 +128,8 @@ public class AluExecutionController : MonoBehaviour
         m_IsPhaseActive = isActive;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
 
+        // Entering the phase or swapping instructions should always rebuild the
+        // ALU's expected inputs from lesson data.
         if (isEnteringPhase || instructionChanged)
             PrepareForExecutionStep();
 
@@ -266,6 +263,8 @@ public class AluExecutionController : MonoBehaviour
     {
         validationMessage = string.Empty;
 
+        // The execute button checks the same logic the learner just configured:
+        // first ALU control state, then the physical packets sitting on the inputs.
         var expectedAluOp = GetExpectedAluOpValue(m_CurrentInstruction);
         if (m_CurrentAluOpValue != expectedAluOp)
         {
@@ -376,6 +375,8 @@ public class AluExecutionController : MonoBehaviour
 
     void RefreshExpectedInputRoles()
     {
+        // Input 1 is always Read Data 1 in the current datapath slice.
+        // Input 2 flips between Read Data 2 and Immediate based on ALUSrc.
         m_InputA?.SetExpectedPacketRole(DataPacketRole.ReadData1);
         m_InputB?.SetExpectedPacketRole(GetExpectedInput2Role());
     }

@@ -218,6 +218,23 @@ Completed:
 - fixed the lesson-guide panel layout issue by treating `Intro UI` and `Register Setup UI` as authored layout panels whose content is rebuilt after runtime text changes
 - updated the lesson guide controller so authored text and action buttons no longer rely on runtime-generated panel content
 - confirmed the `Intro UI` panel now works as the real lesson entry point for the current MVP
+
+### 2026-06-29 - Pre-Demo Script Cleanup And Comment Pass
+
+Completed:
+- removed leftover empty `MyScripts` folders that were no longer part of the scene-authored lesson path
+- removed clearly dead compatibility methods from the register bank cleanup path
+- kept the tested MVP behavior intact while tightening comments across:
+  - lesson flow
+  - lesson guide
+  - control decode
+  - ALU execution
+  - ALU input scanners
+  - register scanners
+- preserved the current working `Testing Ground` scene and lesson behavior after cleanup
+
+Notes:
+- this pass was intentionally conservative: obvious dead code was removed, but potentially reusable fallback paths were left alone if they still fit future lessons
 - confirmed the `Register Setup UI` panel follows the same authored layout pattern
 - updated control decode so a correct control-signal setup no longer advances immediately
 - added the intended decode rhythm:

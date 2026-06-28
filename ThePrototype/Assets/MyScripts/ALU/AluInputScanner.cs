@@ -116,6 +116,8 @@ public class AluInputScanner : MonoBehaviour
         if (m_CurrentStableTime < m_RequiredStableSeconds)
             return;
 
+        // Once a packet has remained stable long enough, the scanner owns it
+        // for the rest of the phase until the controller explicitly resets.
         AcceptedPacket = stableCandidate;
         AcceptedPacket.LatchInPlace(transform);
         m_IsLatched = true;
@@ -136,6 +138,8 @@ public class AluInputScanner : MonoBehaviour
 
         m_ExpectedPacketRole = expectedPacketRole;
 
+        // If ALUSrc changes mid-phase, an already accepted packet may become
+        // invalid. Drop it so the learner has to provide the new correct type.
         if (AcceptedPacket != null && AcceptedPacket.PacketRole != m_ExpectedPacketRole)
             ClearAcceptedPacket();
 
@@ -178,6 +182,8 @@ public class AluInputScanner : MonoBehaviour
     {
         m_PacketsInZone.RemoveWhere(packet => packet == null);
 
+        // The first ungrabbed packet in the trigger is treated as the current
+        // candidate. We keep this intentionally simple for the two-input ALU MVP.
         foreach (var dataPacket in m_PacketsInZone)
         {
             if (dataPacket == null || dataPacket.IsGrabbed)
