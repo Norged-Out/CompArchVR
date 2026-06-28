@@ -49,12 +49,21 @@ If scene placement, readability, spacing, or general visual feel matters:
 - do not silently solve it by generating everything in code
 - tell the user what needs to exist in-scene
 - let the user help place and eyeball it inside Unity
+- if the user has recently edited the scene, rescan `Testing Ground` before assuming older hierarchy or components still exist
 
 Runtime-generated scene objects are acceptable only as:
 - temporary fallback scaffolding
 - emergency prototyping glue when Unity is not open
 
 They are not the preferred final workflow for layout-heavy scene elements.
+
+For the current lesson framework, also prefer:
+- serialized Inspector references to authored scene objects
+- explicit scene wiring for buttons, panels, scanners, and banks
+
+Avoid:
+- `Find*`-style scene searches for core lesson objects
+- name-based runtime hookup when the user can wire the scene directly in edit mode
 
 ## Design Rules
 
@@ -100,6 +109,14 @@ Do not allow one script to become a dumping ground for:
 - runtime button construction
 
 Prefer several focused scripts over one bloated controller.
+
+For the current `Testing Ground` lesson path:
+- `LessonGuideController` should stay focused on authored panel flow
+- `ControlDecodeController` should stay focused on control-signal interaction and checking
+- `CpuLessonFlow` should stay focused on lesson-step state and validation
+
+Also:
+- if older scene assumptions are no longer true, refactor or delete the dead code instead of layering more hacks on top
 
 ## Documentation Update Rule
 

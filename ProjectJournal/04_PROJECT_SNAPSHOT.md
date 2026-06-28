@@ -20,31 +20,58 @@ Scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype features:
-- lesson framework present, but not intended to auto-start during ordinary scene iteration
-- explicit node highlighting by datapath id
-- refactored lesson runtime split across small helper scripts
-- runtime world-space lesson UI fallback
-- scene-authored `Register Bank` with 32 permanent grabbable MIPS registers
+- lesson framework re-wired around `Lesson Guide`
+- scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
+- scene-authored `Control Decode UI` used as the decode-phase gate between intro and registers
+- scene-authored `Register Setup UI` near the register area
+- scene-authored `Register Zone` with 32 permanent grabbable MIPS registers
+- scene-authored `Control Unit` signal buttons for:
+  - `RegDst`
+  - `Branch`
+  - `MemRead`
+  - `MemtoReg`
+  - `ALUOp`
+  - `MemWrite`
+  - `ALUSrc`
+  - `RegWrite`
+- register scanners for `Read Register 1`, `Read Register 2`, and `Write Register`
 - reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - local register-bank reset button path separate from lesson reset
-- planned `Execution` / `WriteBack` pedestal-zones for physical register placement validation
+- authored register placement validation in the register zone
+- first-pass control decode validation now lives in `ControlDecodeController`:
+  - button presses cycle signal values
+  - `Control Decode UI` mirrors the current signal states
+  - the panel action button checks the full signal combination against the active instruction
+- authored lesson panels are now expected to be wired through serialized scene references, not found dynamically at runtime
+- working MVP path:
+  - start from `Intro UI`
+  - present instruction / fetch framing
+  - use `Control Decode UI` to set/check control signals
+  - hand off to `Register Setup UI`
+  - validate register placement through the authored scanners
+- planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
+- slim lesson scripts now reduced to:
+  - `CpuLessonFlow`
+  - `LessonGuideController`
+  - `LessonChecks`
+  - register bank / token / scanner scripts
 
 ## Most Important Scripts Right Now
 
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuNodeSequenceController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\NodeMap.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonSetup.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonUI.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\ControlDecodeController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankAuthoring.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankResetButton.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterButton.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScanner.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScannerZone.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefinition.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionEnums.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefaults.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionRuntimeSelection.cs`
 
 ## Recommended Development Order
 
@@ -79,8 +106,8 @@ Before stopping:
 ## Current Open Questions
 
 - how readable and comfortable the current lesson UI and register bank feel in-headset
-- which remaining elements should become scene-authored instead of runtime-generated
-- how much of instruction decode should be physical vs UI-driven
+- how much of the intro/decode text should stay on `Intro UI` before handoff to later zone panels
+- how much instruction decoding should be physical vs UI-driven
 - how explicit the control-signal interactions should be in the first version
 - whether instruction choice is user-selected, randomized, or both
 - the exact acceptance rule for pedestal validation:
@@ -95,11 +122,13 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- co-author any remaining spacing or readability changes to the saved register bank in-scene with the user
-- validate and polish the playable `add` lesson in-headset
-- author pedestal zones for the `ALU` / `Execution` phase and later `WriteBack`
-- make each pedestal scan the placed register token and validate it only for the active lesson step
-- then extend the same framework into `addi`
+- extend the now-working intro-to-register MVP:
+- keep `Intro UI` and `Register Setup UI` authored in-scene
+- keep `Control Decode UI` and the authored `Control Unit` buttons as the decode-phase baseline
+- keep the flow order fixed as intro -> control decode -> register setup unless the user explicitly changes it
+- polish their layout and wording
+- add the next authored lesson panel for the next zone
+- reuse the scanner / register / lesson state pattern for `addi` and `lw`
 
 ## Personal Reminder
 

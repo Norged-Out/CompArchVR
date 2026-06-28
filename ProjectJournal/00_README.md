@@ -60,3 +60,11 @@ Before doing meaningful work in a future chat, the assistant should read:
 The user requested that after meaningful development sessions, the relevant journal files should be updated before wrapping up whenever practical.
 
 This rule is now part of the repository working process.
+
+## Current Resume Note
+
+As of `2026-06-28`, the active baseline is:
+- scene-authored world-space UI under `Lesson Guide`
+- a permanent scene-authored `Register Zone`
+- a dedicated scene-authored `Control Decode UI` between intro and register setup
+- lesson scripts wired through serialized scene references instead of runtime scene searches
