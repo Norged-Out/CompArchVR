@@ -96,7 +96,7 @@ Implication:
 ## 2026-06-16 - The Existing Instruction Scripts Should Be Refined, Not Scrapped
 
 Decision:
-- keep `InstructionSystemV1` as useful scaffolding
+- keep `InstructionSystem` as useful scaffolding
 
 Why:
 - the current plan still benefits from instruction definitions, runtime selection, and UI layout data
@@ -354,6 +354,49 @@ Why:
 Implication:
 - the next extension should add an authored `ALU` zone before trying to build out memory behavior
 - `Data Memory` should remain unused for `add` while the ALU interaction is being stabilized
+
+## 2026-06-28 - Register Values Should Be Separate From Physical Reset
+
+Decision:
+- register tokens may carry logical values, but the local bank reset button should only reset pose / scanner / visual state
+
+Why:
+- the user explicitly wants lesson-time register values that can differ from the default zero state
+- wiping those values whenever a lost token is returned home would make iteration and teaching flow worse
+
+Implication:
+- logical register value reset should stay under lesson/runtime control
+- physical prop reset and lesson-value reset remain separate concerns
+
+## 2026-06-28 - Scanner Value Display Is Preferred Over Always-On Register Value Display
+
+Decision:
+- prefer showing the active value at the scanner / datapath stage rather than forcing every register token to permanently foreground its value
+
+Why:
+- the register pieces are easier to read when they primarily communicate identity
+- the value becomes pedagogically meaningful at the moment the datapath reads it
+- this fits the user's ALU plan better, where scanned values turn into carried data packets
+
+Implication:
+- future scenes can still show values on tokens if needed, but the main teaching emphasis should stay on phase-specific value exposure
+
+## 2026-06-28 - ALU Should Consume Data Packets Rather Than Raw Register Tokens
+
+Decision:
+- after successful register scanning, later phases should work with emitted datapath value packets instead of continuing to move the original register token through every stage
+
+Why:
+- this more closely matches the datapath mental model:
+  - choose register
+  - read value
+  - carry value into ALU / memory / write-back logic
+- it keeps register identity selection separate from value flow
+- it makes later `addi` and `lw` extensions cleaner
+
+Implication:
+- ALU and later memory interactions should be built around packet scanners / result tokens
+- the existing register bank remains the source of operand identity, not the universal prop for every later phase
 
 ## Open Questions
 

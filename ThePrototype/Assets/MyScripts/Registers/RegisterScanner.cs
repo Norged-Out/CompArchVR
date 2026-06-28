@@ -1,6 +1,8 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 /// <summary>
 /// Pedestal-style scanner used during lesson phases that need a specific
@@ -49,7 +51,24 @@ public class RegisterScanner : MonoBehaviour
     TMP_Text m_LabelText;
 
     [SerializeField]
+    TMP_Text m_ValueText;
+
+    [SerializeField]
     BoxCollider m_ScanZone;
+
+    [Header("Data Packet Output")]
+
+    [SerializeField]
+    DataPacketToken m_DataPacketPrefab;
+
+    [SerializeField]
+    Vector3 m_DataPacketSpawnOffset = new(0f, 0.1f, 0.45f);
+
+    [SerializeField]
+    Transform m_DataPacketSpawnAnchor;
+
+    [SerializeField]
+    DataPacketRole m_OutputPacketRole = DataPacketRole.ReadData1;
 
     [Header("Materials")]
 
@@ -109,8 +128,10 @@ public class RegisterScanner : MonoBehaviour
     bool m_IsAwaitingValidation;
     bool m_IsLatchedSuccessful;
     ScannerVisualState m_VisualState = ScannerVisualState.Inactive;
+    DataPacketToken m_SpawnedPacket;
 
     public InstructionRegisterRole RegisterRole => m_RegisterRole;
+    public DataPacketToken SpawnedPacket => m_SpawnedPacket;
 
     void Awake()
     {
@@ -145,6 +166,8 @@ public class RegisterScanner : MonoBehaviour
 
     void Update()
     {
+        UpdateValueText();
+
         if (!m_IsStepActive || m_IsAwaitingValidation || m_IsLatchedSuccessful)
             return;
 
@@ -193,7 +216,11 @@ public class RegisterScanner : MonoBehaviour
             m_FailureRoutine = null;
         }
 
+        if (!isActive)
+            ClearSpawnedPacket();
+
         SetVisualState(isActive ? ScannerVisualState.Idle : ScannerVisualState.Inactive);
+        UpdateValueText();
     }
 
     /// <summary>
@@ -202,7 +229,9 @@ public class RegisterScanner : MonoBehaviour
     public void ResetScanner()
     {
         m_TokensInZone.Clear();
+        ClearSpawnedPacket();
         SetStepActive(false);
+        UpdateValueText();
     }
 
     /// <summary>
@@ -212,6 +241,7 @@ public class RegisterScanner : MonoBehaviour
     {
         m_IsAwaitingValidation = false;
         m_IsLatchedSuccessful = true;
+        SpawnDataPacketFromCurrentCandidate();
         SetVisualState(ScannerVisualState.Success);
     }
 
@@ -233,6 +263,8 @@ public class RegisterScanner : MonoBehaviour
     {
         if (registerToken != null)
             m_TokensInZone.Add(registerToken);
+
+        UpdateValueText();
     }
 
     /// <summary>
@@ -253,6 +285,8 @@ public class RegisterScanner : MonoBehaviour
             if (!m_IsLatchedSuccessful && m_IsStepActive && m_FailureRoutine == null)
                 SetVisualState(ScannerVisualState.Idle);
         }
+
+        UpdateValueText();
     }
 
     IEnumerator FlashFailureRoutine()
@@ -306,6 +340,18 @@ public class RegisterScanner : MonoBehaviour
         m_LabelText = labelTransform != null
             ? labelTransform.GetComponent<TMP_Text>() ?? labelTransform.GetComponentInChildren<TMP_Text>(true)
             : GetComponentInChildren<TMP_Text>(true);
+
+        if (m_ValueText == null)
+        {
+            foreach (var textMesh in GetComponentsInChildren<TMP_Text>(true))
+            {
+                if (textMesh == null || textMesh == m_LabelText)
+                    continue;
+
+                m_ValueText = textMesh;
+                break;
+            }
+        }
 
         var scanZoneTransform = FindChildTransform("Scan Zone");
         m_ScanZone = scanZoneTransform != null ? scanZoneTransform.GetComponent<BoxCollider>() : null;
@@ -500,6 +546,9 @@ public class RegisterScanner : MonoBehaviour
         if (m_LabelText != null)
             m_LabelText.color = labelColor;
 
+        if (m_ValueText != null)
+            m_ValueText.color = labelColor;
+
         if (m_BodyTransform != null)
         {
             var targetLocalPosition = m_BodyRestLocalPosition;
@@ -508,6 +557,55 @@ public class RegisterScanner : MonoBehaviour
 
             m_BodyTransform.localPosition = targetLocalPosition;
         }
+
+        UpdateValueText();
+    }
+
+    void UpdateValueText()
+    {
+        if (m_ValueText == null)
+            return;
+
+        var stableCandidate = GetStableCandidate();
+        m_ValueText.text = stableCandidate != null
+            ? stableCandidate.RegisterValue.ToString()
+            : "0";
+    }
+
+    void SpawnDataPacketFromCurrentCandidate()
+    {
+        ClearSpawnedPacket();
+
+        if (m_DataPacketPrefab == null)
+            return;
+
+        var sourceToken = m_CurrentCandidate != null ? m_CurrentCandidate : GetStableCandidate();
+        if (sourceToken == null)
+            return;
+
+        var spawnTransform = m_DataPacketSpawnAnchor != null ? m_DataPacketSpawnAnchor : transform;
+        var spawnPosition = spawnTransform.TransformPoint(m_DataPacketSpawnOffset);
+        var spawnedPacket = Instantiate(m_DataPacketPrefab, spawnPosition, spawnTransform.rotation);
+        spawnedPacket.Configure(
+            m_OutputPacketRole,
+            sourceToken.RegisterId,
+            sourceToken.DisplayLabel,
+            sourceToken.RegisterValue);
+
+        m_SpawnedPacket = spawnedPacket;
+    }
+
+    void ClearSpawnedPacket()
+    {
+        if (m_SpawnedPacket == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(m_SpawnedPacket.gameObject);
+        else
+            DestroyImmediate(m_SpawnedPacket.gameObject);
+
+        m_SpawnedPacket = null;
     }
 
     static void ApplyRendererColor(Renderer targetRenderer, Color color)

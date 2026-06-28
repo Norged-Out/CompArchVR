@@ -46,6 +46,13 @@ public class InstructionFlowStep
     public string expectedTargetObjectName = string.Empty;
 }
 
+[Serializable]
+public class InstructionRegisterValue
+{
+    public string registerId = "t0";
+    public int value;
+}
+
 /// <summary>
 /// ScriptableObject draft for one instruction definition.
 /// Think of this as "stored lesson data" rather than scene logic:
@@ -95,9 +102,6 @@ public class InstructionDefinition : ScriptableObject
     public string expectedRt = "t1";
     public string expectedRd = "t2";
 
-    // Small curated set of choices to build a first-pass physical register bank.
-    public string[] registerBankChoices = { "t0", "t1", "t2", "s0", "s1", "zero" };
-
     [Header("Behavior Flags")]
 
     // High-level restrictions that can drive both explanation and validation.
@@ -106,10 +110,11 @@ public class InstructionDefinition : ScriptableObject
     public bool usesImmediate = false;
     public bool usesDestinationRegister = true;
 
-    [Header("UI Layout")]
+    [Header("Initial Register Values")]
 
-    // Controls which operand fields should be visible when this instruction is selected.
-    public InstructionUiLayout uiLayout = new();
+    // Optional runtime seed values for lesson play.
+    // Any register not listed here implicitly stays at zero.
+    public InstructionRegisterValue[] initialRegisterValues = Array.Empty<InstructionRegisterValue>();
 
     [Header("Guided Flow")]
 

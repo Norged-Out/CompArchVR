@@ -24,26 +24,17 @@ MonoBehaviour:
   expectedRs: t0
   expectedRt: t1
   expectedRd: t2
-  registerBankChoices:
-  - t0
-  - t1
-  - t2
-  - s0
-  - s1
-  - zero
   touchesDataMemory: 0
   writesRegisterFile: 1
   usesImmediate: 0
   usesDestinationRegister: 1
-  uiLayout:
-    showOpcode: 1
-    showRs: 1
-    showRt: 1
-    showRd: 1
-    showShamt: 0
-    showImmediate: 0
-    showFunct: 1
-    showAddress: 0
+  initialRegisterValues:
+  - registerId: t0
+    value: 5
+  - registerId: t1
+    value: 7
+  - registerId: t2
+    value: 0
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1

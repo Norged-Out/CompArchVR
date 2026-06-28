@@ -23,6 +23,9 @@ public class RegisterToken : MonoBehaviour
     string m_DisplayLabel = "$t0";
 
     [SerializeField]
+    int m_RegisterValue;
+
+    [SerializeField]
     RegisterBank m_OwningBank;
 
     [Header("Scene References")]
@@ -41,6 +44,9 @@ public class RegisterToken : MonoBehaviour
 
     [SerializeField]
     TMP_Text m_LabelText;
+
+    [SerializeField]
+    TMP_Text m_ValueText;
 
     [Header("Home Pose")]
 
@@ -87,12 +93,13 @@ public class RegisterToken : MonoBehaviour
 
     public string RegisterId => m_RegisterId;
     public string DisplayLabel => m_DisplayLabel;
+    public int RegisterValue => m_RegisterValue;
     public bool IsGrabbed => m_GrabInteractable != null && m_GrabInteractable.isSelected;
 
     void Awake()
     {
         CacheReferences();
-        UpdateLabel();
+        RefreshText();
         ApplyCurrentVisualState();
     }
 
@@ -127,7 +134,7 @@ public class RegisterToken : MonoBehaviour
     {
         m_RegisterId = registerId;
         m_DisplayLabel = displayLabel;
-        UpdateLabel();
+        RefreshText();
     }
 
     /// <summary>
@@ -139,16 +146,36 @@ public class RegisterToken : MonoBehaviour
         Rigidbody rigidbody,
         Renderer baseRenderer,
         Renderer bodyRenderer,
-        TMP_Text labelText)
+        TMP_Text labelText,
+        TMP_Text valueText = null)
     {
         m_GrabInteractable = grabInteractable;
         m_Rigidbody = rigidbody;
         m_BaseRenderer = baseRenderer;
         m_BodyRenderer = bodyRenderer;
         m_LabelText = labelText;
+        m_ValueText = valueText;
 
-        UpdateLabel();
+        RefreshText();
         ApplyCurrentVisualState();
+    }
+
+    /// <summary>
+    /// Updates the stored register value without touching pose or lesson state.
+    /// </summary>
+    public void SetRegisterValue(int registerValue)
+    {
+        m_RegisterValue = registerValue;
+        UpdateValueText();
+    }
+
+    /// <summary>
+    /// Resets only the logical register value back to zero.
+    /// This is separate from the physical bank reset button on purpose.
+    /// </summary>
+    public void ResetRegisterValue()
+    {
+        SetRegisterValue(0);
     }
 
     /// <summary>
@@ -276,14 +303,43 @@ public class RegisterToken : MonoBehaviour
                 m_BodyRenderer = bodyTransform.GetComponent<Renderer>();
         }
 
-        m_LabelText ??= GetComponentInChildren<TextMeshPro>(true);
+        if (m_LabelText == null || m_ValueText == null)
+        {
+            foreach (var textMesh in GetComponentsInChildren<TextMeshPro>(true))
+            {
+                if (textMesh == null)
+                    continue;
+
+                if (m_LabelText == null)
+                {
+                    m_LabelText = textMesh;
+                    continue;
+                }
+
+                if (m_ValueText == null && textMesh != m_LabelText)
+                    m_ValueText = textMesh;
+            }
+        }
+
         m_OwningBank ??= GetComponentInParent<RegisterBank>();
+    }
+
+    void RefreshText()
+    {
+        UpdateLabel();
+        UpdateValueText();
     }
 
     void UpdateLabel()
     {
         if (m_LabelText != null)
             m_LabelText.text = m_DisplayLabel;
+    }
+
+    void UpdateValueText()
+    {
+        if (m_ValueText != null)
+            m_ValueText.text = m_RegisterValue.ToString();
     }
 
     void ApplyCurrentVisualState()
@@ -308,6 +364,9 @@ public class RegisterToken : MonoBehaviour
 
         if (m_LabelText != null)
             m_LabelText.color = labelColor;
+
+        if (m_ValueText != null)
+            m_ValueText.color = labelColor;
     }
 
     static void ApplyRendererColor(Renderer targetRenderer, ref Material runtimeMaterial, Color color)

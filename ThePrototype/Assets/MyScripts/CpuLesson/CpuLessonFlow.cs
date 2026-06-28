@@ -90,6 +90,7 @@ public class CpuLessonFlow : MonoBehaviour
             m_RegisterBank.RefreshRegisterCache();
             m_RegisterBank.RefreshScannerCache();
             m_RegisterBank.ResetAllRegisters();
+            ApplyInitialRegisterValues();
         }
 
         PresentCurrentStep();
@@ -126,7 +127,10 @@ public class CpuLessonFlow : MonoBehaviour
     public void ResetLesson()
     {
         if (m_RegisterBank != null)
+        {
             m_RegisterBank.ResetAllRegisters();
+            ApplyInitialRegisterValues();
+        }
 
         m_RuntimeSelection.definition = m_CurrentInstruction;
         m_RuntimeSelection.ResetOperands();
@@ -372,6 +376,26 @@ public class CpuLessonFlow : MonoBehaviour
     void SetFeedback(string message, bool isFailure)
     {
         FeedbackChanged?.Invoke(message, isFailure);
+    }
+
+    void ApplyInitialRegisterValues()
+    {
+        if (m_RegisterBank == null)
+            return;
+
+        m_RegisterBank.ResetAllRegisterValues();
+
+        var initialRegisterValues = m_CurrentInstruction?.initialRegisterValues;
+        if (initialRegisterValues == null)
+            return;
+
+        foreach (var registerValue in initialRegisterValues)
+        {
+            if (registerValue == null || string.IsNullOrWhiteSpace(registerValue.registerId))
+                continue;
+
+            m_RegisterBank.SetRegisterValue(registerValue.registerId, registerValue.value);
+        }
     }
 
     InstructionDefinition LoadDefaultInstruction()

@@ -35,6 +35,7 @@ Current prototype features:
   - `ALUSrc`
   - `RegWrite`
 - register scanners for `Read Register 1`, `Read Register 2`, and `Write Register`
+- register tokens now support persistent logical values in code
 - reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - local register-bank reset button path separate from lesson reset
 - authored register placement validation in the register zone
@@ -51,6 +52,10 @@ Current prototype features:
   - hand off to `Register Setup UI`
   - validate register placement through the authored scanners
 - authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
+- first-pass value pipeline groundwork now exists in code:
+  - register scanners can emit data packets
+  - ALU input scanners can accept those packets
+  - ALU execution can compute an `add` result in code
 - planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
 - slim lesson scripts now reduced to:
@@ -58,6 +63,7 @@ Current prototype features:
   - `LessonGuideController`
   - `LessonChecks`
   - register bank / token / scanner scripts
+  - ALU packet / scanner / controller scripts
 
 ## Most Important Scripts Right Now
 
@@ -70,10 +76,15 @@ Current prototype features:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankResetButton.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScanner.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScannerZone.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefinition.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionEnums.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefaults.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionRuntimeSelection.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionDefinition.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionEnums.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionDefaults.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionRuntimeSelection.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluExecutionController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScanner.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScannerZone.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluPacketTypes.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\DataPacketToken.cs`
 
 ## Recommended Development Order
 
@@ -133,7 +144,10 @@ The cleanest next work item is:
   - authored in scene
   - updated by code
   - not generated at runtime
-- add the next authored lesson panel / interaction zone for `ALU`
+- author the next physical interaction layer for `ALU`:
+  - pyramid-based data packets
+  - torus-based ALU input scanners
+  - ALU result handoff into later write-back / memory work
 - reuse the scanner / register / lesson state pattern for `addi` and `lw`
 
 ## Personal Reminder

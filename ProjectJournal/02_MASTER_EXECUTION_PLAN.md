@@ -199,7 +199,7 @@ Poor candidate interactions for a first version:
 
 ## Architecture Direction
 
-The current `InstructionSystemV1` scripts are useful scaffolding and should be evolved rather than discarded.
+The current `InstructionSystem` scripts are useful scaffolding and should be evolved rather than discarded.
 
 Likely long-term shape:
 - `InstructionDefinition`

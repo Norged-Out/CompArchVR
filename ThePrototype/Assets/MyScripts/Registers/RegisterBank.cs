@@ -25,6 +25,44 @@ public class RegisterBank : MonoBehaviour
         m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rt) &&
         m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rd);
 
+    /// <summary>
+    /// Reads a register's current logical value.
+    /// Missing registers safely report zero for first-pass lesson logic.
+    /// </summary>
+    public int GetRegisterValue(string registerId)
+    {
+        if (string.IsNullOrWhiteSpace(registerId))
+            return 0;
+
+        return m_RegisterTokens.TryGetValue(registerId, out var registerToken)
+            ? registerToken.RegisterValue
+            : 0;
+    }
+
+    /// <summary>
+    /// Writes a logical value into the named register token.
+    /// This does not move the token or change lesson progress.
+    /// </summary>
+    public void SetRegisterValue(string registerId, int registerValue)
+    {
+        if (string.IsNullOrWhiteSpace(registerId))
+            return;
+
+        if (m_RegisterTokens.TryGetValue(registerId, out var registerToken))
+            registerToken.SetRegisterValue(registerValue);
+    }
+
+    /// <summary>
+    /// Resets only register values back to zero.
+    /// Kept separate from pose reset so the bank reset button does not wipe
+    /// lesson-authored runtime values unless asked to explicitly.
+    /// </summary>
+    public void ResetAllRegisterValues()
+    {
+        foreach (var registerToken in m_RegisterTokens.Values)
+            registerToken.ResetRegisterValue();
+    }
+
     void Awake()
     {
         RefreshRegisterCache();

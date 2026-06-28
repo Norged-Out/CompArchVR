@@ -93,7 +93,7 @@ Use UI for:
 
 ## Architecture Rules
 
-The current `InstructionSystemV1` scripts are scaffolding, not final dogma.
+The current `InstructionSystem` scripts are scaffolding, not final dogma.
 
 Do not scrap them casually.
 Instead:

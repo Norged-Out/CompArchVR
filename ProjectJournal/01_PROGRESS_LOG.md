@@ -12,7 +12,9 @@ Current prototype focus:
 - minimal playable `add` lesson loop in `Testing Ground`
 - scene-authored `Intro UI`, `Control Decode UI`, and `Register Setup UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
+- per-register logical values now supported in code
 - register scanner validation path for `rs`, `rt`, and destination register
+- first-pass ALU data-packet groundwork in code
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
 
 Current milestone:
@@ -31,9 +33,11 @@ The project now has:
 - grabbable labeled register tokens with working local reset behavior
 - a reusable register prefab/material path under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - register scanner pedestals for `Read Register 1`, `Read Register 2`, and `Write Register`
+- logical register values stored on register tokens, with lesson-time value seeding from instruction assets
 - a working MVP lesson flow that starts from `Intro UI`, gates through `Control Decode UI`, then hands off to `Register Setup UI` for scanner validation
 - a smaller lesson architecture centered on focused lesson and register scripts
-- draft `addi` and `lw` instruction assets for later extension
+- cleaned instruction assets for `add`, `addi`, and `lw`
+- first-pass `ALU` packet and scanner scripts ready for scene hookup
 
 ## Chronological Entries
 
@@ -233,6 +237,41 @@ Risks / Notes:
 - during register selection, success text currently stays minimal while failure text is more explicit; this is acceptable for now
 - after the third correct register, later-step auto-satisfaction is still possible if a reused scanner is already holding the expected register; this should be cleaned up in the ALU/write-back pass
 
+### 2026-06-28 - Register Values And ALU Groundwork Added
+
+Completed:
+- added logical integer values to register tokens
+- added register-bank helpers to:
+  - read register values
+  - set register values
+  - reset only logical values separately from physical reset
+- kept the local register reset button behavior limited to pose / scanner / visual reset so it does not accidentally wipe lesson values
+- updated lesson startup/reset flow so instruction assets can seed runtime register values
+- cleaned instruction definition assets under `Assets/MyData/Resources/InstructionDefinitions`
+- removed stale instruction-definition fields that no longer match the current authored-scene workflow
+- renamed `InstructionSystemV1` to `InstructionSystem`
+- added first-pass ALU-side scripts for:
+  - data packets emitted from successful register scanners
+  - ALU input scanners that accept data packets
+  - a lightweight ALU execution controller that computes the first-pass `add` result in code
+
+Changed:
+- the project now distinguishes between:
+  - physical register identity
+  - logical register value
+  - datapath value packets carried into later stages
+- the instruction data model now owns initial register values instead of old curated bank-choice / UI-layout fields
+
+Next:
+- author a `Data Packet` prefab using the pyramid model
+- author ALU input scanners using the torus model
+- hook the new ALU scripts into `Testing Ground`
+- decide whether value display should live on the packet, the scanner, or both for each ALU-side interaction
+
+Risks / Notes:
+- the ALU groundwork is code-first right now; the Unity scene hookup is still required
+- `Testing Ground.unity` and the register scanner prefab already had live scene/prefab edits during this pass and should be treated carefully in follow-up work
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
@@ -252,15 +291,20 @@ Current relevant scripts:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\ControlDecodeController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluExecutionController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScanner.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScannerZone.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluPacketTypes.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\DataPacketToken.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankResetButton.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScanner.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScannerZone.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefinition.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionEnums.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionDefaults.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystemV1\InstructionRuntimeSelection.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionDefinition.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionEnums.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionDefaults.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionRuntimeSelection.cs`
 
 Interpretation:
 - these are the scripts that currently matter to the working MVP

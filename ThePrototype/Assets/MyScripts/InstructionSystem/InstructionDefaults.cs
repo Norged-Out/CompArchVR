@@ -27,17 +27,11 @@ public static class InstructionDefaults
         instruction.writesRegisterFile = true;
         instruction.usesImmediate = false;
         instruction.usesDestinationRegister = true;
-        instruction.registerBankChoices = new[] { "t0", "t1", "t2", "s0", "s1", "zero" };
-        instruction.uiLayout = new InstructionUiLayout
+        instruction.initialRegisterValues = new[]
         {
-            showOpcode = true,
-            showRs = true,
-            showRt = true,
-            showRd = true,
-            showShamt = false,
-            showImmediate = false,
-            showFunct = true,
-            showAddress = false,
+            new InstructionRegisterValue { registerId = "t0", value = 5 },
+            new InstructionRegisterValue { registerId = "t1", value = 7 },
+            new InstructionRegisterValue { registerId = "t2", value = 0 },
         };
 
         instruction.flowSteps = new[]
