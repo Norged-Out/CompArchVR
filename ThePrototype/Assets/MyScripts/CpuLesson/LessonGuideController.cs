@@ -9,6 +9,8 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public class LessonGuideController : MonoBehaviour
 {
+    const float k_ActionButtonHeight = 56f;
+
     [SerializeField]
     CpuLessonFlow m_LessonFlow;
 
@@ -63,6 +65,8 @@ public class LessonGuideController : MonoBehaviour
     void Awake()
     {
         HookButtons();
+        EnsureButtonLayout(m_IntroActionButton);
+        EnsureButtonLayout(m_RegisterActionButton);
         RefreshView();
     }
 
@@ -139,8 +143,10 @@ public class LessonGuideController : MonoBehaviour
             {
                 m_RegisterFeedback.text = message;
                 m_RegisterFeedback.color = feedbackColor;
+                m_RegisterFeedback.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
             }
 
+            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
             return;
         }
 
@@ -151,7 +157,10 @@ public class LessonGuideController : MonoBehaviour
         {
             m_IntroFeedback.text = message;
             m_IntroFeedback.color = feedbackColor;
+            m_IntroFeedback.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
         }
+
+        RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
     }
 
     void RefreshView()
@@ -180,6 +189,8 @@ public class LessonGuideController : MonoBehaviour
             SetText(m_IntroFeedback, string.Empty);
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_StartButtonLabel, true);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
             return;
         }
 
@@ -191,22 +202,28 @@ public class LessonGuideController : MonoBehaviour
         {
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
             return;
         }
 
         if (!showRegisterPanel)
         {
             SetText(m_IntroBody, BuildIntroBody(step));
+            SetText(m_IntroFeedback, string.Empty);
             SetButtonState(
                 m_IntroActionButton,
                 m_IntroActionLabel,
                 step.requiredInteraction == InstructionStepInteractionType.Completion ? m_RestartButtonLabel : m_ContinueButtonLabel,
                 step.requiredInteraction == InstructionStepInteractionType.ContinueButton || step.requiredInteraction == InstructionStepInteractionType.Completion);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
             return;
         }
 
         SetText(m_RegisterBody, BuildRegisterBody(step));
+        SetText(m_RegisterFeedback, string.Empty);
         var showContinue = step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
                            step.requiredInteraction == InstructionStepInteractionType.Completion;
         SetButtonState(
@@ -215,6 +232,8 @@ public class LessonGuideController : MonoBehaviour
             step.requiredInteraction == InstructionStepInteractionType.Completion ? m_RestartButtonLabel : m_ContinueButtonLabel,
             showContinue);
         SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
+        RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+        RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
     }
 
     bool ShouldShowControlDecodePanel()
@@ -288,8 +307,11 @@ public class LessonGuideController : MonoBehaviour
 
     static void SetText(TMP_Text target, string text)
     {
-        if (target != null)
-            target.text = text;
+        if (target == null)
+            return;
+
+        target.text = text;
+        target.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
     }
 
     static void SetButtonState(Button button, TMP_Text label, string labelText, bool visibleAndEnabled)
@@ -302,5 +324,48 @@ public class LessonGuideController : MonoBehaviour
 
         if (label != null)
             label.text = labelText;
+    }
+
+    static void EnsureButtonLayout(Button button)
+    {
+        if (button == null)
+            return;
+
+        var layoutElement = button.GetComponent<LayoutElement>();
+        if (layoutElement == null)
+            layoutElement = button.gameObject.AddComponent<LayoutElement>();
+
+        if (layoutElement.preferredHeight <= 0f)
+            layoutElement.preferredHeight = k_ActionButtonHeight;
+
+        if (layoutElement.minHeight <= 0f)
+            layoutElement.minHeight = k_ActionButtonHeight;
+    }
+
+    static void RefreshLayout(GameObject root, TMP_Text body, TMP_Text feedback, Button actionButton)
+    {
+        if (root == null || !root.activeInHierarchy)
+            return;
+
+        body?.ForceMeshUpdate();
+        feedback?.ForceMeshUpdate();
+        EnsureButtonLayout(actionButton);
+
+        Canvas.ForceUpdateCanvases();
+
+        var scrollRect = root.GetComponentInChildren<ScrollRect>(true);
+        if (scrollRect != null && scrollRect.content != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.content);
+
+            if (scrollRect.viewport != null)
+                LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.viewport);
+        }
+
+        var rootRect = root.GetComponent<RectTransform>();
+        if (rootRect != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
+
+        Canvas.ForceUpdateCanvases();
     }
 }

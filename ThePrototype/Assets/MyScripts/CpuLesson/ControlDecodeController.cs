@@ -83,6 +83,9 @@ public class ControlDecodeController : MonoBehaviour
     TMP_Text m_RegWriteText;
 
     [SerializeField]
+    TMP_Text m_ProgressFeedbackText;
+
+    [SerializeField]
     string m_DefaultCheckLabel = "Check Signals";
 
     [SerializeField]
@@ -90,6 +93,9 @@ public class ControlDecodeController : MonoBehaviour
 
     [SerializeField]
     string m_FailureCheckLabel = "Try Again";
+
+    [SerializeField]
+    string m_ContinueLabel = "Continue";
 
     [SerializeField]
     Color m_DefaultTextColor = Color.white;
@@ -109,12 +115,14 @@ public class ControlDecodeController : MonoBehaviour
     string m_ALUSrcValue = "0";
     string m_RegWriteValue = "0";
     bool m_IsPhaseActive;
+    bool m_IsSolvedAwaitingContinue;
     InstructionDefinition m_CurrentInstruction;
 
     void Awake()
     {
         RefreshSignalText();
         SetCheckButtonLabel(m_DefaultCheckLabel);
+        SetProgressFeedback(string.Empty, false);
     }
 
     void OnEnable()
@@ -163,8 +171,10 @@ public class ControlDecodeController : MonoBehaviour
 
         if (!isActive)
         {
+            m_IsSolvedAwaitingContinue = false;
             ResetSignalColors();
             SetCheckButtonLabel(m_DefaultCheckLabel);
+            SetProgressFeedback(string.Empty, false);
             return;
         }
 
@@ -229,6 +239,14 @@ public class ControlDecodeController : MonoBehaviour
         if (!m_IsPhaseActive || m_CurrentInstruction == null)
             return;
 
+        if (m_IsSolvedAwaitingContinue)
+        {
+            m_IsSolvedAwaitingContinue = false;
+            SetProgressFeedback(string.Empty, false);
+            m_LessonFlow?.Advance();
+            return;
+        }
+
         var expectedRegDst = m_CurrentInstruction.usesDestinationRegister ? "1" : "0";
         var expectedBranch = "0";
         var expectedMemRead = m_CurrentInstruction.mnemonic == InstructionMnemonic.Lw ? "1" : "0";
@@ -259,7 +277,16 @@ public class ControlDecodeController : MonoBehaviour
         SetCheckButtonLabel(isCorrect ? m_SuccessCheckLabel : m_FailureCheckLabel);
 
         if (isCorrect)
-            m_LessonFlow?.Advance();
+        {
+            m_IsSolvedAwaitingContinue = true;
+            SetCheckButtonLabel(m_ContinueLabel);
+            SetProgressFeedback("Control signals are correct. Click the button once more to proceed.", false);
+        }
+        else
+        {
+            m_IsSolvedAwaitingContinue = false;
+            SetProgressFeedback("Some control signals are still incorrect. Fix the highlighted entries and check again.", true);
+        }
     }
 
     void ToggleBinarySignal(ControlSignal signal)
@@ -297,13 +324,16 @@ public class ControlDecodeController : MonoBehaviour
 
     void HandleSignalChanged()
     {
+        m_IsSolvedAwaitingContinue = false;
         RefreshSignalText();
         ResetSignalColors();
         SetCheckButtonLabel(m_DefaultCheckLabel);
+        SetProgressFeedback(string.Empty, false);
     }
 
     void ResetSelections()
     {
+        m_IsSolvedAwaitingContinue = false;
         m_RegDstValue = "0";
         m_BranchValue = "0";
         m_MemReadValue = "0";
@@ -316,6 +346,7 @@ public class ControlDecodeController : MonoBehaviour
         ResetSignalColors();
         RefreshSignalText();
         SetCheckButtonLabel(m_DefaultCheckLabel);
+        SetProgressFeedback(string.Empty, false);
     }
 
     void RefreshSignalText()
@@ -355,6 +386,16 @@ public class ControlDecodeController : MonoBehaviour
     {
         if (m_CheckButtonLabel != null)
             m_CheckButtonLabel.text = labelText;
+    }
+
+    void SetProgressFeedback(string message, bool isFailure)
+    {
+        if (m_ProgressFeedbackText == null)
+            return;
+
+        m_ProgressFeedbackText.text = message;
+        m_ProgressFeedbackText.color = isFailure ? m_FailureTextColor : m_SuccessTextColor;
+        m_ProgressFeedbackText.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
     }
 
     static void SetSignalText(TMP_Text target, string label, string value)
