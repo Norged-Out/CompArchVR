@@ -118,6 +118,10 @@ public class ControlDecodeController : MonoBehaviour
     bool m_IsSolvedAwaitingContinue;
     InstructionDefinition m_CurrentInstruction;
 
+    public string CurrentALUSrcValue => m_ALUSrcValue;
+    public string CurrentALUOpValue => m_ALUOpValue;
+    public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
+
     void Awake()
     {
         RefreshSignalText();

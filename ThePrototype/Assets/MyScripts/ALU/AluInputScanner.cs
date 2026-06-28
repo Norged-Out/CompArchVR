@@ -34,9 +34,6 @@ public class AluInputScanner : MonoBehaviour
     TMP_Text m_ValueText;
 
     [SerializeField]
-    BoxCollider m_ScanZone;
-
-    [SerializeField]
     float m_RequiredStableSeconds = 1f;
 
     [SerializeField]
@@ -79,20 +76,16 @@ public class AluInputScanner : MonoBehaviour
     {
         CacheReferences();
         RememberBodyPose();
-        BindZoneHelper();
         ApplyVisualState();
     }
 
     void OnEnable()
     {
         CacheReferences();
-        BindZoneHelper();
     }
 
     void Update()
     {
-        UpdateValueText();
-
         if (!m_IsActive || m_IsLatched)
             return;
 
@@ -126,8 +119,10 @@ public class AluInputScanner : MonoBehaviour
             return;
 
         AcceptedPacket = stableCandidate;
+        AcceptedPacket.LatchInPlace(transform);
         m_IsLatched = true;
         SetVisualState(VisualState.Success);
+        UpdateValueText();
         PacketAccepted?.Invoke(this, stableCandidate);
     }
 
@@ -138,6 +133,20 @@ public class AluInputScanner : MonoBehaviour
             ClearAcceptedPacket();
 
         SetVisualState(isActive ? VisualState.Idle : VisualState.Inactive);
+        UpdateValueText();
+    }
+
+    public void SetExpectedPacketRole(DataPacketRole expectedPacketRole)
+    {
+        if (m_ExpectedPacketRole == expectedPacketRole)
+            return;
+
+        m_ExpectedPacketRole = expectedPacketRole;
+
+        if (AcceptedPacket != null && AcceptedPacket.PacketRole != m_ExpectedPacketRole)
+            ClearAcceptedPacket();
+
+        ApplyVisualState();
         UpdateValueText();
     }
 
@@ -162,8 +171,23 @@ public class AluInputScanner : MonoBehaviour
 
         m_PacketsInZone.Remove(dataPacketToken);
 
-        if (AcceptedPacket == dataPacketToken)
+        if (!m_IsLatched && AcceptedPacket == dataPacketToken)
             ClearAcceptedPacket();
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        NotifyPacketEntered(collision.collider.GetComponentInParent<DataPacketToken>());
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        NotifyPacketEntered(collision.collider.GetComponentInParent<DataPacketToken>());
+    }
+
+    void OnCollisionExit(Collision collision)
+    {
+        NotifyPacketExited(collision.collider.GetComponentInParent<DataPacketToken>());
     }
 
     void ClearAcceptedPacket()
@@ -191,11 +215,10 @@ public class AluInputScanner : MonoBehaviour
 
     void CacheReferences()
     {
-        if (m_BodyTransform == null)
-            m_BodyTransform = transform.Find("Body");
+        m_BodyTransform ??= transform;
 
-        if (m_BodyRenderer == null && m_BodyTransform != null)
-            m_BodyRenderer = m_BodyTransform.GetComponent<Renderer>();
+        if (m_BodyRenderer == null)
+            m_BodyRenderer = GetComponent<Renderer>();
 
         if (m_LabelText == null || m_ValueText == null)
         {
@@ -215,30 +238,12 @@ public class AluInputScanner : MonoBehaviour
             }
         }
 
-        if (m_ScanZone == null)
-        {
-            var scanZoneTransform = transform.Find("Scan Zone");
-            if (scanZoneTransform != null)
-                m_ScanZone = scanZoneTransform.GetComponent<BoxCollider>();
-        }
     }
 
     void RememberBodyPose()
     {
         if (m_BodyTransform != null)
             m_BodyRestLocalPosition = m_BodyTransform.localPosition;
-    }
-
-    void BindZoneHelper()
-    {
-        if (m_ScanZone == null)
-            return;
-
-        var helper = m_ScanZone.GetComponent<AluInputScannerZone>();
-        if (helper == null)
-            helper = m_ScanZone.gameObject.AddComponent<AluInputScannerZone>();
-
-        helper.Bind(this);
     }
 
     void SetVisualState(VisualState visualState)
@@ -278,7 +283,7 @@ public class AluInputScanner : MonoBehaviour
 
         if (m_LabelText != null)
         {
-            m_LabelText.text = m_ExpectedPacketRole.ToString();
+            m_LabelText.text = GetRoleDisplayName(m_ExpectedPacketRole);
             m_LabelText.color = labelColor;
         }
 
@@ -300,8 +305,7 @@ public class AluInputScanner : MonoBehaviour
         if (m_ValueText == null)
             return;
 
-        var shownPacket = AcceptedPacket ?? GetStableCandidate();
-        m_ValueText.text = shownPacket != null ? shownPacket.Value.ToString() : "0";
+        m_ValueText.text = AcceptedPacket != null ? AcceptedPacket.Value.ToString() : "0";
     }
 
     static void ApplyRendererColor(Renderer targetRenderer, Color color)
@@ -324,5 +328,18 @@ public class AluInputScanner : MonoBehaviour
             return;
 
         targetRenderer.SetPropertyBlock(propertyBlock);
+    }
+
+    static string GetRoleDisplayName(DataPacketRole packetRole)
+    {
+        return packetRole switch
+        {
+            DataPacketRole.ReadData1 => "Input 1",
+            DataPacketRole.ReadData2 => "Input 2",
+            DataPacketRole.Immediate => "Immediate",
+            DataPacketRole.AluResult => "ALU Result",
+            DataPacketRole.MemoryData => "Memory Data",
+            _ => "Input",
+        };
     }
 }
