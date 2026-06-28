@@ -142,42 +142,37 @@ Why:
 Implication:
 - future lesson work should preserve separation of concerns unless there is a strong reason to merge responsibilities
 
-## 2026-06-26 - Register Bank Should Be Scene-Authored, Not Runtime-Spun Up
+## 2026-06-26 - Register Bank Should Be Scene-Authored
 
 Decision:
-- treat the user-created `Register Bank` object in `Testing Ground` as the permanent home for physical MIPS registers
-- prefer editor-time authoring under that object over creating the bank from scratch when play mode starts
+- treat the user-created register area in `Testing Ground` as the permanent home for physical MIPS registers
 
 Why:
 - the user explicitly dislikes important scene layout being silently created at runtime
 - register spacing, readability, and reachability are visual/physical design decisions that need to be eyeballed in-scene
-- the register bank is intended to become reusable later for ALU, memory, and placement-zone interactions
 
 Implication:
-- future assistants should extend the authored bank instead of replacing it with another runtime-generated register UI
-- if the register bank is regenerated procedurally, it should be done in editor-time authoring or with the user's scene collaboration, not as invisible play-mode setup
+- future assistants should extend the authored bank instead of replacing it with runtime-generated register UI
 
-## 2026-06-26 - Reuse XR Sample Interactables For Register Feel
+## 2026-06-26 - Reuse XR Sample Feel For Register Interaction
 
 Decision:
-- build physical registers from XR Interaction Toolkit sample interactables rather than inventing grab/highlight behavior from scratch
+- build physical registers on top of XR Interaction Toolkit sample interaction feel rather than inventing grab/highlight behavior from scratch
 
 Why:
 - the user specifically pointed at the sample interactable feel they liked
-- this preserves the stock highlight affordance and grab tuning from known-good XR samples
-- it reduces risk compared with manually rebuilding every part of the interaction stack
+- this reduces risk compared with rebuilding every part of the interaction stack manually
 
 Implication:
-- register objects should keep behaving like grabbable sample props, with lesson scripts layered on top instead of replacing the XR basics
+- register objects should keep behaving like grabbable sample props, with lesson scripts layered on top
 
-## 2026-06-26 - Register Look Should Stay Close To The Earlier Chunky Labeled Design
+## 2026-06-26 - Register Look Should Stay Close To The Chunky Labeled Design
 
 Decision:
 - keep the register tokens visually close to the earlier blocky labeled look that the user liked
-- only the interaction mode should change from button-like activation to grabbable object behavior
 
 Why:
-- the user explicitly approved the earlier visual direction and rejected the later tiny-cylinder pass
+- the user explicitly approved that visual direction and rejected the tiny-cylinder pass
 - the register bank needs readable labels and obvious affordance, not minimalist placeholder bodies
 
 Implication:
@@ -189,7 +184,7 @@ Decision:
 - the register area should have its own reset control whose only job is returning lost pieces to home poses
 
 Why:
-- the user wants a quick recovery path if a register is dropped or thrown away from the bank
+- the user wants a quick recovery path if a register is dropped away from the bank
 - resetting the whole lesson just to recover props would be annoying during iteration and playtesting
 
 Implication:
@@ -202,21 +197,21 @@ Decision:
 
 Why:
 - the user wants the learner to physically place the correct register onto the appropriate lesson target
-- this keeps VR interaction meaningful instead of reducing later phases to button presses
-- pedestal scanning also gives a clean path for instructions that reuse the same register in more than one logical role
+- pedestal scanning gives a clean path for instructions that reuse the same logical register in more than one role
 
 Implication:
 - pedestal objects should become part of the scene-authored interaction set
 - each pedestal should validate only when its lesson step is active
-- a pedestal should read the placed register token's identity, hold that scanned result, and then drive success/failure feedback
-- future duplicate-register instructions should rely on scanned logical identity rather than requiring duplicate physical register props
+- each pedestal should read the placed register token's identity and drive success/failure feedback
 
 ## 2026-06-26 - Register Placement Validation May Use A Short Stable-Placement Rule
 
 Decision:
-- it is acceptable for a pedestal to require a short stability condition before accepting a register, such as:
-  - the token being released
-  - or the token remaining in-zone for roughly 1-2 seconds
+- it is acceptable for a pedestal to require a short stability condition before accepting a register
+
+Examples:
+- the token being released
+- the token remaining in-zone for roughly 1-2 seconds
 
 Why:
 - this reduces accidental brush-triggering while still feeling physical
@@ -224,7 +219,6 @@ Why:
 
 Implication:
 - pedestal validation should be designed around placement confirmation, not instant overlap detection alone
-- the exact acceptance rule can still be tuned once the first pedestal exists in-scene
 
 ## 2026-06-27 - Lesson UI Should Be Authored As Zone-Specific World-Space Panels
 
@@ -233,7 +227,6 @@ Decision:
 
 Why:
 - the user wants the learner to physically move through the lesson space
-- the current authored `Intro UI` and `Register Zone` support this better than a single central dashboard
 - this keeps prompts close to the action and reduces unnecessary head-turning
 
 Implication:
@@ -254,24 +247,78 @@ Implication:
 - future work should inspect the live scene state first
 - dead code tied to removed scene structures should be pruned rather than preserved automatically
 
-## 2026-06-27 - A Small Runtime Clone Of The Intro Panel Is Acceptable For Fast MVP Wiring
+## 2026-06-28 - Lesson UI Must Be Authored In Edit Mode
 
 Decision:
-- for the immediate MVP, it is acceptable to clone the existing intro scroll panel at runtime to create the register-area guide panel
+- lesson UI should exist in the scene ahead of play
+- code should drive existing scene UI rather than spawning lesson panels or text objects at runtime
 
 Why:
-- the authored scene already has the right visual language in `Intro UI`
-- duplicating that panel manually in the scene would take longer than the current checkpoint allows
-- this preserves the user's current scene layout while still giving the lesson a second panel near the register zone
+- the user explicitly prefers to author and eyeball the world-space panels in Unity
+- runtime-built UI caused layout, overlap, and readability problems during the MVP pass
+- the current verified MVP works better when the scene owns the panel layout
 
 Implication:
-- the runtime clone is a speed-first solution, not the final authored layout
-- if the placement and content feel correct in play mode, the next cleanup pass should serialize that second panel into the scene permanently
+- future lesson panels should be created in edit mode under `Testing Ground`
+- lesson code should mostly:
+  - toggle authored panels
+  - update authored text
+  - respond to authored buttons
+- future assistants should not default back to runtime-created lesson UI
+
+## 2026-06-28 - Core Lesson Objects Should Be Inspector-Wired, Not Found At Runtime
+
+Decision:
+- core lesson scene objects should be assigned through serialized Inspector references whenever practical
+
+Why:
+- the user explicitly wants scene objects bound in edit mode
+- runtime scene searches made the system less trustworthy and less aligned with the authored-scene workflow
+- the current lesson flow is easier to reason about when the scene wiring is visible in the Inspector
+
+Implication:
+- `LessonGuideController`, `ControlDecodeController`, and `CpuLessonFlow` should prefer serialized refs for authored panels, buttons, and banks
+- future assistants should not default to `Find*` or name-based hookup for the main lesson path
+
+## 2026-06-28 - Control Decode Is A Real Gated Phase Between Intro And Registers
+
+Decision:
+- the active lesson order is now:
+  1. `Intro UI`
+  2. `Control Decode UI`
+  3. `Register Setup UI`
+
+Why:
+- the user explicitly defined this order in the scene
+- the decode step is part of the intended instruction-decode phase, not a side experiment
+- treating the flow explicitly keeps future work grounded and prevents circular redesign
+
+Implication:
+- future lesson extensions should preserve this authored handoff unless the user changes it
+- later zones such as `ALU`, memory, and write-back should grow after this baseline rather than replace it
+
+## 2026-06-28 - Current Working MVP Is Intro-To-Register
+
+Decision:
+- treat the current working baseline as a minimal intro-to-register `add` lesson
+
+What currently works:
+- the lesson starts from `Intro UI`
+- the learner is introduced to the instruction there
+- the flow then hands off to `Register Setup UI`
+- the learner places registers through the authored scanners in the register zone
+
+Why:
+- the user has tested the current scene and confirmed that it works so far
+- this is the safest baseline to refine instead of destabilizing it with bigger rewrites
+
+Implication:
+- future work should polish and extend this exact path
+- `addi` and `lw` should grow from this verified baseline, not replace it
 
 ## Open Questions
 
-- which instruction should become the first fully playable lesson
-- how much instruction decoding should be interactive in v1
+- how much instruction decoding should be interactive in V1
 - how explicit ALU/control-signal manipulation should be in the first prototype
 - whether instruction selection is user-driven, random, or both
 - how closely the prototype should model exact datapath semantics vs pedagogically simplified interactions

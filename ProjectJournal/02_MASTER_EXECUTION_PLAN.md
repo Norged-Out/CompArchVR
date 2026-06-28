@@ -167,11 +167,14 @@ Current preferred authored-panel shape:
 1. `Intro UI`
    - start lesson
    - show current instruction
-   - show the fetch/decode framing
-2. `Register Zone UI`
+   - show the fetch framing
+2. `Control Decode UI`
+   - let the learner set or confirm the instruction's control signals
+   - gate progression out of decode through a small authored panel
+3. `Register Zone UI`
    - remind the learner which fields map to `rs`, `rt`, and destination
    - keep prompts physically near the register bank and scanners
-3. later zone-specific panels
+4. later zone-specific panels
    - `ALU`
    - `Data Memory`
    - `WriteBack`

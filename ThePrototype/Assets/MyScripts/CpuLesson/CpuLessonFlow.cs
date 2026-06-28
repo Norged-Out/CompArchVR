@@ -53,8 +53,6 @@ public class CpuLessonFlow : MonoBehaviour
 
     void Awake()
     {
-        m_RegisterBank ??= FindFirstObjectByType<RegisterBank>();
-
         if (m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
     }
@@ -140,7 +138,6 @@ public class CpuLessonFlow : MonoBehaviour
 
     void RebindRegisterBank()
     {
-        m_RegisterBank ??= FindFirstObjectByType<RegisterBank>();
         if (m_RegisterBank == null)
             return;
 

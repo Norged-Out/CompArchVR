@@ -63,7 +63,8 @@ This rule is now part of the repository working process.
 
 ## Current Resume Note
 
-As of `2026-06-27`, the project has shifted further toward:
+As of `2026-06-28`, the active baseline is:
 - scene-authored world-space UI under `Lesson Guide`
 - a permanent scene-authored `Register Zone`
-- a minimal reusable lesson loop that should be wired into authored scene objects instead of silently spawning layout in code
+- a dedicated scene-authored `Control Decode UI` between intro and register setup
+- lesson scripts wired through serialized scene references instead of runtime scene searches
