@@ -126,12 +126,6 @@ public class CpuLessonFlow : MonoBehaviour
                     SetFeedback("Configure the write-back controls, place the target register and final data packet, then execute the transfer.", false);
                 break;
 
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                SetFeedback(
-                    $"Place {m_CurrentInstruction.GetExpectedRegisterName(CurrentStep.confirmationRegisterRole)} on the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.",
-                    true);
-                break;
-
             case InstructionStepInteractionType.Completion:
                 ResetLesson();
                 break;
@@ -209,10 +203,6 @@ public class CpuLessonFlow : MonoBehaviour
             case InstructionStepInteractionType.RegisterSelection:
                 ValidateRegisterSelection(InstructionRegisterRole.None, registerName, false);
                 break;
-
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                ValidateWriteBack(InstructionRegisterRole.None, registerName, false);
-                break;
         }
     }
 
@@ -228,10 +218,6 @@ public class CpuLessonFlow : MonoBehaviour
         {
             case InstructionStepInteractionType.RegisterSelection:
                 ValidateRegisterSelection(scannedRole, registerName, true);
-                break;
-
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                ValidateWriteBack(scannedRole, registerName, true);
                 break;
         }
     }
@@ -297,37 +283,6 @@ public class CpuLessonFlow : MonoBehaviour
         StepChanged?.Invoke(this);
     }
 
-    void ValidateWriteBack(InstructionRegisterRole scannedRole, string registerName, bool cameFromScanner)
-    {
-        if (cameFromScanner && scannedRole != CurrentStep.confirmationRegisterRole)
-        {
-            m_RegisterBank?.FlashScannerFailure(scannedRole);
-            SetFeedback($"Wrong pedestal. Use the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.", true);
-            return;
-        }
-
-        var result = LessonChecks.ValidateWriteBack(m_CurrentInstruction, CurrentStep, registerName);
-        if (!result.isCorrect)
-        {
-            if (cameFromScanner)
-                m_RegisterBank?.FlashScannerFailure(scannedRole);
-            else
-                m_RegisterBank?.FlashFailure(registerName);
-
-            SetFeedback($"Incorrect. The write-back destination should be {result.expectedRegister}.", true);
-            return;
-        }
-
-        m_RuntimeSelection.confirmedWriteBackRegister = registerName;
-        if (cameFromScanner)
-            m_RegisterBank?.SetScannerSuccess(CurrentStep.confirmationRegisterRole);
-        else
-            m_RegisterBank?.SetSelected(registerName);
-
-        SetFeedback("Write-back confirmed.", false);
-        AdvanceToNextStep();
-    }
-
     void AdvanceToNextStep()
     {
         if (m_CurrentInstruction == null || m_CurrentInstruction.flowSteps == null)
@@ -371,12 +326,6 @@ public class CpuLessonFlow : MonoBehaviour
                     false);
                 break;
 
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                SetFeedback(
-                    $"Place {m_CurrentInstruction.GetExpectedRegisterName(CurrentStep.confirmationRegisterRole)} on the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.",
-                    false);
-                break;
-
             case InstructionStepInteractionType.Completion:
                 SetFeedback("Lesson complete. Press Restart to play it again.", false);
                 break;
@@ -402,10 +351,6 @@ public class CpuLessonFlow : MonoBehaviour
         {
             case InstructionStepInteractionType.RegisterSelection:
                 ConfigureRegisterDecodeScanners();
-                break;
-
-            case InstructionStepInteractionType.WriteBackRegisterConfirmation:
-                m_RegisterBank.ConfigureScannerRoles(new[] { CurrentStep.confirmationRegisterRole });
                 break;
 
             default:

@@ -3,27 +3,29 @@
 ## Current Status
 
 Project phase:
-- scene-authored MVP lesson pass for the June 29 V1 check-in
+- post-demo refinement pass after the June 29, 2026 supervisor check-in
 
 Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype focus:
-- minimal playable `add` lesson loop in `Testing Ground`
+- playable `add` lesson loop in `Testing Ground`
 - scene-authored `Intro UI` and `Register Setup UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
 - register scanner validation path for decode-stage source operands
 - first-pass ALU execution phase now wired with authored ALU UI, physical ALU buttons, and result spawning
-- first-pass write-back groundwork now being wired through a dedicated `WB` prefab and authored `WB UI`
-- a placeholder `Mem UI` now exists for the future memory-phase teaching handoff
+- dedicated write-back phase now present through a `WB` prefab and authored `WB UI`
+- `Mem UI` exists and is currently functioning as an explanatory checkpoint
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing a dedicated write-back phase for the demo instead of confirming the destination register during decode
+- preparing `addi` and `lw` as the next two instruction targets
 
 Current milestone:
-- V1 supervisor demo target on `2026-06-29`
-- `add`, `addi`, and `lw` should be finished by `2026-06-28` at all costs
-- this is the near-term prototype target, not the permanent upper bound of the whole project
+- June 29, 2026 supervisor demo completed
+- next checkpoint target: `2026-07-06`
+- desired target for that checkpoint:
+  - `addi` working
+  - `lw` working
 
 ## Latest Summary
 
@@ -47,16 +49,77 @@ The project now has:
   - physical `ALUOp` / `ALUSrc` buttons drive execution setup
   - the authored `ALU UI` validates execution and gates the continue into write-back
   - the ALU emits an `ALU Result` packet with the computed value
-- in-progress dedicated write-back scaffolding:
+- a working first-pass write-back loop for `add`:
   - authored `WB` prefab with separate register and datapacket inputs
   - authored `WB UI` for control-signal and input-status teaching
-  - authored `Mem UI` placeholder for the eventual memory-stage explanation
-  - a bonus loose register scanner intended for value inspection outside the lesson-gated decode flow
+  - bonus loose register scanner for value inspection outside the lesson-gated decode flow
+  - final register value update happens through the write-back phase instead of being implied
+- an explanatory `Mem UI` checkpoint now exists between execution and write-back
 - a cleaner instruction-decode model:
   - `add` scans `rs` and `rt`
   - `addi` and `lw` scan `rs` only
   - immediate-based instructions spawn the `Immediate` packet from the second scanner's packet spawn location
   - destination register choice is now intended for write-back rather than register decode
+- a simple sign-extension placeholder path in code:
+  - immediate packets now carry a boolean that later phases can validate
+  - this keeps `addi` / `lw` unblocked before a physical sign-extension interaction is authored
+
+### 2026-06-29 - V1 Closed Out, V2 Design Started
+
+Completed:
+- closed out the current V1 lesson slice around `add`
+- kept the tested intro -> decode -> execute -> memory checkpoint -> write-back path intact
+- removed the now-dead `ControlDecodeController` script from `Assets/MyScripts`
+- cleaned the lesson flow so the old write-back confirmation branch is no longer part of the active runtime path
+- kept immediate groundwork lightweight by adding a boolean sign-extension state directly to datapackets
+- updated ALU validation so immediate-based execution can now distinguish between raw and sign-extended immediate packets
+
+Changed:
+- the repo is now transitioning from "stabilize the demoable `add` slice" into "prepare `addi` and `lw` cleanly"
+- the lesson/runtime code should now treat:
+  - immediate packets as first-class datapath objects
+  - sign extension as an explicit state that can later become a physical interaction
+
+Next:
+- author the physical sign-extension interaction when ready
+- extend decode / ALU / memory / write-back into `addi`
+- build the real memory interaction for `lw`
+
+Risks / Notes:
+- the sign-extension path is intentionally simple for now
+- the next design pass should focus on clarity and reuse, not another rushed architectural rewrite
+
+### 2026-06-29 - Supervisor Demo Completed, Next Target Set
+
+Completed:
+- demonstrated the current `add` walkthrough to the supervisor
+- validated the staged difficulty ramp:
+  - `IF` as light introduction
+  - `ID` as first physical interaction/scanner training
+  - `EX` as a more involved phase with changing UI and physical controls
+  - `WB` as the final combined interaction
+- kept the choice of not frontloading all signals at the beginning
+- refined the authored lesson UIs after the demo and confirmed the scene now works end-to-end again
+
+Supervisor Feedback:
+- separate guide / explanation UI from interaction UI where practical
+- reduce the need to scroll for information during active interaction
+- the current difficulty ramp is a good design choice
+- `RegDst` may later be separated again, but only if it does not create too much clutter
+
+Changed:
+- the project is now in post-demo refinement mode rather than first-demo scramble mode
+- the next milestone is no longer "make `add` demoable"; it is "extend the framework cleanly to `addi` and `lw` by July 6, 2026"
+
+Next:
+- add a persistent settings / cheatsheet panel the learner can open at any time
+- decide how immediate generation and sign extension should physically appear in `ID`
+- design the ALU control sub-step more clearly
+- build the real memory interaction for `lw` (and eventually `sw`)
+
+Risks / Notes:
+- the main design challenge is now clarity rather than raw MVP existence
+- future additions should preserve the staged teaching feel instead of dumping too many controls into one phase
 
 ## Chronological Entries
 

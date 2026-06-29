@@ -80,7 +80,6 @@ public enum InstructionStepInteractionType
     None,
     ContinueButton,
     RegisterSelection,
-    WriteBackRegisterConfirmation,
     Completion,
     AluExecution,
     WriteBackExecution,

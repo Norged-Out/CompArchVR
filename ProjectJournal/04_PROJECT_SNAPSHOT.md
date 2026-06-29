@@ -23,16 +23,8 @@ Current prototype features:
 - lesson framework re-wired around `Lesson Guide`
 - scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
 - scene-authored `Register Setup UI` near the register area
+- guide panels have now been proven useful, but post-demo feedback suggests separating guide/explanation surfaces from active interaction surfaces more clearly
 - scene-authored `Register Zone` with 32 permanent grabbable MIPS registers
-- scene-authored `Control Unit` signal buttons for:
-  - `RegDst`
-  - `Branch`
-  - `MemRead`
-  - `MemtoReg`
-  - `ALUOp`
-  - `MemWrite`
-  - `ALUSrc`
-  - `RegWrite`
 - register scanners for `Read Register 1`, `Read Register 2`, and `Write Register`
 - register tokens now support persistent logical values in code
 - reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
@@ -54,12 +46,12 @@ Current prototype features:
   - input 2 role switching based on `ALUSrc`
   - result packet spawning with role `ALU Result`
   - one extra continue click after success before write-back
-- authored write-back groundwork now exists:
+- authored memory/write-back path now exists:
+  - a dedicated `Mem UI` explanatory checkpoint
   - a dedicated `WB` prefab
   - a dedicated `WB UI`
   - a bonus loose register scanner for value inspection / confirmation
-  - early lesson-flow wiring for a real write-back phase instead of only a temporary intro-panel explanation
-- a placeholder `Mem UI` now exists as the likely teaching surface for the memory step
+  - lesson-flow wiring for a real write-back phase instead of only a temporary intro-panel explanation
 - authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
@@ -70,6 +62,7 @@ Current prototype features:
   - initial register values
   - expected immediate values
   - write-back target resolution (`rd` vs `rt`)
+  - immediate packets carrying a simple sign-extension boolean for now
 - planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
 - slim lesson scripts now reduced to:
@@ -84,7 +77,6 @@ Current prototype features:
 
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\ControlDecodeController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
@@ -114,9 +106,11 @@ Why:
 
 ## Current Non-Negotiable Milestone
 
-- by `2026-06-28`, `add`, `addi`, and `lw` should be working
-- on `2026-06-29`, this should be ready to show the supervisor as a V1 checkpoint
-- this is the current deadline target, not a promise that the whole dissertation will stop at those three instructions
+- the June 29, 2026 supervisor demo has been completed
+- the next checkpoint is on `2026-07-06`
+- the desired target for that checkpoint is:
+  - `addi` working
+  - `lw` working
 
 ## If Starting A New Chat
 
@@ -134,11 +128,15 @@ Before stopping:
 ## Current Open Questions
 
 - how readable and comfortable the current lesson UI and register bank feel in-headset
-- how much of the intro/decode text should stay on `Intro UI` before handoff to later zone panels
+- how aggressively guide/explanation UI should be separated from interaction UI after the demo feedback
+- whether a permanent settings / cheatsheet panel should mirror all closed lesson information
 - how much instruction decoding should be physical vs UI-driven
 - exactly where `RegDst` and `ALUSrc` should live pedagogically:
   - both in their strict hardware-derivation sense
   - and in the simplified lesson flow sense
+- how immediate generation and sign extension should be visualized physically for `addi` and `lw`
+- what the cleanest ALU-control teaching interaction should be beyond the current `ALUOp` / `ALUSrc` layer
+- what the cleanest memory interaction should be for `lw` / `sw`, especially when handling address packets, memory-data packets, and store-data packets
 - whether instruction choice is user-selected, randomized, or both
 - the exact acceptance rule for pedestal validation:
   - immediate on release
@@ -152,15 +150,15 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- finish the dedicated write-back phase on top of the current mainline snapshot:
+- extend the current `add` framework into `addi` and `lw`:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
-- keep the flow order fixed as intro -> instruction decode -> ALU -> write-back unless the user explicitly changes it
+- keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- finish the next physical interaction layer for `WriteBack`
 - reuse the scanner / register / lesson state pattern for `addi` and `lw`
+- add a persistent cheatsheet/settings menu for previously closed guidance
 
 ## Personal Reminder
 

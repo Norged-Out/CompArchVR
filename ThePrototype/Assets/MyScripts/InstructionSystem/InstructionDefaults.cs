@@ -76,6 +76,14 @@ public static class InstructionDefaults
             },
             new InstructionFlowStep
             {
+                stepName = "Data Memory",
+                highlightedNode = DatapathNodeId.DataMemory,
+                explanation = "add does not use Data Memory. This checkpoint exists so the learner can explicitly see that the memory path is skipped before write-back.",
+                requiredInteraction = InstructionStepInteractionType.ContinueButton,
+                blockProgressUntilValidated = true,
+            },
+            new InstructionFlowStep
+            {
                 stepName = "Write Back",
                 highlightedNode = DatapathNodeId.WriteBack,
                 explanation = "The ALU result is written back to the destination register rd. Use the lesson guide to confirm the destination and final value before continuing.",

@@ -307,6 +307,12 @@ public class AluExecutionController : MonoBehaviour
             return false;
         }
 
+        if (expectedInput2Role == DataPacketRole.Immediate && !m_InputB.AcceptedPacket.IsSignExtended)
+        {
+            validationMessage = "Input 2 has the immediate packet, but it has not been sign-extended yet.";
+            return false;
+        }
+
         return true;
     }
 
@@ -409,6 +415,9 @@ public class AluExecutionController : MonoBehaviour
             var input2RoleName = GetRoleDisplayName(GetExpectedInput2Role());
             var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
             var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
+            var input2Note = GetExpectedInput2Role() == DataPacketRole.Immediate
+                ? "Input 2 must use the sign-extended immediate packet."
+                : "Input 2 must use the second register-read packet.";
             m_BodyText.text =
                 "Execution Phase\n\n" +
                 $"Instruction: {instructionName}\n\n" +
@@ -417,8 +426,9 @@ public class AluExecutionController : MonoBehaviour
                 "2. Set ALUSrc to choose whether Input 2 comes from Read Data 2 or the Immediate path.\n" +
                 "3. Place Read Data 1 on Input 1.\n" +
                 $"4. Place {input2RoleName} on Input 2.\n" +
-                $"5. For this instruction, ALUOp should be {GetExpectedAluOpValue(m_CurrentInstruction)} and ALUSrc should be {(m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate ? "1" : "0")}.\n" +
-                "6. Press Execute to produce the ALU result packet.";
+                $"5. {input2Note}\n" +
+                $"6. For this instruction, ALUOp should be {GetExpectedAluOpValue(m_CurrentInstruction)} and ALUSrc should be {(m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate ? "1" : "0")}.\n" +
+                "7. Press Execute to produce the ALU result packet.";
         }
 
         if (m_AluOpStatusText != null)
@@ -445,7 +455,10 @@ public class AluExecutionController : MonoBehaviour
         if (scanner == null || scanner.AcceptedPacket == null)
             return $"{inputLabel}: waiting for {GetRoleDisplayName(expectedRole)}";
 
-        return $"{inputLabel}: {GetRoleDisplayName(scanner.AcceptedPacket.PacketRole)} = {scanner.AcceptedValue}";
+        var signExtensionSuffix = scanner.AcceptedPacket.PacketRole == DataPacketRole.Immediate
+            ? scanner.AcceptedPacket.IsSignExtended ? " (sign-extended)" : " (not sign-extended)"
+            : string.Empty;
+        return $"{inputLabel}: {GetRoleDisplayName(scanner.AcceptedPacket.PacketRole)} = {scanner.AcceptedValue}{signExtensionSuffix}";
     }
 
     string GetOperationDisplayName()

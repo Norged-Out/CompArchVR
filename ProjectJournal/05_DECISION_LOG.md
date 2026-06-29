@@ -429,6 +429,71 @@ Implication:
   - the actual register-value update
 - `Mem UI` can remain explanatory-first for the demo while write-back becomes the real next interaction milestone
 
+## 2026-06-29 - Keep The Difficulty Ramp Progressive
+
+Decision:
+- keep the current phased ramp where interaction complexity increases as the learner moves forward through the datapath
+
+Current shape:
+- `IF` = light introduction
+- `ID` = first meaningful register/scanner interaction
+- `EX` = richer interaction with physical controls and changing UI
+- `WB` = final combined interaction phase
+
+Why:
+- the supervisor explicitly approved this gradual ramp
+- it makes the lesson feel more teachable than dumping every control signal on the learner at once
+
+Implication:
+- future work on `addi` and `lw` should preserve this pacing
+- adding more signals should be justified by the teaching sequence, not by hardware purity alone
+
+## 2026-06-29 - Separate Guide UI From Interaction UI More Clearly
+
+Decision:
+- move toward separating explanatory/guide content from active interaction content where practical
+
+Why:
+- supervisor feedback highlighted that scrolling during active interaction is not ideal
+- the player should not need to hunt through lesson text while also manipulating objects
+
+Implication:
+- future panels should distinguish between:
+  - guide/reference content
+  - interaction state / actionable status
+- a persistent cheatsheet/settings panel is now a good candidate for holding closed lesson information
+
+## 2026-06-29 - July 6, 2026 Checkpoint Should Prioritize addi And lw
+
+Decision:
+- the next concrete target is the July 6, 2026 checkpoint
+- the desired deliverables for that checkpoint are:
+  - `addi`
+  - `lw`
+
+Why:
+- `add` is now demonstrable
+- the next value comes from extending the framework to one immediate instruction and one memory instruction
+
+Implication:
+- near-term work should prioritize:
+  - immediate packet generation + sign extension
+  - memory-phase design and implementation
+  - minimal ALU-control refinement only as needed to support those two instructions
+
+## 2026-06-29 - Immediate Sign Extension Can Stay Boolean For Now
+
+Decision:
+- represent immediate sign extension with a simple boolean flag on the datapacket for now
+
+Why:
+- the next checkpoint needs `addi` and `lw` functioning more than it needs a fully physical sign-extension contraption
+- this keeps the code path ready while leaving room for a later authored interaction
+
+Implication:
+- immediate packets can be validated by later phases as either sign-extended or not
+- a future physical sign-extension station can update that same packet state instead of forcing a data-model rewrite
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

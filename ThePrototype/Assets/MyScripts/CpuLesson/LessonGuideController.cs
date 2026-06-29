@@ -496,15 +496,6 @@ public class LessonGuideController : MonoBehaviour
                 $"{step.explanation}";
         }
 
-        if (step.requiredInteraction == InstructionStepInteractionType.WriteBackRegisterConfirmation)
-        {
-            return
-                $"Instruction: {instruction.displayName}\n\n" +
-                $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                $"Confirm write-back by placing {instruction.GetWriteBackTargetRegister()} on Write Register.\n\n" +
-                $"{step.explanation}";
-        }
-
         return
             $"Instruction: {instruction.displayName}\n\n" +
             $"Assembly: {instruction.assemblyInstructionText}\n\n" +

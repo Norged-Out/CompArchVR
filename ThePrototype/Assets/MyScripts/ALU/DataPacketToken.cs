@@ -22,6 +22,9 @@ public class DataPacketToken : MonoBehaviour
     [SerializeField]
     int m_Value;
 
+    [SerializeField]
+    bool m_IsSignExtended;
+
     [Header("Scene References")]
 
     [SerializeField]
@@ -37,6 +40,7 @@ public class DataPacketToken : MonoBehaviour
     public string SourceRegisterId => m_SourceRegisterId;
     public string SourceDisplayLabel => m_SourceDisplayLabel;
     public int Value => m_Value;
+    public bool IsSignExtended => m_IsSignExtended;
     public bool IsGrabbed => m_GrabInteractable != null && m_GrabInteractable.isSelected;
 
     void Awake()
@@ -57,10 +61,37 @@ public class DataPacketToken : MonoBehaviour
         string sourceDisplayLabel,
         int value)
     {
+        Configure(packetRole, sourceRegisterId, sourceDisplayLabel, value, false);
+    }
+
+    /// <summary>
+    /// Configures the packet's role, source identity, stored value, and
+    /// whether the payload is already sign-extended for datapath use.
+    /// </summary>
+    public void Configure(
+        DataPacketRole packetRole,
+        string sourceRegisterId,
+        string sourceDisplayLabel,
+        int value,
+        bool isSignExtended)
+    {
         m_PacketRole = packetRole;
         m_SourceRegisterId = sourceRegisterId;
         m_SourceDisplayLabel = sourceDisplayLabel;
         m_Value = value;
+        m_IsSignExtended = isSignExtended;
+        RefreshText();
+    }
+
+    /// <summary>
+    /// Marks an existing immediate packet as sign-extended in place.
+    /// The value can also be overwritten if a later sign-extension station
+    /// wants to explicitly rewrite the payload before ALU/MEM use.
+    /// </summary>
+    public void MarkSignExtended(int signExtendedValue)
+    {
+        m_Value = signExtendedValue;
+        m_IsSignExtended = true;
         RefreshText();
     }
 
