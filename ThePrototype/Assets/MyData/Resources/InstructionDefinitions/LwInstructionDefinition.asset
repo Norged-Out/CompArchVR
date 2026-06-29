@@ -24,6 +24,7 @@ MonoBehaviour:
   expectedRs: t0
   expectedRt: t1
   expectedRd: 
+  expectedImmediateValue: 8
   touchesDataMemory: 1
   writesRegisterFile: 1
   usesImmediate: 1
@@ -54,11 +55,12 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Base Register + Offset
     highlightedNode: 3
-    explanation: The learner will eventually choose the base register and the destination rt before reasoning about the address offset.
+    explanation: Decode lw by reading the base register rs and preparing the immediate offset as the second ALU operand. The destination rt is remembered for write-back later.
     advanceVisualHighlight: 1
-    requiredInteraction: 1
+    requiredInteraction: 2
     blockProgressUntilValidated: 1
-    requiredRegisterSelections: []
+    requiredRegisterSelections:
+    - 1
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
   - stepName: Address Calculation

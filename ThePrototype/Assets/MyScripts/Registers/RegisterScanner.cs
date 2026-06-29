@@ -1,8 +1,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 /// <summary>
 /// Pedestal-style scanner used during lesson phases that need a specific
@@ -12,22 +10,13 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 /// - tracking which register token is resting in the scan zone
 /// - waiting for the 1-second scan window
 /// - pressing the body down while occupied
-/// - showing idle / success / failure colors
+/// - swapping authored materials for each scanner state
 ///
 /// Lesson correctness still lives in <see cref="CpuLessonFlow"/>.
 /// </summary>
 [DisallowMultipleComponent]
-public class RegisterScanner : MonoBehaviour
+public class RegisterScanner : PedestalScannerBase
 {
-    enum ScannerVisualState
-    {
-        Inactive,
-        Idle,
-        Occupied,
-        Success,
-        Failure,
-    }
-
     [Header("Role")]
 
     [SerializeField]
@@ -35,17 +24,6 @@ public class RegisterScanner : MonoBehaviour
 
     [SerializeField]
     RegisterBank m_OwningBank;
-
-    [Header("Scene References")]
-
-    [SerializeField]
-    Transform m_BodyTransform;
-
-    [SerializeField]
-    Renderer m_BaseRenderer;
-
-    [SerializeField]
-    Renderer m_BodyRenderer;
 
     [SerializeField]
     TMP_Text m_LabelText;
@@ -67,21 +45,7 @@ public class RegisterScanner : MonoBehaviour
     [SerializeField]
     DataPacketRole m_OutputPacketRole = DataPacketRole.ReadData1;
 
-    [Header("Materials")]
-
-    [SerializeField]
-    Material m_BaseMaterialTemplate;
-
-    [SerializeField]
-    Material m_BodyMaterialTemplate;
-
     [Header("Scan Tuning")]
-
-    [SerializeField]
-    float m_ScanDurationSeconds = 2f;
-
-    [SerializeField]
-    float m_PressedOffsetY = -0.03f;
 
     [SerializeField]
     Vector3 m_ScanZonePadding = new(0.12f, 0.18f, 0.12f);
@@ -92,166 +56,37 @@ public class RegisterScanner : MonoBehaviour
     [SerializeField]
     float m_SupportColliderHeightPadding = 0.01f;
 
-    [Header("Colors")]
-
-    [SerializeField]
-    Color m_InactiveBodyColor = new(0.23f, 0.28f, 0.34f, 1f);
-
-    [SerializeField]
-    Color m_IdleBodyColor = new(0.37f, 0.54f, 0.72f, 1f);
-
-    [SerializeField]
-    Color m_OccupiedBodyColor = new(0.93f, 0.72f, 0.25f, 1f);
-
-    [SerializeField]
-    Color m_SuccessBodyColor = new(0.3f, 0.76f, 0.43f, 1f);
-
-    [SerializeField]
-    Color m_FailureBodyColor = new(0.86f, 0.24f, 0.24f, 1f);
-
-    [SerializeField]
-    Color m_BaseColor = new(0.14f, 0.15f, 0.19f, 1f);
-
-    static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
-    static readonly int k_ColorId = Shader.PropertyToID("_Color");
-
     readonly System.Collections.Generic.HashSet<RegisterToken> m_TokensInZone = new();
 
-    Vector3 m_BodyRestLocalPosition;
-    RegisterToken m_CurrentCandidate;
-    Coroutine m_FailureRoutine;
-    float m_CurrentScanTime;
-    bool m_IsStepActive;
-    bool m_IsAwaitingValidation;
-    bool m_IsLatchedSuccessful;
-    ScannerVisualState m_VisualState = ScannerVisualState.Inactive;
     DataPacketToken m_SpawnedPacket;
     int m_LastResolvedValue;
 
     public InstructionRegisterRole RegisterRole => m_RegisterRole;
     public DataPacketToken SpawnedPacket => m_SpawnedPacket;
+    public Transform DataPacketSpawnAnchor => m_DataPacketSpawnAnchor;
 
-    void Awake()
+    protected override void Awake()
     {
-        CacheReferences();
-        ApplyTemplates();
-        RememberBodyPose();
+        base.Awake();
         ConfigureSupportCollider();
         ConfigureScanZone();
         BindZoneHelper();
         EnsureStaticPedestalPhysics();
-        ApplyCurrentVisualState();
     }
 
-    void OnEnable()
+    protected override void OnEnable()
     {
-        CacheReferences();
+        base.OnEnable();
         BindZoneHelper();
     }
 
-    void OnValidate()
+    protected override void OnValidate()
     {
-        CacheReferences();
-        ApplyTemplates();
-        ResetEditorState();
+        base.OnValidate();
         RestoreEditorRestPose();
-        RememberBodyPose();
         ConfigureSupportCollider();
         ConfigureScanZone();
         EnsureStaticPedestalPhysics();
-        ApplyCurrentVisualState();
-    }
-
-    void Update()
-    {
-        if (!m_IsStepActive || m_IsAwaitingValidation || m_IsLatchedSuccessful)
-            return;
-
-        var candidate = GetStableCandidate();
-        if (candidate == null)
-        {
-            m_CurrentCandidate = null;
-            m_CurrentScanTime = 0f;
-            if (m_VisualState != ScannerVisualState.Failure)
-                SetVisualState(ScannerVisualState.Idle);
-            return;
-        }
-
-        if (candidate != m_CurrentCandidate)
-        {
-            m_CurrentCandidate = candidate;
-            m_CurrentScanTime = 0f;
-        }
-
-        m_CurrentScanTime += Time.deltaTime;
-        SetVisualState(ScannerVisualState.Occupied);
-
-        if (m_CurrentScanTime < m_ScanDurationSeconds)
-            return;
-
-        // Reaching the scan duration only means "candidate is stable".
-        // The lesson flow still decides whether the scanned register is correct.
-        m_IsAwaitingValidation = true;
-        m_CurrentScanTime = 0f;
-        m_OwningBank?.NotifyRegisterScanned(m_RegisterRole, candidate);
-    }
-
-    /// <summary>
-    /// Enables or disables this scanner for the active lesson step.
-    /// Inactive scanners ignore tokens and fall back to a muted idle look.
-    /// </summary>
-    public void SetStepActive(bool isActive)
-    {
-        m_IsStepActive = isActive;
-        m_IsAwaitingValidation = false;
-        m_IsLatchedSuccessful = false;
-        m_CurrentCandidate = null;
-        m_CurrentScanTime = 0f;
-        m_LastResolvedValue = 0;
-
-        if (m_FailureRoutine != null)
-        {
-            StopCoroutine(m_FailureRoutine);
-            m_FailureRoutine = null;
-        }
-
-        SetVisualState(isActive ? ScannerVisualState.Idle : ScannerVisualState.Inactive);
-        UpdateValueText();
-    }
-
-    /// <summary>
-    /// Clears local progress and returns the scanner to its default state.
-    /// </summary>
-    public void ResetScanner()
-    {
-        m_TokensInZone.Clear();
-        ClearSpawnedPacket();
-        SetStepActive(false);
-        UpdateValueText();
-    }
-
-    /// <summary>
-    /// Latches the scanner green after the lesson accepts the placed register.
-    /// </summary>
-    public void MarkSuccess()
-    {
-        m_IsAwaitingValidation = false;
-        m_IsLatchedSuccessful = true;
-        m_LastResolvedValue = m_CurrentCandidate != null ? m_CurrentCandidate.RegisterValue : 0;
-        if (ShouldSpawnDataPacket())
-            SpawnDataPacketFromCurrentCandidate();
-        SetVisualState(ScannerVisualState.Success);
-    }
-
-    /// <summary>
-    /// Briefly shows a failure state, then returns to idle or occupied.
-    /// </summary>
-    public void FlashFailure()
-    {
-        if (m_FailureRoutine != null)
-            StopCoroutine(m_FailureRoutine);
-
-        m_FailureRoutine = StartCoroutine(FlashFailureRoutine());
     }
 
     /// <summary>
@@ -272,66 +107,34 @@ public class RegisterScanner : MonoBehaviour
             return;
 
         m_TokensInZone.Remove(registerToken);
-        if (m_CurrentCandidate == registerToken)
+        if (CurrentCandidateAs<RegisterToken>() == registerToken)
         {
-            m_CurrentCandidate = null;
-            m_CurrentScanTime = 0f;
-            m_IsAwaitingValidation = false;
-
-            if (!m_IsLatchedSuccessful && m_IsStepActive && m_FailureRoutine == null)
-                SetVisualState(ScannerVisualState.Idle);
+            OnCandidateLost();
         }
 
     }
 
-    IEnumerator FlashFailureRoutine()
+    protected override Component GetStableCandidate()
     {
-        m_IsAwaitingValidation = true;
-        SetVisualState(ScannerVisualState.Failure);
-        yield return new WaitForSeconds(0.35f);
-
-        m_IsAwaitingValidation = false;
-        m_FailureRoutine = null;
-        m_CurrentCandidate = null;
-        m_CurrentScanTime = 0f;
-        m_LastResolvedValue = 0;
-
-        if (!m_IsStepActive)
-            SetVisualState(ScannerVisualState.Inactive);
-        else if (GetStableCandidate() != null)
-            SetVisualState(ScannerVisualState.Occupied);
-        else
-            SetVisualState(ScannerVisualState.Idle);
-    }
-
-    RegisterToken GetStableCandidate()
-    {
-        RegisterToken stableCandidate = null;
-
         m_TokensInZone.RemoveWhere(token => token == null);
         foreach (var registerToken in m_TokensInZone)
         {
             if (registerToken == null || registerToken.IsGrabbed)
                 continue;
 
-            stableCandidate = registerToken;
-            break;
+            return registerToken;
         }
 
-        return stableCandidate;
+        return null;
     }
 
-    void CacheReferences()
+    protected override void CacheVisualReferences()
     {
+        base.CacheVisualReferences();
+
         // Always rebind authored child references by name. Duplicating these
         // scanners in the scene can leave serialized references pointing at the
         // original object's children, so relying on "only if null" is brittle.
-        m_BodyTransform = FindChildTransform("Body");
-
-        var baseTransform = FindChildTransform("Base");
-        m_BaseRenderer = baseTransform != null ? baseTransform.GetComponent<Renderer>() : null;
-        m_BodyRenderer = m_BodyTransform != null ? m_BodyTransform.GetComponent<Renderer>() : null;
-
         var labelTransform = FindChildTransform("Label");
         m_LabelText = labelTransform != null
             ? labelTransform.GetComponent<TMP_Text>() ?? labelTransform.GetComponentInChildren<TMP_Text>(true)
@@ -371,43 +174,18 @@ public class RegisterScanner : MonoBehaviour
         }
     }
 
-    Transform FindChildTransform(string childName)
-    {
-        foreach (var childTransform in GetComponentsInChildren<Transform>(true))
-        {
-            if (childTransform == null || childTransform == transform)
-                continue;
-
-            if (childTransform.name.Equals(childName, System.StringComparison.Ordinal))
-                return childTransform;
-        }
-
-        return null;
-    }
-
-    void ApplyTemplates()
-    {
-        CacheReferences();
-
-        if (m_BaseRenderer && m_BaseMaterialTemplate != null)
-            m_BaseRenderer.sharedMaterial = m_BaseMaterialTemplate;
-
-        if (m_BodyRenderer && m_BodyMaterialTemplate != null)
-            m_BodyRenderer.sharedMaterial = m_BodyMaterialTemplate;
-    }
-
     void ConfigureSupportCollider()
     {
         var supportCollider = GetComponent<BoxCollider>();
-        if (supportCollider == null || !m_BaseRenderer || !m_BodyRenderer)
+        if (supportCollider == null || BaseRenderer == null || BodyRenderer == null)
             return;
 
         // The solid collider matches the scanner footprint, not the trigger.
         // That keeps dropped tokens resting on the pedestal instead of sinking
         // into the moving body mesh.
-        var baseBounds = GetRendererBoundsInRootSpace(m_BaseRenderer);
-        var bodyBounds = GetRendererBoundsInRootSpace(m_BodyRenderer);
-        var pressedBodyCenterY = bodyBounds.center.y + m_PressedOffsetY;
+        var baseBounds = GetRendererBoundsInRootSpace(BaseRenderer);
+        var bodyBounds = GetRendererBoundsInRootSpace(BodyRenderer);
+        var pressedBodyCenterY = bodyBounds.center.y + PressedOffsetY;
         var supportHeight = Mathf.Max(0.02f, bodyBounds.size.y + m_SupportColliderHeightPadding);
 
         supportCollider.center = new Vector3(baseBounds.center.x, pressedBodyCenterY, baseBounds.center.z);
@@ -417,13 +195,13 @@ public class RegisterScanner : MonoBehaviour
 
     void ConfigureScanZone()
     {
-        if (m_ScanZone == null || !m_BodyRenderer)
+        if (m_ScanZone == null || BodyRenderer == null)
             return;
 
         // The trigger extends a little above the pressed surface so packets can
         // settle naturally before the timer starts.
-        var bodyBounds = GetRendererBoundsInRootSpace(m_BodyRenderer);
-        var pressedBodyTopY = bodyBounds.max.y + m_PressedOffsetY;
+        var bodyBounds = GetRendererBoundsInRootSpace(BodyRenderer);
+        var pressedBodyTopY = bodyBounds.max.y + PressedOffsetY;
         var scanHeight = Mathf.Max(0.12f, bodyBounds.size.y + m_ScanZonePadding.y);
         var scanBottomY = pressedBodyTopY - m_ScanZoneSurfaceInset;
         var scanCenterY = scanBottomY + scanHeight * 0.5f;
@@ -467,82 +245,28 @@ public class RegisterScanner : MonoBehaviour
 
     void RememberBodyPose()
     {
-        if (m_BodyTransform != null)
-            m_BodyRestLocalPosition = m_BodyTransform.localPosition;
-    }
-
-    void ResetEditorState()
-    {
-        if (Application.isPlaying)
-            return;
-
-        m_TokensInZone.Clear();
-        m_CurrentCandidate = null;
-        m_CurrentScanTime = 0f;
-        m_IsStepActive = false;
-        m_IsAwaitingValidation = false;
-        m_IsLatchedSuccessful = false;
-        m_FailureRoutine = null;
-        m_VisualState = ScannerVisualState.Inactive;
+        // handled by base
     }
 
     void RestoreEditorRestPose()
     {
-        if (Application.isPlaying || !m_BaseRenderer || !m_BodyRenderer || m_BodyTransform == null)
+        if (Application.isPlaying || BaseRenderer == null || BodyRenderer == null || BodyTransform == null)
             return;
 
-        var baseBounds = GetRendererBoundsInRootSpace(m_BaseRenderer);
-        var bodyBounds = GetRendererBoundsInRootSpace(m_BodyRenderer);
+        var baseBounds = GetRendererBoundsInRootSpace(BaseRenderer);
+        var bodyBounds = GetRendererBoundsInRootSpace(BodyRenderer);
         var desiredBodyBottom = baseBounds.max.y + 0.01f;
         var correction = desiredBodyBottom - bodyBounds.min.y;
 
         if (correction > 0.002f)
-            m_BodyTransform.localPosition += new Vector3(0f, correction, 0f);
+            BodyTransform.localPosition += new Vector3(0f, correction, 0f);
     }
 
-    void SetVisualState(ScannerVisualState newState)
+    protected override void ApplyAuxiliaryVisuals(ScannerVisualState visualState)
     {
-        m_VisualState = newState;
-        ApplyCurrentVisualState();
-    }
-
-    void ApplyCurrentVisualState()
-    {
-        CacheReferences();
-
-        var bodyColor = m_IdleBodyColor;
-        var labelColor = Color.white;
-        var pressed = false;
-
-        switch (m_VisualState)
-        {
-            case ScannerVisualState.Inactive:
-                bodyColor = m_InactiveBodyColor;
-                labelColor = new Color(0.82f, 0.85f, 0.9f, 0.8f);
-                break;
-
-            case ScannerVisualState.Idle:
-                bodyColor = m_IdleBodyColor;
-                break;
-
-            case ScannerVisualState.Occupied:
-                bodyColor = m_OccupiedBodyColor;
-                pressed = true;
-                break;
-
-            case ScannerVisualState.Success:
-                bodyColor = m_SuccessBodyColor;
-                pressed = true;
-                break;
-
-            case ScannerVisualState.Failure:
-                bodyColor = m_FailureBodyColor;
-                pressed = true;
-                break;
-        }
-
-        ApplyRendererColor(m_BaseRenderer, m_BaseColor);
-        ApplyRendererColor(m_BodyRenderer, bodyColor);
+        var labelColor = visualState == ScannerVisualState.Inactive
+            ? new Color(0.82f, 0.85f, 0.9f, 0.8f)
+            : Color.white;
 
         if (m_LabelText != null)
             m_LabelText.color = labelColor;
@@ -550,16 +274,42 @@ public class RegisterScanner : MonoBehaviour
         if (m_ValueText != null)
             m_ValueText.color = labelColor;
 
-        if (m_BodyTransform != null)
-        {
-            var targetLocalPosition = m_BodyRestLocalPosition;
-            if (pressed)
-                targetLocalPosition.y += m_PressedOffsetY;
-
-            m_BodyTransform.localPosition = targetLocalPosition;
-        }
-
         UpdateValueText();
+    }
+
+    protected override void OnCandidateLost()
+    {
+        m_LastResolvedValue = 0;
+    }
+
+    protected override void AfterFailureReset()
+    {
+        m_LastResolvedValue = 0;
+    }
+
+    protected override void OnStepActiveChanged(bool isActive)
+    {
+        m_LastResolvedValue = 0;
+        UpdateValueText();
+    }
+
+    protected override void HandleScannerReset()
+    {
+        m_TokensInZone.Clear();
+        ClearSpawnedPacket();
+        m_LastResolvedValue = 0;
+        UpdateValueText();
+    }
+
+    protected override void HandleStableCandidate(Component candidate)
+    {
+        var registerToken = candidate as RegisterToken;
+        if (registerToken == null)
+            return;
+
+        // Reaching the scan duration only means "candidate is stable".
+        // The lesson flow still decides whether the scanned register is correct.
+        m_OwningBank?.NotifyRegisterScanned(m_RegisterRole, registerToken);
     }
 
     void UpdateValueText()
@@ -567,35 +317,65 @@ public class RegisterScanner : MonoBehaviour
         if (m_ValueText == null)
             return;
 
-        m_ValueText.text = m_IsLatchedSuccessful
+        m_ValueText.text = IsLatchedSuccessful
             ? m_LastResolvedValue.ToString()
             : "0";
     }
 
-    void SpawnDataPacketFromCurrentCandidate()
+    protected override void HandleSuccessLatched()
+    {
+        var currentCandidate = CurrentCandidateAs<RegisterToken>();
+        m_LastResolvedValue = currentCandidate != null ? currentCandidate.RegisterValue : 0;
+
+        if (ShouldSpawnDataPacket())
+            SpawnDataPacketFromCurrentCandidate();
+    }
+
+    /// <summary>
+    /// Retargets the packet role emitted by this scanner without requiring a
+    /// separate prefab for each datapath use-case.
+    /// </summary>
+    public void SetOutputPacketRole(DataPacketRole outputPacketRole)
+    {
+        m_OutputPacketRole = outputPacketRole;
+    }
+
+    /// <summary>
+    /// Spawns a packet from this scanner's authored output anchor using the
+    /// currently configured packet role.
+    /// </summary>
+    public void SpawnConfiguredPacket(string sourceRegisterId, string sourceDisplayLabel, int value)
     {
         ClearSpawnedPacket();
 
         if (m_DataPacketPrefab == null || m_DataPacketSpawnAnchor == null)
             return;
 
-        var sourceToken = m_CurrentCandidate != null ? m_CurrentCandidate : GetStableCandidate();
-        if (sourceToken == null)
-            return;
-
-        // Packet data is copied at scan success time so later register resets
-        // or value changes do not mutate an already emitted datapath packet.
         var spawnedPacket = Instantiate(
             m_DataPacketPrefab,
             m_DataPacketSpawnAnchor.position,
             m_DataPacketSpawnAnchor.rotation);
         spawnedPacket.Configure(
             m_OutputPacketRole,
+            sourceRegisterId,
+            sourceDisplayLabel,
+            value);
+
+        m_SpawnedPacket = spawnedPacket;
+    }
+
+    void SpawnDataPacketFromCurrentCandidate()
+    {
+        var sourceToken = CurrentCandidateAs<RegisterToken>() ?? GetStableCandidate() as RegisterToken;
+        if (sourceToken == null)
+            return;
+
+        // Packet data is copied at scan success time so later register resets
+        // or value changes do not mutate an already emitted datapath packet.
+        SpawnConfiguredPacket(
             sourceToken.RegisterId,
             sourceToken.DisplayLabel,
             sourceToken.RegisterValue);
-
-        m_SpawnedPacket = spawnedPacket;
     }
 
     bool ShouldSpawnDataPacket()
@@ -619,28 +399,6 @@ public class RegisterScanner : MonoBehaviour
             DestroyImmediate(m_SpawnedPacket.gameObject);
 
         m_SpawnedPacket = null;
-    }
-
-    static void ApplyRendererColor(Renderer targetRenderer, Color color)
-    {
-        if (!targetRenderer)
-            return;
-
-        var sharedMaterial = targetRenderer.sharedMaterial;
-        if (sharedMaterial == null)
-            return;
-
-        var propertyBlock = new MaterialPropertyBlock();
-        targetRenderer.GetPropertyBlock(propertyBlock);
-
-        if (sharedMaterial.HasProperty(k_BaseColorId))
-            propertyBlock.SetColor(k_BaseColorId, color);
-        else if (sharedMaterial.HasProperty(k_ColorId))
-            propertyBlock.SetColor(k_ColorId, color);
-        else
-            return;
-
-        targetRenderer.SetPropertyBlock(propertyBlock);
     }
 
     Bounds GetRendererBoundsInRootSpace(Renderer targetRenderer)

@@ -101,7 +101,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 9cd928fdfd124cdbba7252afcf45effc, type: 2}
+  - {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -159,17 +159,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9545821bdc6d95442b935a13cac29109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ExpectedPacketRole: 1
-  m_BodyTransform: {fileID: 0}
+  m_BodyTransform: {fileID: 8530779814507811918}
+  m_BaseRenderer: {fileID: 2819453700368837501}
   m_BodyRenderer: {fileID: 2819453700368837501}
+  m_InactiveMaterial: {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
+  m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
+  m_OccupiedMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
+  m_SuccessMaterial: {fileID: 2100000, guid: 1a63d72c6152ef54493960acf859fc4a, type: 2}
+  m_FailureMaterial: {fileID: 2100000, guid: 52e4708390753da4d9c262a4a102d958, type: 2}
+  m_ScanDurationSeconds: 2
+  m_PressedOffsetY: -0.02
+  m_ExpectedPacketRole: 1
   m_ScanZone: {fileID: 4599394110786640528}
   m_RequiredStableSeconds: 1
-  m_PressedOffsetY: -0.02
-  m_InactiveColor: {r: 0.23, g: 0.28, b: 0.34, a: 1}
-  m_IdleColor: {r: 0.37, g: 0.54, b: 0.72, a: 1}
-  m_OccupiedColor: {r: 0.93, g: 0.72, b: 0.25, a: 1}
-  m_SuccessColor: {r: 0.3, g: 0.76, b: 0.43, a: 1}
-  m_FailureColor: {r: 0.86, g: 0.24, b: 0.24, a: 1}
+  m_LocalPressedOffsetY: -0.02
 --- !u!1 &3453943341465484998
 GameObject:
   m_ObjectHideFlags: 0
@@ -1155,7 +1158,6 @@ MonoBehaviour:
   m_ResultSpawnDelaySeconds: 1.25
   m_ExecuteButtonText: Execute
   m_ResultReadyButtonText: Result Ready
-  m_DefaultFeedbackColor: {r: 1, g: 1, b: 1, a: 1}
   m_SuccessFeedbackColor: {r: 0.78, g: 0.96, b: 0.82, a: 1}
   m_FailureFeedbackColor: {r: 1, g: 0.55, b: 0.55, a: 1}
 --- !u!1 &6962034538506223565
@@ -6163,7 +6165,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 7e765abcd8c74e1fa53f1413b2188410, type: 2}
+  - {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -6221,17 +6223,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9545821bdc6d95442b935a13cac29109, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_ExpectedPacketRole: 2
-  m_BodyTransform: {fileID: 0}
+  m_BodyTransform: {fileID: 1444873480756048693}
+  m_BaseRenderer: {fileID: 8557756201868330266}
   m_BodyRenderer: {fileID: 8557756201868330266}
+  m_InactiveMaterial: {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
+  m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
+  m_OccupiedMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
+  m_SuccessMaterial: {fileID: 2100000, guid: 1a63d72c6152ef54493960acf859fc4a, type: 2}
+  m_FailureMaterial: {fileID: 2100000, guid: 52e4708390753da4d9c262a4a102d958, type: 2}
+  m_ScanDurationSeconds: 2
+  m_PressedOffsetY: -0.02
+  m_ExpectedPacketRole: 2
   m_ScanZone: {fileID: 1486162368219922240}
   m_RequiredStableSeconds: 1
-  m_PressedOffsetY: -0.02
-  m_InactiveColor: {r: 0.23, g: 0.28, b: 0.34, a: 1}
-  m_IdleColor: {r: 0.37, g: 0.54, b: 0.72, a: 1}
-  m_OccupiedColor: {r: 0.93, g: 0.72, b: 0.25, a: 1}
-  m_SuccessColor: {r: 0.3, g: 0.76, b: 0.43, a: 1}
-  m_FailureColor: {r: 0.86, g: 0.24, b: 0.24, a: 1}
+  m_LocalPressedOffsetY: -0.02
 --- !u!1001 &2776118215929052066
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -23,6 +23,7 @@ public static class InstructionDefaults
         instruction.expectedRs = "t0";
         instruction.expectedRt = "t1";
         instruction.expectedRd = "t2";
+        instruction.expectedImmediateValue = 0;
         instruction.touchesDataMemory = false;
         instruction.writesRegisterFile = true;
         instruction.usesImmediate = false;
@@ -56,14 +57,13 @@ public static class InstructionDefaults
             {
                 stepName = "Register Selection",
                 highlightedNode = DatapathNodeId.Registers,
-                explanation = "Choose the operand registers in order. Add reads rs and rt as inputs, and rd is the destination that will receive the ALU result.",
+                explanation = "Decode the source operands for add. Scan rs and rt now so their values become Read Data 1 and Read Data 2 packets. The destination rd is remembered for write-back later.",
                 requiredInteraction = InstructionStepInteractionType.RegisterSelection,
                 blockProgressUntilValidated = true,
                 requiredRegisterSelections = new[]
                 {
                     InstructionRegisterRole.Rs,
                     InstructionRegisterRole.Rt,
-                    InstructionRegisterRole.Rd,
                 },
             },
             new InstructionFlowStep

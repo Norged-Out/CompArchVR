@@ -24,6 +24,7 @@ MonoBehaviour:
   expectedRs: t0
   expectedRt: t1
   expectedRd: 
+  expectedImmediateValue: 4
   touchesDataMemory: 0
   writesRegisterFile: 1
   usesImmediate: 1
@@ -54,11 +55,12 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Registers + Immediate
     highlightedNode: 3
-    explanation: The learner will eventually need to choose rs, the destination rt, and reason about the immediate path.
+    explanation: Decode addi by reading rs from the register file and preparing the immediate value as the second ALU operand. The destination rt is remembered for write-back later.
     advanceVisualHighlight: 1
-    requiredInteraction: 1
+    requiredInteraction: 2
     blockProgressUntilValidated: 1
-    requiredRegisterSelections: []
+    requiredRegisterSelections:
+    - 1
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
   - stepName: ALU Execute

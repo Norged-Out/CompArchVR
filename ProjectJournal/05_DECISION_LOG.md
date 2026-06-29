@@ -369,6 +369,47 @@ Implication:
 - `ControlDecodeController` should not gate on `ALUOp` / `ALUSrc`
 - `AluExecutionController` and the authored `ALU UI` now own those checks
 
+## 2026-06-29 - Instruction Decode Should Gather Only The Operands Actually Read
+
+Decision:
+- treat `ID` as source-operand preparation, not destination confirmation
+
+For the current teaching flow:
+- `add` decode should scan `rs` and `rt`
+- `addi` decode should scan `rs` and spawn an immediate packet
+- `lw` decode should scan `rs` and spawn an immediate offset packet
+- destination register choice should be deferred to write-back
+
+Why:
+- this matches the register-file read ports more cleanly
+- it keeps decode from doing write-back work too early
+- it makes the later write-back interaction more meaningful
+
+Implication:
+- the register phase should no longer require `rd`
+- immediate packets may be spawned from the second scanner's authored spawn location
+- write-back should own the final target-register confirmation
+
+## 2026-06-29 - RegDst And ALUSrc Placement Still Needs Pedagogical Review
+
+Decision:
+- leave the current flow stable for the demo, and revisit exact control-signal ownership after write-back is complete
+
+Open tension:
+- `ALUSrc` is the clean signal for deciding register operand 2 vs immediate operand
+- `RegDst` is the clean signal for deciding write-back target register
+- but the most understandable lesson placement for these may not match the earliest point they are derived in hardware
+
+Why:
+- the write-back phase is the most important missing piece before the demo
+- destabilizing phase ownership now is not worth the risk
+
+Implication:
+- future work should explicitly decide whether:
+  - `ALUSrc` stays purely in `EX`
+  - `RegDst` stays purely in `WB`
+  - or either one is exposed earlier for teaching clarity
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

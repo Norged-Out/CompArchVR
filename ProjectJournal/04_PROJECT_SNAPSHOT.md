@@ -22,7 +22,6 @@ Scene:
 Current prototype features:
 - lesson framework re-wired around `Lesson Guide`
 - scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
-- scene-authored `Control Decode UI` used as the decode-phase gate between intro and registers
 - scene-authored `Register Setup UI` near the register area
 - scene-authored `Register Zone` with 32 permanent grabbable MIPS registers
 - scene-authored `Control Unit` signal buttons for:
@@ -40,19 +39,14 @@ Current prototype features:
 - local register-bank reset button path separate from lesson reset
 - local register-bank reset now restores only register poses and does not clear lesson progress, scanner success state, or emitted packets
 - authored register placement validation in the register zone
-- first-pass control decode validation now lives in `ControlDecodeController`:
-  - button presses cycle signal values
-  - `Control Decode UI` mirrors the current signal states
-  - the panel action button checks the full signal combination against the active instruction
-- control decode now intentionally ignores `ALUOp` and `ALUSrc`; those controls now belong to the execution phase
 - authored lesson panels are now expected to be wired through serialized scene references, not found dynamically at runtime
 - working MVP path:
   - start from `Intro UI`
   - present instruction / fetch framing
-  - use `Control Decode UI` to set/check control signals
-  - use one final continue press after a correct decode result
   - hand off to `Register Setup UI`
-  - validate register placement through the authored scanners
+  - show instruction breakdown during decode
+  - validate source-register placement through the authored scanners
+  - spawn data packets from decode for later execution
 - authored `ALU` execution pass now exists:
   - physical `ALUOp` and `ALUSrc` buttons on the ALU prefab
   - authored `ALU UI` for execution validation
@@ -63,8 +57,13 @@ Current prototype features:
 - authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
+  - decode can now emit immediate packets from the second scanner spawn point for immediate-based instructions
   - ALU input scanners can accept those packets
   - ALU execution can compute an `add` result in code
+- instruction definitions now explicitly support:
+  - initial register values
+  - expected immediate values
+  - write-back target resolution (`rd` vs `rt`)
 - planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
 - slim lesson scripts now reduced to:
@@ -131,7 +130,9 @@ Before stopping:
 - how readable and comfortable the current lesson UI and register bank feel in-headset
 - how much of the intro/decode text should stay on `Intro UI` before handoff to later zone panels
 - how much instruction decoding should be physical vs UI-driven
-- how explicit the control-signal interactions should be in the first version
+- exactly where `RegDst` and `ALUSrc` should live pedagogically:
+  - both in their strict hardware-derivation sense
+  - and in the simplified lesson flow sense
 - whether instruction choice is user-selected, randomized, or both
 - the exact acceptance rule for pedestal validation:
   - immediate on release
@@ -145,19 +146,14 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- branch from `main` into `ALU_V1`
-- extend the now-working intro-to-register MVP:
+- finish the dedicated write-back phase on top of the current mainline snapshot:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
-- keep `Control Decode UI` and the authored `Control Unit` buttons as the decode-phase baseline
-- keep the flow order fixed as intro -> control decode -> register setup unless the user explicitly changes it
+- keep the flow order fixed as intro -> instruction decode -> ALU -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- author the next physical interaction layer for `ALU`:
-  - keep the current ALU execution loop and polish it
-  - add a future ALU-control teaching step if needed
-  - extend the result handoff into later write-back / memory work
+- author the next physical interaction layer for `WriteBack`
 - reuse the scanner / register / lesson state pattern for `addi` and `lw`
 
 ## Personal Reminder

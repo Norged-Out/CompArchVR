@@ -6,11 +6,15 @@ using System;
 /// </summary>
 public static class LessonChecks
 {
-    static readonly InstructionRegisterRole[] k_DefaultRegisterOrder =
+    static readonly InstructionRegisterRole[] k_RegisterReadOrder =
     {
         InstructionRegisterRole.Rs,
         InstructionRegisterRole.Rt,
-        InstructionRegisterRole.Rd,
+    };
+
+    static readonly InstructionRegisterRole[] k_ImmediateRegisterReadOrder =
+    {
+        InstructionRegisterRole.Rs,
     };
 
     public readonly struct RegisterSelectionResult
@@ -54,12 +58,15 @@ public static class LessonChecks
     /// <summary>
     /// Returns the logical register order a step expects.
     /// </summary>
-    public static InstructionRegisterRole[] GetRequiredRoles(InstructionFlowStep step)
+    public static InstructionRegisterRole[] GetRequiredRoles(InstructionDefinition instruction, InstructionFlowStep step)
     {
         if (step.requiredRegisterSelections != null && step.requiredRegisterSelections.Length > 0)
             return step.requiredRegisterSelections;
 
-        return k_DefaultRegisterOrder;
+        if (instruction != null && instruction.usesImmediate)
+            return k_ImmediateRegisterReadOrder;
+
+        return k_RegisterReadOrder;
     }
 
     /// <summary>
@@ -71,7 +78,7 @@ public static class LessonChecks
         int currentSelectionIndex,
         string registerName)
     {
-        var requiredRoles = GetRequiredRoles(step);
+        var requiredRoles = GetRequiredRoles(instruction, step);
         if (currentSelectionIndex < 0 || currentSelectionIndex >= requiredRoles.Length)
         {
             return new RegisterSelectionResult(

@@ -6,25 +6,10 @@ using UnityEngine;
 /// packet role and latches the currently resting packet for later ALU logic.
 /// </summary>
 [DisallowMultipleComponent]
-public class AluInputScanner : MonoBehaviour
+public class AluInputScanner : PedestalScannerBase
 {
-    enum VisualState
-    {
-        Inactive,
-        Idle,
-        Occupied,
-        Success,
-        Failure,
-    }
-
     [SerializeField]
     DataPacketRole m_ExpectedPacketRole = DataPacketRole.ReadData1;
-
-    [SerializeField]
-    Transform m_BodyTransform;
-
-    [SerializeField]
-    Renderer m_BodyRenderer;
 
     [SerializeField]
     Collider m_ScanZone;
@@ -33,34 +18,9 @@ public class AluInputScanner : MonoBehaviour
     float m_RequiredStableSeconds = 1f;
 
     [SerializeField]
-    float m_PressedOffsetY = -0.02f;
-
-    [SerializeField]
-    Color m_InactiveColor = new(0.23f, 0.28f, 0.34f, 1f);
-
-    [SerializeField]
-    Color m_IdleColor = new(0.37f, 0.54f, 0.72f, 1f);
-
-    [SerializeField]
-    Color m_OccupiedColor = new(0.93f, 0.72f, 0.25f, 1f);
-
-    [SerializeField]
-    Color m_SuccessColor = new(0.3f, 0.76f, 0.43f, 1f);
-
-    [SerializeField]
-    Color m_FailureColor = new(0.86f, 0.24f, 0.24f, 1f);
-
-    static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
-    static readonly int k_ColorId = Shader.PropertyToID("_Color");
+    float m_LocalPressedOffsetY = -0.02f;
 
     readonly System.Collections.Generic.HashSet<DataPacketToken> m_PacketsInZone = new();
-
-    Vector3 m_BodyRestLocalPosition;
-    DataPacketToken m_CurrentCandidate;
-    float m_CurrentStableTime;
-    bool m_IsActive;
-    bool m_IsLatched;
-    VisualState m_VisualState = VisualState.Inactive;
 
     public DataPacketRole ExpectedPacketRole => m_ExpectedPacketRole;
     public DataPacketToken AcceptedPacket { get; private set; }
@@ -68,67 +28,24 @@ public class AluInputScanner : MonoBehaviour
 
     public event System.Action<AluInputScanner, DataPacketToken> PacketAccepted;
 
-    void Awake()
-    {
-        CacheReferences();
-        RememberBodyPose();
-        BindZoneHelper();
-        ApplyVisualState();
-    }
+    protected override float RequiredStableSeconds => m_RequiredStableSeconds;
+    protected override float PressedOffsetY => m_LocalPressedOffsetY;
 
-    void OnEnable()
+    protected override void Awake()
     {
-        CacheReferences();
+        base.Awake();
         BindZoneHelper();
     }
 
-    void Update()
+    protected override void OnEnable()
     {
-        if (!m_IsActive || m_IsLatched)
-            return;
-
-        var stableCandidate = GetStableCandidate();
-        if (stableCandidate == null)
-        {
-            m_CurrentCandidate = null;
-            m_CurrentStableTime = 0f;
-            SetVisualState(VisualState.Idle);
-            return;
-        }
-
-        if (stableCandidate.PacketRole != m_ExpectedPacketRole)
-        {
-            m_CurrentCandidate = null;
-            m_CurrentStableTime = 0f;
-            SetVisualState(VisualState.Failure);
-            return;
-        }
-
-        if (stableCandidate != m_CurrentCandidate)
-        {
-            m_CurrentCandidate = stableCandidate;
-            m_CurrentStableTime = 0f;
-        }
-
-        m_CurrentStableTime += Time.deltaTime;
-        SetVisualState(VisualState.Occupied);
-
-        if (m_CurrentStableTime < m_RequiredStableSeconds)
-            return;
-
-        // Once a packet has remained stable long enough, the scanner owns it
-        // for the rest of the phase until the controller explicitly resets.
-        AcceptedPacket = stableCandidate;
-        AcceptedPacket.LatchInPlace(transform);
-        m_IsLatched = true;
-        SetVisualState(VisualState.Success);
-        PacketAccepted?.Invoke(this, stableCandidate);
+        base.OnEnable();
+        BindZoneHelper();
     }
 
     public void SetActive(bool isActive)
     {
-        m_IsActive = isActive;
-        SetVisualState(isActive ? VisualState.Idle : VisualState.Inactive);
+        SetStepActive(isActive);
     }
 
     public void SetExpectedPacketRole(DataPacketRole expectedPacketRole)
@@ -141,16 +58,14 @@ public class AluInputScanner : MonoBehaviour
         // If ALUSrc changes mid-phase, an already accepted packet may become
         // invalid. Drop it so the learner has to provide the new correct type.
         if (AcceptedPacket != null && AcceptedPacket.PacketRole != m_ExpectedPacketRole)
-            ClearAcceptedPacket();
-
-        ApplyVisualState();
+            ResetScanner();
     }
 
     public void ResetScanner()
     {
         m_PacketsInZone.Clear();
         ClearAcceptedPacket();
-        SetVisualState(m_IsActive ? VisualState.Idle : VisualState.Inactive);
+        base.ResetScanner();
     }
 
     public void NotifyPacketEntered(DataPacketToken dataPacketToken)
@@ -166,19 +81,16 @@ public class AluInputScanner : MonoBehaviour
 
         m_PacketsInZone.Remove(dataPacketToken);
 
-        if (!m_IsLatched && AcceptedPacket == dataPacketToken)
+        if (!IsLatchedSuccessful && AcceptedPacket == dataPacketToken)
             ClearAcceptedPacket();
     }
 
     void ClearAcceptedPacket()
     {
         AcceptedPacket = null;
-        m_CurrentCandidate = null;
-        m_CurrentStableTime = 0f;
-        m_IsLatched = false;
     }
 
-    DataPacketToken GetStableCandidate()
+    protected override Component GetStableCandidate()
     {
         m_PacketsInZone.RemoveWhere(packet => packet == null);
 
@@ -195,10 +107,9 @@ public class AluInputScanner : MonoBehaviour
         return null;
     }
 
-    void CacheReferences()
+    protected override void CacheVisualReferences()
     {
-        if (m_BodyRenderer == null)
-            m_BodyRenderer = GetComponent<Renderer>();
+        base.CacheVisualReferences();
 
         if (m_ScanZone == null)
         {
@@ -220,75 +131,33 @@ public class AluInputScanner : MonoBehaviour
         helper.Bind(this);
     }
 
-    void RememberBodyPose()
+    protected override bool IsImmediateMismatch(Component candidate)
     {
-        if (m_BodyTransform != null)
-            m_BodyRestLocalPosition = m_BodyTransform.localPosition;
+        return candidate is DataPacketToken dataPacketToken &&
+               dataPacketToken.PacketRole != m_ExpectedPacketRole;
     }
 
-    void SetVisualState(VisualState visualState)
+    protected override void OnImmediateMismatch(Component candidate)
     {
-        m_VisualState = visualState;
-        ApplyVisualState();
+        ClearAcceptedPacket();
     }
 
-    void ApplyVisualState()
+    protected override void HandleScannerReset()
     {
-        var bodyColor = m_IdleColor;
-        var pressed = false;
-
-        switch (m_VisualState)
-        {
-            case VisualState.Inactive:
-                bodyColor = m_InactiveColor;
-                break;
-            case VisualState.Occupied:
-                bodyColor = m_OccupiedColor;
-                pressed = true;
-                break;
-            case VisualState.Success:
-                bodyColor = m_SuccessColor;
-                pressed = true;
-                break;
-            case VisualState.Failure:
-                bodyColor = m_FailureColor;
-                pressed = true;
-                break;
-        }
-
-        if (m_BodyRenderer != null)
-            ApplyRendererColor(m_BodyRenderer, bodyColor);
-
-        if (m_BodyTransform != null)
-        {
-            var targetLocalPosition = m_BodyRestLocalPosition;
-            if (pressed)
-                targetLocalPosition.y += m_PressedOffsetY;
-
-            m_BodyTransform.localPosition = targetLocalPosition;
-        }
+        ClearAcceptedPacket();
     }
 
-    static void ApplyRendererColor(Renderer targetRenderer, Color color)
+    protected override void HandleStableCandidate(Component candidate)
     {
-        if (targetRenderer == null)
+        var stableCandidate = candidate as DataPacketToken;
+        if (stableCandidate == null)
             return;
 
-        var sharedMaterial = targetRenderer.sharedMaterial;
-        if (sharedMaterial == null)
-            return;
-
-        var propertyBlock = new MaterialPropertyBlock();
-        targetRenderer.GetPropertyBlock(propertyBlock);
-
-        if (sharedMaterial.HasProperty(k_BaseColorId))
-            propertyBlock.SetColor(k_BaseColorId, color);
-        else if (sharedMaterial.HasProperty(k_ColorId))
-            propertyBlock.SetColor(k_ColorId, color);
-        else
-            return;
-
-        targetRenderer.SetPropertyBlock(propertyBlock);
+        // Once a packet has remained stable long enough, the scanner owns it
+        // for the rest of the phase until the controller explicitly resets.
+        AcceptedPacket = stableCandidate;
+        AcceptedPacket.LatchInPlace(transform);
+        PacketAccepted?.Invoke(this, stableCandidate);
+        MarkSuccess();
     }
-
 }

@@ -6,7 +6,7 @@ using UnityEngine;
 /// It owns:
 /// - which instruction is active
 /// - which lesson step is active
-/// - register-scanner validation for rs / rt / rd
+/// - register-scanner validation for the decode-stage source operands
 /// - simple continue-style progression for non-placement steps
 /// </summary>
 [DisallowMultipleComponent]
@@ -265,7 +265,11 @@ public class CpuLessonFlow : MonoBehaviour
 
         if (result.completesStep)
         {
-            SetFeedback($"{successMessage} Registers placed correctly. Continue to the next stage.", false);
+            var completionMessage = successMessage;
+            if (TrySpawnImmediatePacket())
+                completionMessage += $" Immediate packet spawned with value {m_CurrentInstruction.expectedImmediateValue}.";
+
+            SetFeedback($"{completionMessage} Registers decoded correctly. Continue to the next stage.", false);
             AdvanceToNextStep();
             return;
         }
@@ -372,9 +376,7 @@ public class CpuLessonFlow : MonoBehaviour
         switch (CurrentStep.requiredInteraction)
         {
             case InstructionStepInteractionType.RegisterSelection:
-                // The authored register zone keeps three scanners in the scene
-                // at all times; we only toggle which roles are "live" per step.
-                m_RegisterBank.ConfigureScannerRoles(LessonChecks.GetRequiredRoles(CurrentStep));
+                ConfigureRegisterDecodeScanners();
                 break;
 
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
@@ -392,7 +394,7 @@ public class CpuLessonFlow : MonoBehaviour
         if (m_RegisterBank == null || m_CurrentInstruction == null || !m_RuntimeSelection.hasAluResult)
             return;
 
-        var destinationRegister = m_CurrentInstruction.expectedRd;
+        var destinationRegister = m_CurrentInstruction.GetWriteBackTargetRegister();
         if (string.IsNullOrWhiteSpace(destinationRegister))
             return;
 
@@ -405,7 +407,7 @@ public class CpuLessonFlow : MonoBehaviour
         if (CurrentStep == null)
             return string.Empty;
 
-        var requiredRoles = LessonChecks.GetRequiredRoles(CurrentStep);
+        var requiredRoles = LessonChecks.GetRequiredRoles(m_CurrentInstruction, CurrentStep);
         if (m_CurrentRegisterSelectionIndex < 0 || m_CurrentRegisterSelectionIndex >= requiredRoles.Length)
             return "Place the required registers on the active scanners.";
 
@@ -439,6 +441,39 @@ public class CpuLessonFlow : MonoBehaviour
     {
         return registerRole == InstructionRegisterRole.Rs ||
                registerRole == InstructionRegisterRole.Rt;
+    }
+
+    void ConfigureRegisterDecodeScanners()
+    {
+        if (m_RegisterBank == null)
+            return;
+
+        // ID only exposes the register-file read ports. Destination selection
+        // is deferred to write-back, where the learner will choose the target
+        // register together with the final data source.
+        var activeRoles = LessonChecks.GetRequiredRoles(m_CurrentInstruction, CurrentStep);
+        m_RegisterBank.ConfigureScannerRoles(activeRoles);
+        m_RegisterBank.SetScannerOutputRole(InstructionRegisterRole.Rs, DataPacketRole.ReadData1);
+        m_RegisterBank.SetScannerOutputRole(
+            InstructionRegisterRole.Rt,
+            m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate
+                ? DataPacketRole.Immediate
+                : DataPacketRole.ReadData2);
+    }
+
+    bool TrySpawnImmediatePacket()
+    {
+        if (m_RegisterBank == null || m_CurrentInstruction == null || !m_CurrentInstruction.usesImmediate)
+            return false;
+
+        m_RuntimeSelection.immediateValue = m_CurrentInstruction.expectedImmediateValue;
+        m_RegisterBank.SpawnPacketFromScanner(
+            InstructionRegisterRole.Rt,
+            DataPacketRole.Immediate,
+            "imm",
+            "Immediate",
+            m_CurrentInstruction.expectedImmediateValue);
+        return true;
     }
 
     static bool IsWriteBackStep(InstructionFlowStep step)

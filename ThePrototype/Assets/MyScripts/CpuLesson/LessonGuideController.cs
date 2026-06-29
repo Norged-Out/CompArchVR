@@ -39,13 +39,6 @@ public class LessonGuideController : MonoBehaviour
     [SerializeField]
     TMP_Text m_IntroActionLabel;
 
-    [Header("Control Decode UI")]
-    [SerializeField]
-    GameObject m_ControlDecodeRoot;
-
-    [SerializeField]
-    ControlDecodeController m_ControlDecodeController;
-
     [Header("Register Setup UI")]
     [SerializeField]
     GameObject m_RegisterRoot;
@@ -175,9 +168,6 @@ public class LessonGuideController : MonoBehaviour
         if (ShouldShowAluPanel())
             return;
 
-        if (ShouldShowControlDecodePanel())
-            return;
-
         if (m_IntroFeedback != null)
         {
             m_IntroFeedback.text = message;
@@ -195,17 +185,11 @@ public class LessonGuideController : MonoBehaviour
         if (m_LessonFlow == null || m_IntroRoot == null)
             return;
 
-        var showControlDecode = ShouldShowControlDecodePanel();
         var showRegisterPanel = ShouldShowRegisterPanel();
         var showAluPanel = ShouldShowAluPanel();
 
         // Panels are authored in the scene and simply toggled on/off as the
         // lesson advances. That keeps layout work in edit mode instead of runtime.
-        if (m_ControlDecodeRoot != null)
-            m_ControlDecodeRoot.SetActive(showControlDecode);
-
-        m_ControlDecodeController?.SetPhaseState(showControlDecode, m_LessonFlow.CurrentInstruction);
-
         if (m_RegisterRoot != null)
             m_RegisterRoot.SetActive(showRegisterPanel);
 
@@ -214,7 +198,7 @@ public class LessonGuideController : MonoBehaviour
 
         m_AluController?.SetPhaseState(showAluPanel, m_LessonFlow.CurrentInstruction);
 
-        m_IntroRoot.SetActive(!showControlDecode && !showRegisterPanel && !showAluPanel);
+        m_IntroRoot.SetActive(!showRegisterPanel && !showAluPanel);
 
         if (!m_LessonFlow.HasStarted)
         {
@@ -233,15 +217,6 @@ public class LessonGuideController : MonoBehaviour
         var step = m_LessonFlow.CurrentStep;
         if (step == null)
             return;
-
-        if (showControlDecode)
-        {
-            SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
-            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
-            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
-            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
-            return;
-        }
 
         if (showAluPanel)
         {
@@ -280,25 +255,17 @@ public class LessonGuideController : MonoBehaviour
         RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
     }
 
-    bool ShouldShowControlDecodePanel()
-    {
-        var step = m_LessonFlow?.CurrentStep;
-        if (step == null)
-            return false;
-
-        return step.stepName.IndexOf("Instruction Memory", System.StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
     bool ShouldShowRegisterPanel()
     {
-        if (ShouldShowControlDecodePanel() || ShouldShowAluPanel())
+        if (ShouldShowAluPanel())
             return false;
 
         var step = m_LessonFlow?.CurrentStep;
         if (step == null)
             return false;
 
-        return step.requiredInteraction == InstructionStepInteractionType.RegisterSelection;
+        return step.highlightedNode == DatapathNodeId.InstructionMemory ||
+               step.requiredInteraction == InstructionStepInteractionType.RegisterSelection;
     }
 
     bool ShouldShowAluPanel()
@@ -325,7 +292,7 @@ public class LessonGuideController : MonoBehaviour
         if (step.highlightedNode == DatapathNodeId.WriteBack && m_LessonFlow.RuntimeSelection.hasAluResult)
         {
             body +=
-                $"\n\nWrite-back target: {instruction.expectedRd}" +
+                $"\n\nWrite-back target: {instruction.GetWriteBackTargetRegister()}" +
                 $"\nALU result value: {m_LessonFlow.RuntimeSelection.aluResultValue}" +
                 "\n\nPress Continue to complete write-back.";
         }
@@ -336,16 +303,55 @@ public class LessonGuideController : MonoBehaviour
     string BuildRegisterBody(InstructionFlowStep step)
     {
         var instruction = m_LessonFlow.CurrentInstruction;
+        if (instruction == null)
+            return string.Empty;
+
+        if (step.highlightedNode == DatapathNodeId.InstructionMemory)
+        {
+            var decodeFocus = instruction.usesImmediate
+                ? "Decode the fields, identify rs, and note that operand 2 will come from the immediate path rather than a second register read."
+                : "Decode the fields and identify which source registers will feed the ALU.";
+
+            return
+                $"Instruction Decode\n\n" +
+                $"Instruction: {instruction.displayName}\n\n" +
+                $"Assembly: {instruction.assemblyInstructionText}\n\n" +
+                $"Field Breakdown:\n{instruction.fieldBreakdownText}\n\n" +
+                $"{decodeFocus}\n\n" +
+                $"{step.explanation}";
+        }
 
         if (step.requiredInteraction == InstructionStepInteractionType.RegisterSelection)
         {
+            var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
+            var registerLines = string.Empty;
+            foreach (var registerRole in requiredRoles)
+            {
+                registerLines += registerRole switch
+                {
+                    InstructionRegisterRole.Rs => $"Read Register 1 <- rs ({instruction.expectedRs})\n",
+                    InstructionRegisterRole.Rt => $"Read Register 2 <- rt ({instruction.expectedRt})\n",
+                    InstructionRegisterRole.Rd => $"Write Register <- rd ({instruction.expectedRd})\n",
+                    _ => string.Empty,
+                };
+            }
+
+            if (instruction.usesImmediate)
+            {
+                registerLines += $"Operand 2 <- immediate ({instruction.expectedImmediateValue})\n";
+                registerLines += $"Write-back target remembered for later <- rt ({instruction.expectedRt})\n";
+            }
+            else if (instruction.usesDestinationRegister)
+            {
+                registerLines += $"Write-back target remembered for later <- rd ({instruction.expectedRd})\n";
+            }
+
             return
+                $"Instruction Decode\n\n" +
                 $"Instruction: {instruction.displayName}\n\n" +
                 $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                $"Place the correct registers on the scanners.\n\n" +
-                $"Read Register 1 <- rs ({instruction.expectedRs})\n" +
-                $"Read Register 2 <- rt ({instruction.expectedRt})\n" +
-                $"Write Register <- rd ({instruction.expectedRd})\n\n" +
+                $"Decode the operands by placing the required source registers on the active scanners.\n\n" +
+                $"{registerLines}\n" +
                 $"{step.explanation}";
         }
 
@@ -354,7 +360,7 @@ public class LessonGuideController : MonoBehaviour
             return
                 $"Instruction: {instruction.displayName}\n\n" +
                 $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                $"Confirm write-back by placing {instruction.expectedRd} on Write Register.\n\n" +
+                $"Confirm write-back by placing {instruction.GetWriteBackTargetRegister()} on Write Register.\n\n" +
                 $"{step.explanation}";
         }
 

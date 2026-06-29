@@ -221,6 +221,38 @@ public class RegisterBank : MonoBehaviour
     }
 
     /// <summary>
+    /// Updates which packet role a scanner should emit when it succeeds.
+    /// </summary>
+    public void SetScannerOutputRole(InstructionRegisterRole role, DataPacketRole packetRole)
+    {
+        RefreshScannerCache();
+
+        if (m_RegisterScanners.TryGetValue(role, out var registerScanner))
+            registerScanner.SetOutputPacketRole(packetRole);
+    }
+
+    /// <summary>
+    /// Spawns a packet from an authored scanner location. This is mainly used
+    /// for immediate values, which belong to decode but do not come from a
+    /// physical register token.
+    /// </summary>
+    public void SpawnPacketFromScanner(
+        InstructionRegisterRole role,
+        DataPacketRole packetRole,
+        string sourceId,
+        string sourceDisplayLabel,
+        int value)
+    {
+        RefreshScannerCache();
+
+        if (!m_RegisterScanners.TryGetValue(role, out var registerScanner))
+            return;
+
+        registerScanner.SetOutputPacketRole(packetRole);
+        registerScanner.SpawnConfiguredPacket(sourceId, sourceDisplayLabel, value);
+    }
+
+    /// <summary>
     /// Called by a scanner after a token has sat in its zone long enough.
     /// </summary>
     public void NotifyRegisterScanned(InstructionRegisterRole role, RegisterToken registerToken)

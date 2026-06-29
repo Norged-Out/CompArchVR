@@ -10,12 +10,13 @@ Current working scene:
 
 Current prototype focus:
 - minimal playable `add` lesson loop in `Testing Ground`
-- scene-authored `Intro UI`, `Control Decode UI`, and `Register Setup UI` under `Lesson Guide`
+- scene-authored `Intro UI` and `Register Setup UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
-- register scanner validation path for `rs`, `rt`, and destination register
+- register scanner validation path for decode-stage source operands
 - first-pass ALU execution phase now wired with authored ALU UI, physical ALU buttons, and result spawning
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
+- preparing a dedicated write-back phase for the demo instead of confirming the destination register during decode
 
 Current milestone:
 - V1 supervisor demo target on `2026-06-29`
@@ -34,8 +35,8 @@ The project now has:
 - a reusable register prefab/material path under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - register scanner pedestals for `Read Register 1`, `Read Register 2`, and `Write Register`
 - logical register values stored on register tokens, with lesson-time value seeding from instruction assets
-- a working MVP lesson flow that starts from `Intro UI`, gates through `Control Decode UI`, then hands off to `Register Setup UI` for scanner validation
-- control decode now validates only the 6 non-ALU signals; `ALUOp` and `ALUSrc` now belong to the execution phase
+- a working MVP lesson flow that starts from `Intro UI`, hands off to `Register Setup UI` for instruction decode, then proceeds into ALU execution
+- control decode scene content still exists, but the active lesson path is now being simplified around fetch -> decode -> execute -> write-back
 - a smaller lesson architecture centered on focused lesson and register scripts
 - cleaned instruction assets for `add`, `addi`, and `lw`
 - a working first-pass `ALU` execution loop for `add`:
@@ -44,6 +45,11 @@ The project now has:
   - physical `ALUOp` / `ALUSrc` buttons drive execution setup
   - the authored `ALU UI` validates execution and gates the continue into write-back
   - the ALU emits an `ALU Result` packet with the computed value
+- a cleaner instruction-decode model:
+  - `add` scans `rs` and `rt`
+  - `addi` and `lw` scan `rs` only
+  - immediate-based instructions spawn the `Immediate` packet from the second scanner's packet spawn location
+  - destination register choice is now intended for write-back rather than register decode
 
 ## Chronological Entries
 
@@ -209,8 +215,9 @@ Risks / Notes:
 - the user has explicitly validated that the present MVP works so far
 - the current authored lesson order is now:
   - `Intro UI`
-  - `Control Decode UI`
   - `Register Setup UI`
+  - `ALU UI`
+  - temporary write-back explanation / continue
 
 ### 2026-06-28 - Intro/Register UI Layout Stabilized And Decode Continue Added
 
@@ -340,6 +347,52 @@ Risks / Notes:
 - the current write-back is still a temporary explanation/continue step, not yet its own physical datapath interaction
 - `Write Register` / `rd` is confirmed during the register phase and does not emit a data packet
 
+### 2026-06-29 - IF/ID Cleanup Prepared For Write-Back
+
+Completed:
+- removed the old control-decode panel from the active `LessonGuideController` lesson path
+- simplified the lesson path toward:
+  - `Intro UI` for lesson intro and instruction fetch framing
+  - `Register Setup UI` for instruction decode and operand preparation
+  - `ALU UI` for execution
+  - dedicated write-back to be authored next
+- updated instruction definitions so decode no longer expects `rd` placement for `add`
+- updated draft `addi` and `lw` definitions so decode expects:
+  - `rs` scan
+  - immediate handling
+  - destination register deferred to write-back
+- updated lesson validation helpers so decode-stage required register roles depend on the instruction instead of assuming `rs`, `rt`, and `rd`
+- added immediate-value support directly to `InstructionDefinition`
+- added write-back target resolution to `InstructionDefinition` so:
+  - R-type destinations resolve to `rd`
+  - immediate/load destinations resolve to `rt`
+- updated register scanners and register-bank helpers so scanner output roles can be reassigned by lesson flow
+- added decode-side immediate packet spawning through the second scanner's authored packet spawn anchor
+
+Changed:
+- the intended phase semantics are now cleaner:
+  - `IF` tells the learner what instruction is being fetched
+  - `ID` gathers only the source operands actually needed
+  - destination selection is deferred to write-back
+- `Register Setup UI` is now the intended home for both:
+  - instruction field breakdown
+  - source register scanning
+
+Next:
+- finish the dedicated write-back prefab and UI
+- replace the temporary write-back explanation with:
+  - WB control-signal configuration
+  - target-register scan
+  - final data-packet scan
+  - register value update on success
+- then add a minimal memory phase panel/prefab for `lw`
+
+Risks / Notes:
+- one open design question remains:
+  - whether `RegDst` should stay in write-back only
+  - or whether `ALUSrc` / `RegDst` responsibilities should be exposed earlier in the teaching flow
+- current recommendation is to leave the flow as-is for the demo and finish write-back first
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
@@ -347,7 +400,7 @@ Risks / Notes:
 - `Testing Ground` is the sandbox scene
 - the lesson framework is currently driven from `Lesson Guide`
 - `Intro UI` is the current lesson start point
-- `Register Setup UI` is the current follow-up panel for register placement guidance
+- `Register Setup UI` is the current instruction-decode and operand-selection panel
 - the preferred register path is the authored `Register Bank` with 32 permanent register tokens
 - the preferred register validation path is the authored scanner pedestals
 - minimal visual feedback is acceptable; heavy animation is not required
@@ -357,7 +410,6 @@ Risks / Notes:
 Current relevant scripts:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\ControlDecodeController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluExecutionController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScanner.cs`
@@ -389,6 +441,7 @@ Recommended next development priorities:
    - cleaner `Register Setup UI` layout
    - clearer feedback text
    - simpler inspector wiring where possible
+   - finish the dedicated write-back phase
 
 2. Treat `add`, `addi`, and `lw` as the non-negotiable V1 set for the `2026-06-29` demo target.
    Recommended implementation order:
@@ -397,8 +450,8 @@ Recommended next development priorities:
 
 3. Build the next interaction layer around placement pedestals and authored lesson panels.
    Focus on:
-   - `Execution` / `ALU` pedestals that scan a placed register token
    - `WriteBack` pedestals that confirm the correct destination register
+   - `WriteBack` packet validation for the final value source
    - success / failure colors tied to active lesson-step validation
    - storing scanned register identity so reused registers can be handled cleanly
 

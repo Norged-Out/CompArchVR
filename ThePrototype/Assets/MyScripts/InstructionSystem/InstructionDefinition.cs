@@ -101,6 +101,7 @@ public class InstructionDefinition : ScriptableObject
     public string expectedRs = "t0";
     public string expectedRt = "t1";
     public string expectedRd = "t2";
+    public int expectedImmediateValue;
 
     [Header("Behavior Flags")]
 
@@ -133,5 +134,14 @@ public class InstructionDefinition : ScriptableObject
             InstructionRegisterRole.Rd => expectedRd,
             _ => string.Empty,
         };
+    }
+
+    /// <summary>
+    /// Returns the architectural destination register that should be updated
+    /// during write-back for the current instruction.
+    /// </summary>
+    public string GetWriteBackTargetRegister()
+    {
+        return usesDestinationRegister ? expectedRd : expectedRt;
     }
 }

@@ -168,13 +168,11 @@ Current preferred authored-panel shape:
    - start lesson
    - show current instruction
    - show the fetch framing
-2. `Control Decode UI`
-   - let the learner set or confirm the instruction's control signals
-   - gate progression out of decode through a small authored panel
-3. `Register Zone UI`
-   - remind the learner which fields map to `rs`, `rt`, and destination
+2. `Register Zone UI`
+   - show the instruction field breakdown for decode
+   - remind the learner which fields map to the currently needed source operands
    - keep prompts physically near the register bank and scanners
-4. later zone-specific panels
+3. later zone-specific panels
    - `ALU`
    - `Data Memory`
    - `WriteBack`
@@ -196,6 +194,10 @@ Poor candidate interactions for a first version:
 - manually computing sign extension bit-by-bit
 - manually replaying every wire-level movement
 - overloading one lesson with too many simultaneous control decisions
+
+Current near-term note:
+- `RegDst` vs `ALUSrc` lesson placement is still an open pedagogical question
+- for the demo, finish the write-back interaction first and revisit that split only afterward
 
 ## Architecture Direction
 

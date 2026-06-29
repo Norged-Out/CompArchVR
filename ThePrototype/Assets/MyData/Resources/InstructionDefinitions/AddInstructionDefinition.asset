@@ -24,6 +24,7 @@ MonoBehaviour:
   expectedRs: t0
   expectedRt: t1
   expectedRd: t2
+  expectedImmediateValue: 0
   touchesDataMemory: 0
   writesRegisterFile: 1
   usesImmediate: 0
@@ -56,14 +57,13 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Register Selection
     highlightedNode: 3
-    explanation: Choose the operand registers in order. add reads rs and rt as ALU inputs, and rd is the destination that will receive the result.
+    explanation: Decode the source operands for add. Scan rs and rt now so their values become Read Data 1 and Read Data 2 packets. The destination rd is remembered for write-back later.
     advanceVisualHighlight: 1
     requiredInteraction: 2
     blockProgressUntilValidated: 1
     requiredRegisterSelections:
     - 1
     - 2
-    - 3
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
   - stepName: ALU Execute

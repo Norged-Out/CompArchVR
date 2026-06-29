@@ -10,7 +10,6 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 /// The bank owns layout and reset, while this component owns:
 /// - register identity (`$t0`, `$s1`, etc.)
 /// - grab notifications for the lesson flow
-/// - visual state changes for hover, success, and failure
 /// - the home pose used by the local reset button
 /// </summary>
 [DisallowMultipleComponent]
@@ -62,35 +61,6 @@ public class RegisterToken : MonoBehaviour
     [SerializeField]
     Vector3 m_HomeLocalScale = Vector3.one;
 
-    [Header("Visual Theme")]
-
-    [SerializeField]
-    Color m_IdleBaseColor = new(0.21f, 0.12f, 0.12f, 1f);
-
-    [SerializeField]
-    Color m_IdleBodyColor = new(0.72f, 0.28f, 0.28f, 1f);
-
-    [SerializeField]
-    Color m_HoverBodyColor = new(0.98f, 0.8f, 0.24f, 1f);
-
-    [SerializeField]
-    Color m_SelectedBodyColor = new(0.27f, 0.77f, 0.4f, 1f);
-
-    [SerializeField]
-    Color m_ErrorBodyColor = new(0.9f, 0.2f, 0.2f, 1f);
-
-    static readonly int k_BaseColorId = Shader.PropertyToID("_BaseColor");
-    static readonly int k_ColorId = Shader.PropertyToID("_Color");
-
-    // Keep per-renderer runtime materials so our lesson colors do not fight the
-    // XR affordance system, which writes its own property block for rim glow.
-    Material m_BaseRuntimeMaterial;
-    Material m_BodyRuntimeMaterial;
-    Coroutine m_FlashRoutine;
-    bool m_IsHovered;
-    bool m_IsGrabbed;
-    bool m_IsLessonSelected;
-
     public string RegisterId => m_RegisterId;
     public string DisplayLabel => m_DisplayLabel;
     public int RegisterValue => m_RegisterValue;
@@ -100,7 +70,6 @@ public class RegisterToken : MonoBehaviour
     {
         CacheReferences();
         RefreshText();
-        ApplyCurrentVisualState();
     }
 
     void OnEnable()
@@ -157,7 +126,6 @@ public class RegisterToken : MonoBehaviour
         m_ValueText = valueText;
 
         RefreshText();
-        ApplyCurrentVisualState();
     }
 
     /// <summary>
@@ -198,32 +166,28 @@ public class RegisterToken : MonoBehaviour
     }
 
     /// <summary>
-    /// Keeps successful lesson selections visible after the player lets go.
+    /// Compatibility hook kept so existing lesson code still compiles.
+    /// Register visuals are now authored directly instead of recolored here.
     /// </summary>
     public void SetSelected(bool isSelected)
     {
-        m_IsLessonSelected = isSelected;
-        ApplyCurrentVisualState();
+        // Intentionally left blank.
     }
 
     /// <summary>
-    /// Clears lesson-driven visual state without moving the token.
+    /// Compatibility hook kept so existing lesson code still compiles.
     /// </summary>
     public void ResetVisualState()
     {
-        m_IsLessonSelected = false;
-        ApplyCurrentVisualState();
+        // Intentionally left blank.
     }
 
     /// <summary>
-    /// Briefly flashes the token red when the learner chooses the wrong register.
+    /// Compatibility hook kept so existing lesson code still compiles.
     /// </summary>
     public void FlashFailure()
     {
-        if (m_FlashRoutine != null)
-            StopCoroutine(m_FlashRoutine);
-
-        m_FlashRoutine = StartCoroutine(FlashFailureRoutine());
+        // Intentionally left blank.
     }
 
     /// <summary>
@@ -250,38 +214,24 @@ public class RegisterToken : MonoBehaviour
         }
     }
 
-    IEnumerator FlashFailureRoutine()
-    {
-        ApplyTheme(m_IdleBaseColor, m_ErrorBodyColor, m_ErrorBodyColor);
-        yield return new WaitForSeconds(0.25f);
-
-        m_FlashRoutine = null;
-        ApplyCurrentVisualState();
-    }
-
     void OnFirstHoverEntered(HoverEnterEventArgs _)
     {
-        m_IsHovered = true;
-        ApplyCurrentVisualState();
+        // Visual styling is authored directly on the prefab now.
     }
 
     void OnLastHoverExited(HoverExitEventArgs _)
     {
-        m_IsHovered = false;
-        ApplyCurrentVisualState();
+        // Visual styling is authored directly on the prefab now.
     }
 
     void OnFirstSelectEntered(SelectEnterEventArgs _)
     {
-        m_IsGrabbed = true;
-        ApplyCurrentVisualState();
         m_OwningBank?.NotifyRegisterGrabbed(this);
     }
 
     void OnLastSelectExited(SelectExitEventArgs _)
     {
-        m_IsGrabbed = false;
-        ApplyCurrentVisualState();
+        // Visual styling is authored directly on the prefab now.
     }
 
     void CacheReferences()
@@ -342,43 +292,4 @@ public class RegisterToken : MonoBehaviour
             m_ValueText.text = m_RegisterValue.ToString();
     }
 
-    void ApplyCurrentVisualState()
-    {
-        if (m_FlashRoutine != null)
-            return;
-
-        var bodyColor = m_IdleBodyColor;
-        if (m_IsLessonSelected)
-            bodyColor = m_SelectedBodyColor;
-        else if (m_IsGrabbed || m_IsHovered)
-            bodyColor = m_HoverBodyColor;
-
-        var labelColor = m_IsLessonSelected ? m_SelectedBodyColor : Color.white;
-        ApplyTheme(m_IdleBaseColor, bodyColor, labelColor);
-    }
-
-    void ApplyTheme(Color baseColor, Color bodyColor, Color labelColor)
-    {
-        ApplyRendererColor(m_BaseRenderer, ref m_BaseRuntimeMaterial, baseColor);
-        ApplyRendererColor(m_BodyRenderer, ref m_BodyRuntimeMaterial, bodyColor);
-
-        if (m_LabelText != null)
-            m_LabelText.color = labelColor;
-
-        if (m_ValueText != null)
-            m_ValueText.color = labelColor;
-    }
-
-    static void ApplyRendererColor(Renderer targetRenderer, ref Material runtimeMaterial, Color color)
-    {
-        if (targetRenderer == null)
-            return;
-
-        runtimeMaterial ??= targetRenderer.material;
-
-        if (runtimeMaterial != null && runtimeMaterial.HasProperty(k_BaseColorId))
-            runtimeMaterial.SetColor(k_BaseColorId, color);
-        else
-            runtimeMaterial?.SetColor(k_ColorId, color);
-    }
 }
