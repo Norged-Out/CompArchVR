@@ -1148,6 +1148,7 @@ MonoBehaviour:
   m_AluOpButtonRoot: {fileID: 1364021660308291361}
   m_AluSrcButtonRoot: {fileID: 8609213945429780975}
   m_AluUiRoot: {fileID: 0}
+  m_BodyText: {fileID: 0}
   m_AluOpStatusText: {fileID: 0}
   m_AluSrcStatusText: {fileID: 0}
   m_Input1StatusText: {fileID: 0}

@@ -120,7 +120,10 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.WriteBackExecution:
-                SetFeedback("Configure the write-back controls, place the target register and final data packet, then execute the transfer.", false);
+                if (!string.IsNullOrWhiteSpace(m_RuntimeSelection.confirmedWriteBackRegister) && m_RuntimeSelection.hasAluResult)
+                    AdvanceToNextStep();
+                else
+                    SetFeedback("Configure the write-back controls, place the target register and final data packet, then execute the transfer.", false);
                 break;
 
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
@@ -179,6 +182,7 @@ public class CpuLessonFlow : MonoBehaviour
         m_RuntimeSelection.hasAluResult = true;
         m_RegisterBank?.SetRegisterValue(destinationRegister, resultValue);
         SetFeedback($"Write-back complete. {destinationRegister} now stores {resultValue}. Click Continue to finish the lesson.", false);
+        StepChanged?.Invoke(this);
     }
 
     void RebindRegisterBank()
@@ -362,7 +366,9 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.WriteBackExecution:
-                SetFeedback("Configure the write-back controls, place the target register and final data packet, then execute the transfer.", false);
+                SetFeedback(
+                    $"Write-back target: {m_CurrentInstruction.GetWriteBackTargetRegister()}. Final source: {GetPacketLabel(m_CurrentInstruction.GetWriteBackPacketRole())}. Configure the controls, place both inputs, then execute the transfer.",
+                    false);
                 break;
 
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
@@ -440,6 +446,19 @@ public class CpuLessonFlow : MonoBehaviour
             InstructionRegisterRole.Rs => "Read Data 1",
             InstructionRegisterRole.Rt => "Read Data 2",
             _ => "data",
+        };
+    }
+
+    static string GetPacketLabel(DataPacketRole packetRole)
+    {
+        return packetRole switch
+        {
+            DataPacketRole.ReadData1 => "Read Data 1",
+            DataPacketRole.ReadData2 => "Read Data 2",
+            DataPacketRole.Immediate => "Immediate",
+            DataPacketRole.AluResult => "ALU Result",
+            DataPacketRole.MemoryData => "Memory Data",
+            _ => "Packet",
         };
     }
 

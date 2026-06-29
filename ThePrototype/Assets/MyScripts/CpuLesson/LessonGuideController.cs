@@ -291,6 +291,14 @@ public class LessonGuideController : MonoBehaviour
         {
             m_AluController?.ResetExecutionState();
             m_WriteBackController?.ResetWriteBackState();
+            if (m_RegisterRoot != null)
+                m_RegisterRoot.SetActive(false);
+            if (m_AluRoot != null)
+                m_AluRoot.SetActive(false);
+            if (m_MemRoot != null)
+                m_MemRoot.SetActive(false);
+            if (m_WriteBackRoot != null)
+                m_WriteBackRoot.SetActive(false);
             SetText(
                 m_IntroBody,
                 $"Lesson Introduction\n\nSelected instruction: {m_LessonFlow.CurrentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin the walkthrough.");
@@ -519,6 +527,7 @@ public class LessonGuideController : MonoBehaviour
             $"Instruction: {instruction.displayName}\n\n" +
             $"Assembly: {instruction.assemblyInstructionText}\n\n" +
             $"{memorySummary}\n\n" +
+            $"For this step, use the panel feedback to confirm whether memory is actually involved before moving on.\n\n" +
             $"{step.explanation}";
     }
 
@@ -650,6 +659,20 @@ public class LessonGuideController : MonoBehaviour
                 continue;
 
             return component;
+        }
+
+        return null;
+    }
+
+    static TMP_Text FindNamedText(Transform root, string objectName)
+    {
+        if (root == null)
+            return null;
+
+        foreach (var textMesh in root.GetComponentsInChildren<TMP_Text>(true))
+        {
+            if (textMesh != null && textMesh.name == objectName)
+                return textMesh;
         }
 
         return null;

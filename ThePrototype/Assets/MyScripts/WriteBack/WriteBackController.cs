@@ -414,12 +414,20 @@ public class WriteBackController : MonoBehaviour
 
         if (m_BodyText != null)
         {
+            var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
+            var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
+            var targetRegister = GetExpectedRegisterIdFromControlState();
+            var expectedPacket = GetPacketRoleDisplayName(GetExpectedPacketRoleFromControlState());
             m_BodyText.text =
                 "Write Back\n\n" +
-                "1. Set the control signals for this instruction.\n" +
-                "2. Place the destination register on the register input.\n" +
-                "3. Place the final datapath value on the data input.\n" +
-                "4. Execute the transfer to update the register file.";
+                $"Instruction: {instructionName}\n\n" +
+                $"Assembly: {assembly}\n\n" +
+                "1. Set RegWrite, RegDst, and MemToReg for this instruction.\n" +
+                $"2. The currently selected destination register is {targetRegister}.\n" +
+                $"3. The currently selected write-back source is {expectedPacket}.\n" +
+                "4. Place the destination register on the register input.\n" +
+                "5. Place the final datapath value on the data input.\n" +
+                "6. Execute the transfer to update the register file.";
         }
 
         if (m_RegWriteStatusText != null)

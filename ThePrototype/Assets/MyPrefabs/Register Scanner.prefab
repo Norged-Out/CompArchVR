@@ -835,6 +835,8 @@ MonoBehaviour:
   m_FailureMaterial: {fileID: 2100000, guid: 52e4708390753da4d9c262a4a102d958, type: 2}
   m_ScanDurationSeconds: 1
   m_PressedOffsetY: -0.03
+  m_UseInLessonFlow: 1
+  m_AlwaysActiveInspector: 0
   m_RegisterRole: 0
   m_OwningBank: {fileID: 0}
   m_LabelText: {fileID: 1890001456753033952}

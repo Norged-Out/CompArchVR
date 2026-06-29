@@ -47,6 +47,9 @@ public class AluExecutionController : MonoBehaviour
     GameObject m_AluUiRoot;
 
     [SerializeField]
+    TMP_Text m_BodyText;
+
+    [SerializeField]
     TMP_Text m_AluOpStatusText;
 
     [SerializeField]
@@ -401,6 +404,23 @@ public class AluExecutionController : MonoBehaviour
 
     void RefreshUiTexts()
     {
+        if (m_BodyText != null)
+        {
+            var input2RoleName = GetRoleDisplayName(GetExpectedInput2Role());
+            var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
+            var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
+            m_BodyText.text =
+                "Execution Phase\n\n" +
+                $"Instruction: {instructionName}\n\n" +
+                $"Assembly: {assembly}\n\n" +
+                "1. Set ALUOp to the correct operation family.\n" +
+                "2. Set ALUSrc to choose whether Input 2 comes from Read Data 2 or the Immediate path.\n" +
+                "3. Place Read Data 1 on Input 1.\n" +
+                $"4. Place {input2RoleName} on Input 2.\n" +
+                $"5. For this instruction, ALUOp should be {GetExpectedAluOpValue(m_CurrentInstruction)} and ALUSrc should be {(m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate ? "1" : "0")}.\n" +
+                "6. Press Execute to produce the ALU result packet.";
+        }
+
         if (m_AluOpStatusText != null)
             m_AluOpStatusText.text = $"ALUOp: {m_CurrentAluOpValue}";
 
@@ -511,6 +531,7 @@ public class AluExecutionController : MonoBehaviour
 
         if (m_AluUiRoot != null)
         {
+            m_BodyText ??= FindNamedText(m_AluUiRoot.transform, "Text Body");
             m_AluOpStatusText ??= FindNamedText(m_AluUiRoot.transform, "Text ALUOp");
             m_AluSrcStatusText ??= FindNamedText(m_AluUiRoot.transform, "Text ALUSrc");
             m_Input1StatusText ??= FindNamedText(m_AluUiRoot.transform, "Text Input 1");

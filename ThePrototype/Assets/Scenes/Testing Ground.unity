@@ -2545,10 +2545,7 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 6297095481714544604, guid: 9f6c18f415aa15b49909149f60340e43, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 0}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9f6c18f415aa15b49909149f60340e43, type: 3}
 --- !u!4 &385768770 stripped
 Transform:
@@ -7779,6 +7776,46 @@ PrefabInstance:
       propertyPath: m_Name
       value: WB
       objectReference: {fileID: 0}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_BodyText
+      value: 
+      objectReference: {fileID: 2008810303}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_WbUiRoot
+      value: 
+      objectReference: {fileID: 1333973418}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_ActionButton
+      value: 
+      objectReference: {fileID: 2003362890}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_FeedbackText
+      value: 
+      objectReference: {fileID: 1288256565}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_DataStatusText
+      value: 
+      objectReference: {fileID: 930938912}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_RegDstStatusText
+      value: 
+      objectReference: {fileID: 703722166}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_ActionButtonLabel
+      value: 
+      objectReference: {fileID: 1778327931}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_MemToRegStatusText
+      value: 
+      objectReference: {fileID: 42953235}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_RegWriteStatusText
+      value: 
+      objectReference: {fileID: 1571682224}
+    - target: {fileID: 6875867537958512515, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
+      propertyPath: m_RegisterStatusText
+      value: 
+      objectReference: {fileID: 928546331}
     - target: {fileID: 7303402734467417492, guid: 320b53266d495bf4bb5bb65c6911a0c6, type: 3}
       propertyPath: m_LocalPosition.z
       value: -0.000000059604645
@@ -14491,6 +14528,13 @@ MonoBehaviour:
   m_RegisterActionLabel: {fileID: 359015012}
   m_AluRoot: {fileID: 2121333926}
   m_AluController: {fileID: 904400269}
+  m_MemRoot: {fileID: 0}
+  m_MemBody: {fileID: 0}
+  m_MemFeedback: {fileID: 0}
+  m_MemActionButton: {fileID: 0}
+  m_MemActionLabel: {fileID: 0}
+  m_WriteBackRoot: {fileID: 0}
+  m_WriteBackController: {fileID: 0}
 --- !u!1 &346822598817615324
 GameObject:
   m_ObjectHideFlags: 0

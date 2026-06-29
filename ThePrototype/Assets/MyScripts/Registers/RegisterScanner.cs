@@ -87,7 +87,7 @@ public class RegisterScanner : PedestalScannerBase
         base.OnEnable();
         BindZoneHelper();
 
-        if (m_AlwaysActiveInspector)
+        if (m_AlwaysActiveInspector || !m_UseInLessonFlow)
             SetStepActive(true);
     }
 
@@ -321,7 +321,7 @@ public class RegisterScanner : PedestalScannerBase
         if (registerToken == null)
             return;
 
-        if (m_AlwaysActiveInspector)
+        if (m_AlwaysActiveInspector || !m_UseInLessonFlow)
         {
             m_LastResolvedValue = registerToken.RegisterValue;
             MarkSuccess();
@@ -401,7 +401,7 @@ public class RegisterScanner : PedestalScannerBase
 
     bool ShouldSpawnDataPacket()
     {
-        if (m_AlwaysActiveInspector)
+        if (m_AlwaysActiveInspector || !m_UseInLessonFlow)
             return false;
 
         if (m_RegisterRole == InstructionRegisterRole.Rd)
