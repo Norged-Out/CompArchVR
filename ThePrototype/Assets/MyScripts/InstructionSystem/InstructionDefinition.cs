@@ -144,4 +144,37 @@ public class InstructionDefinition : ScriptableObject
     {
         return usesDestinationRegister ? expectedRd : expectedRt;
     }
+
+    /// <summary>
+    /// Returns which logical register field the write-back mux currently targets.
+    /// R-type arithmetic writes to rd, while immediate / load instructions write to rt.
+    /// </summary>
+    public InstructionRegisterRole GetWriteBackTargetRole()
+    {
+        return usesDestinationRegister ? InstructionRegisterRole.Rd : InstructionRegisterRole.Rt;
+    }
+
+    /// <summary>
+    /// Returns which packet source should be written back into the register file.
+    /// Loads write memory data; arithmetic instructions write the ALU result.
+    /// </summary>
+    public DataPacketRole GetWriteBackPacketRole()
+    {
+        return touchesDataMemory ? DataPacketRole.MemoryData : DataPacketRole.AluResult;
+    }
+
+    public string GetExpectedRegWriteControlValue()
+    {
+        return writesRegisterFile ? "1" : "0";
+    }
+
+    public string GetExpectedRegDstControlValue()
+    {
+        return usesDestinationRegister ? "1" : "0";
+    }
+
+    public string GetExpectedMemToRegControlValue()
+    {
+        return touchesDataMemory ? "1" : "0";
+    }
 }

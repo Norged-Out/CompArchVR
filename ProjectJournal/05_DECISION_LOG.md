@@ -410,6 +410,25 @@ Implication:
   - `RegDst` stays purely in `WB`
   - or either one is exposed earlier for teaching clarity
 
+## 2026-06-29 - Write-Back Should Become Its Own Physical Phase
+
+Decision:
+- move away from the temporary "write-back explanation on Intro UI" approach and build a dedicated write-back interaction with its own prefab and authored UI
+
+Why:
+- the learner should explicitly confirm both:
+  - which register is being written
+  - which datapath value is being written
+- this keeps the final state change legible and gives `addi` / `lw` a reusable end-stage pattern
+
+Implication:
+- `WB` should own:
+  - `RegWrite`
+  - target-register confirmation
+  - final value-source confirmation
+  - the actual register-value update
+- `Mem UI` can remain explanatory-first for the demo while write-back becomes the real next interaction milestone
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

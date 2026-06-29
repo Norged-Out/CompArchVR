@@ -54,6 +54,12 @@ Current prototype features:
   - input 2 role switching based on `ALUSrc`
   - result packet spawning with role `ALU Result`
   - one extra continue click after success before write-back
+- authored write-back groundwork now exists:
+  - a dedicated `WB` prefab
+  - a dedicated `WB UI`
+  - a bonus loose register scanner for value inspection / confirmation
+  - early lesson-flow wiring for a real write-back phase instead of only a temporary intro-panel explanation
+- a placeholder `Mem UI` now exists as the likely teaching surface for the memory step
 - authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
@@ -153,7 +159,7 @@ The cleanest next work item is:
   - authored in scene
   - updated by code
   - not generated at runtime
-- author the next physical interaction layer for `WriteBack`
+- finish the next physical interaction layer for `WriteBack`
 - reuse the scanner / register / lesson state pattern for `addi` and `lw`
 
 ## Personal Reminder

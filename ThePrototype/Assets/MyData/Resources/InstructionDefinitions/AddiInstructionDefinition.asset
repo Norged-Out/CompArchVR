@@ -76,7 +76,7 @@ MonoBehaviour:
     highlightedNode: 6
     explanation: The ALU result should write back to rt rather than rd.
     advanceVisualHighlight: 1
-    requiredInteraction: 1
+    requiredInteraction: 6
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0

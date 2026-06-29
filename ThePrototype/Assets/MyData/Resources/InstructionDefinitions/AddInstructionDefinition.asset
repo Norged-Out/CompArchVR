@@ -79,7 +79,7 @@ MonoBehaviour:
     highlightedNode: 6
     explanation: The ALU result is written back to rd. Use the lesson guide to confirm the destination register and final value before continuing.
     advanceVisualHighlight: 1
-    requiredInteraction: 1
+    requiredInteraction: 6
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0

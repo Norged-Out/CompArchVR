@@ -110,6 +110,9 @@ public class RegisterBank : MonoBehaviour
             if (registerScanner.gameObject.scene != gameObject.scene)
                 continue;
 
+            if (!registerScanner.UseInLessonFlow)
+                continue;
+
             if (registerScanner.RegisterRole == InstructionRegisterRole.None)
                 continue;
 

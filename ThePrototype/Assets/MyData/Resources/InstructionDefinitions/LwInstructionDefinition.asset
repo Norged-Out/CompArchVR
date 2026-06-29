@@ -85,7 +85,7 @@ MonoBehaviour:
     highlightedNode: 6
     explanation: The loaded memory value writes back to rt.
     advanceVisualHighlight: 1
-    requiredInteraction: 1
+    requiredInteraction: 6
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0

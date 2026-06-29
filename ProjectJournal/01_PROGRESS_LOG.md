@@ -15,6 +15,8 @@ Current prototype focus:
 - per-register logical values now supported in code
 - register scanner validation path for decode-stage source operands
 - first-pass ALU execution phase now wired with authored ALU UI, physical ALU buttons, and result spawning
+- first-pass write-back groundwork now being wired through a dedicated `WB` prefab and authored `WB UI`
+- a placeholder `Mem UI` now exists for the future memory-phase teaching handoff
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
 - preparing a dedicated write-back phase for the demo instead of confirming the destination register during decode
 
@@ -45,6 +47,11 @@ The project now has:
   - physical `ALUOp` / `ALUSrc` buttons drive execution setup
   - the authored `ALU UI` validates execution and gates the continue into write-back
   - the ALU emits an `ALU Result` packet with the computed value
+- in-progress dedicated write-back scaffolding:
+  - authored `WB` prefab with separate register and datapacket inputs
+  - authored `WB UI` for control-signal and input-status teaching
+  - authored `Mem UI` placeholder for the eventual memory-stage explanation
+  - a bonus loose register scanner intended for value inspection outside the lesson-gated decode flow
 - a cleaner instruction-decode model:
   - `add` scans `rs` and `rt`
   - `addi` and `lw` scan `rs` only
@@ -392,6 +399,40 @@ Risks / Notes:
   - whether `RegDst` should stay in write-back only
   - or whether `ALUSrc` / `RegDst` responsibilities should be exposed earlier in the teaching flow
 - current recommendation is to leave the flow as-is for the demo and finish write-back first
+
+### 2026-06-29 - Dedicated Write-Back Groundwork Started
+
+Completed:
+- introduced a dedicated write-back interaction direction instead of relying on the temporary intro-panel confirmation
+- added first-pass write-back scripts and wiring groundwork for:
+  - register-target scanning
+  - datapacket scanning
+  - write-back phase gating inside the lesson flow
+- updated instruction / lesson definitions so write-back can be treated as its own explicit interaction step
+- prepared the lesson guide to recognize a future authored `Mem UI` and authored `WB UI`
+- separated a bonus register-inspection scanner from the lesson-controlled decode scanners so it can be used as a value-check station
+
+Changed:
+- the lesson is now being steered toward:
+  - `Intro UI`
+  - `Register Setup UI`
+  - `ALU UI`
+  - `Mem UI`
+  - `WB UI`
+- write-back is no longer being treated as just a narrative "continue" step in the architecture
+
+Next:
+- finish the dedicated `WB` prefab hookup
+- finish `WB UI` validation and execution flow
+- keep `Mem UI` explanatory-only for the demo unless `lw` memory logic is stabilized in time
+- iron out the exact pedagogical home of `RegDst` and `ALUSrc`
+
+Risks / Notes:
+- this pass is groundwork, not the final validated write-back implementation
+- the open teaching-design question is still:
+  - whether `RegDst` belongs strictly in write-back
+  - whether `ALUSrc` should remain purely execution-side
+  - or whether either should be surfaced earlier for lesson clarity
 
 ## Current Working Baseline
 

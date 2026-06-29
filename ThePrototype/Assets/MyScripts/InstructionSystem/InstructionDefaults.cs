@@ -79,7 +79,7 @@ public static class InstructionDefaults
                 stepName = "Write Back",
                 highlightedNode = DatapathNodeId.WriteBack,
                 explanation = "The ALU result is written back to the destination register rd. Use the lesson guide to confirm the destination and final value before continuing.",
-                requiredInteraction = InstructionStepInteractionType.ContinueButton,
+                requiredInteraction = InstructionStepInteractionType.WriteBackExecution,
                 blockProgressUntilValidated = true,
             },
             new InstructionFlowStep

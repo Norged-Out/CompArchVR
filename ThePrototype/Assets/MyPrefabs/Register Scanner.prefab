@@ -825,17 +825,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1e2f3a4b5674890c1d2e3f4a5b67890, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_RegisterRole: 0
-  m_OwningBank: {fileID: 0}
   m_BodyTransform: {fileID: 8530779814507811918}
   m_BaseRenderer: {fileID: 3201790251042574262}
   m_BodyRenderer: {fileID: 2819453700368837501}
-  m_LabelText: {fileID: 1890001456753033952}
-  m_ValueText: {fileID: 4569443550285306970}
-  m_ScanZone: {fileID: 8222810023871308504}
-  m_DataPacketPrefab: {fileID: 2850044229737508648, guid: 2874c88f5adc40788d4b1d6bb0a6c80f, type: 3}
-  m_DataPacketSpawnAnchor: {fileID: 1158355636761020559}
-  m_OutputPacketRole: 0
   m_InactiveMaterial: {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
   m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
   m_OccupiedMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
@@ -843,6 +835,14 @@ MonoBehaviour:
   m_FailureMaterial: {fileID: 2100000, guid: 52e4708390753da4d9c262a4a102d958, type: 2}
   m_ScanDurationSeconds: 1
   m_PressedOffsetY: -0.03
+  m_RegisterRole: 0
+  m_OwningBank: {fileID: 0}
+  m_LabelText: {fileID: 1890001456753033952}
+  m_ValueText: {fileID: 4569443550285306970}
+  m_ScanZone: {fileID: 8222810023871308504}
+  m_DataPacketPrefab: {fileID: 2850044229737508648, guid: 2874c88f5adc40788d4b1d6bb0a6c80f, type: 3}
+  m_DataPacketSpawnAnchor: {fileID: 1158355636761020559}
+  m_OutputPacketRole: 0
   m_ScanZonePadding: {x: 0.12, y: 0.18, z: 0.12}
   m_ScanZoneSurfaceInset: 0.02
   m_SupportColliderHeightPadding: 0.01

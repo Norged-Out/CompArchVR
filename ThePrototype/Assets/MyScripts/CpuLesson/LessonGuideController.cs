@@ -62,12 +62,36 @@ public class LessonGuideController : MonoBehaviour
     [SerializeField]
     AluExecutionController m_AluController;
 
+    [Header("Memory UI")]
+    [SerializeField]
+    GameObject m_MemRoot;
+
+    [SerializeField]
+    TMP_Text m_MemBody;
+
+    [SerializeField]
+    TMP_Text m_MemFeedback;
+
+    [SerializeField]
+    Button m_MemActionButton;
+
+    [SerializeField]
+    TMP_Text m_MemActionLabel;
+
+    [Header("Write-Back UI")]
+    [SerializeField]
+    GameObject m_WriteBackRoot;
+
+    [SerializeField]
+    WriteBackController m_WriteBackController;
+
     void Awake()
     {
         CacheReferences();
         HookButtons();
         EnsureButtonLayout(m_IntroActionButton);
         EnsureButtonLayout(m_RegisterActionButton);
+        EnsureButtonLayout(m_MemActionButton);
         RefreshView();
     }
 
@@ -77,6 +101,12 @@ public class LessonGuideController : MonoBehaviour
 
         if (m_AluController != null)
             m_AluController.ExecutionCompleted += HandleAluExecutionCompleted;
+
+        if (m_WriteBackController != null)
+        {
+            m_WriteBackController.WriteBackApplied += HandleWriteBackApplied;
+            m_WriteBackController.ContinueRequested += HandleWriteBackContinueRequested;
+        }
 
         if (m_LessonFlow == null)
             return;
@@ -90,6 +120,12 @@ public class LessonGuideController : MonoBehaviour
     {
         if (m_AluController != null)
             m_AluController.ExecutionCompleted -= HandleAluExecutionCompleted;
+
+        if (m_WriteBackController != null)
+        {
+            m_WriteBackController.WriteBackApplied -= HandleWriteBackApplied;
+            m_WriteBackController.ContinueRequested -= HandleWriteBackContinueRequested;
+        }
 
         if (m_LessonFlow == null)
             return;
@@ -110,6 +146,12 @@ public class LessonGuideController : MonoBehaviour
         {
             m_RegisterActionButton.onClick.RemoveAllListeners();
             m_RegisterActionButton.onClick.AddListener(HandleRegisterActionPressed);
+        }
+
+        if (m_MemActionButton != null)
+        {
+            m_MemActionButton.onClick.RemoveAllListeners();
+            m_MemActionButton.onClick.AddListener(HandleMemActionPressed);
         }
     }
 
@@ -135,6 +177,17 @@ public class LessonGuideController : MonoBehaviour
             m_LessonFlow.Advance();
     }
 
+    void HandleMemActionPressed()
+    {
+        if (m_LessonFlow == null)
+            return;
+
+        if (!m_LessonFlow.HasStarted)
+            m_LessonFlow.StartLesson();
+        else
+            m_LessonFlow.Advance();
+    }
+
     void HandleStepChanged(CpuLessonFlow _)
     {
         RefreshView();
@@ -143,6 +196,16 @@ public class LessonGuideController : MonoBehaviour
     void HandleAluExecutionCompleted(int resultValue)
     {
         m_LessonFlow?.CompleteAluExecution(resultValue);
+    }
+
+    void HandleWriteBackApplied(string destinationRegister, int resultValue)
+    {
+        m_LessonFlow?.CompleteWriteBackExecution(destinationRegister, resultValue);
+    }
+
+    void HandleWriteBackContinueRequested()
+    {
+        m_LessonFlow?.Advance();
     }
 
     void HandleFeedbackChanged(string message, bool isFailure)
@@ -162,6 +225,19 @@ public class LessonGuideController : MonoBehaviour
             }
 
             RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            return;
+        }
+
+        if (ShouldShowMemoryPanel())
+        {
+            if (m_MemFeedback != null)
+            {
+                m_MemFeedback.text = message;
+                m_MemFeedback.color = feedbackColor;
+                m_MemFeedback.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
+            }
+
+            RefreshLayout(m_MemRoot, m_MemBody, m_MemFeedback, m_MemActionButton);
             return;
         }
 
@@ -187,6 +263,8 @@ public class LessonGuideController : MonoBehaviour
 
         var showRegisterPanel = ShouldShowRegisterPanel();
         var showAluPanel = ShouldShowAluPanel();
+        var showMemoryPanel = ShouldShowMemoryPanel();
+        var showWriteBackPanel = ShouldShowWriteBackPanel();
 
         // Panels are authored in the scene and simply toggled on/off as the
         // lesson advances. That keeps layout work in edit mode instead of runtime.
@@ -196,21 +274,33 @@ public class LessonGuideController : MonoBehaviour
         if (m_AluRoot != null)
             m_AluRoot.SetActive(showAluPanel);
 
-        m_AluController?.SetPhaseState(showAluPanel, m_LessonFlow.CurrentInstruction);
+        if (m_MemRoot != null)
+            m_MemRoot.SetActive(showMemoryPanel);
 
-        m_IntroRoot.SetActive(!showRegisterPanel && !showAluPanel);
+        if (m_WriteBackRoot != null)
+            m_WriteBackRoot.SetActive(showWriteBackPanel);
+
+        m_AluController?.SetPhaseState(showAluPanel, m_LessonFlow.CurrentInstruction);
+        m_WriteBackController?.SetPhaseState(showWriteBackPanel, m_LessonFlow.CurrentInstruction, m_LessonFlow.RegisterBank);
+        if (m_WriteBackController != null && !showWriteBackPanel)
+            m_WriteBackController.ResetWriteBackState();
+
+        m_IntroRoot.SetActive(!showRegisterPanel && !showAluPanel && !showMemoryPanel && !showWriteBackPanel);
 
         if (!m_LessonFlow.HasStarted)
         {
             m_AluController?.ResetExecutionState();
+            m_WriteBackController?.ResetWriteBackState();
             SetText(
                 m_IntroBody,
                 $"Lesson Introduction\n\nSelected instruction: {m_LessonFlow.CurrentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin the walkthrough.");
             SetText(m_IntroFeedback, string.Empty);
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_StartButtonLabel, true);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
             RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_MemRoot, m_MemBody, m_MemFeedback, m_MemActionButton);
             return;
         }
 
@@ -222,8 +312,34 @@ public class LessonGuideController : MonoBehaviour
         {
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
             RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_MemRoot, m_MemBody, m_MemFeedback, m_MemActionButton);
+            return;
+        }
+
+        if (showWriteBackPanel)
+        {
+            SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, false);
+            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_MemRoot, m_MemBody, m_MemFeedback, m_MemActionButton);
+            return;
+        }
+
+        if (showMemoryPanel)
+        {
+            SetText(m_MemBody, BuildMemoryBody(step));
+            SetText(m_MemFeedback, string.Empty);
+            SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, true);
+            SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_MemRoot, m_MemBody, m_MemFeedback, m_MemActionButton);
             return;
         }
 
@@ -237,8 +353,10 @@ public class LessonGuideController : MonoBehaviour
                 step.requiredInteraction == InstructionStepInteractionType.Completion ? m_RestartButtonLabel : m_ContinueButtonLabel,
                 step.requiredInteraction == InstructionStepInteractionType.ContinueButton || step.requiredInteraction == InstructionStepInteractionType.Completion);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
             RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_MemRoot, m_MemBody, m_MemFeedback, m_MemActionButton);
             return;
         }
 
@@ -251,8 +369,10 @@ public class LessonGuideController : MonoBehaviour
             step.requiredInteraction == InstructionStepInteractionType.Completion ? m_RestartButtonLabel : m_ContinueButtonLabel,
             showContinue);
         SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
+        SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, false);
         RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
         RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+        RefreshLayout(m_MemRoot, m_MemBody, m_MemFeedback, m_MemActionButton);
     }
 
     bool ShouldShowRegisterPanel()
@@ -277,6 +397,27 @@ public class LessonGuideController : MonoBehaviour
         return step.requiredInteraction == InstructionStepInteractionType.AluExecution;
     }
 
+    bool ShouldShowMemoryPanel()
+    {
+        if (ShouldShowAluPanel() || ShouldShowWriteBackPanel())
+            return false;
+
+        var step = m_LessonFlow?.CurrentStep;
+        if (step == null)
+            return false;
+
+        return step.highlightedNode == DatapathNodeId.DataMemory;
+    }
+
+    bool ShouldShowWriteBackPanel()
+    {
+        var step = m_LessonFlow?.CurrentStep;
+        if (step == null)
+            return false;
+
+        return step.requiredInteraction == InstructionStepInteractionType.WriteBackExecution;
+    }
+
     string BuildIntroBody(InstructionFlowStep step)
     {
         var instruction = m_LessonFlow.CurrentInstruction;
@@ -288,14 +429,6 @@ public class LessonGuideController : MonoBehaviour
 
         if (step.stepName.IndexOf("Fetch", System.StringComparison.OrdinalIgnoreCase) >= 0)
             body += "\n\nPress Continue when you are ready to move into instruction decode.";
-
-        if (step.highlightedNode == DatapathNodeId.WriteBack && m_LessonFlow.RuntimeSelection.hasAluResult)
-        {
-            body +=
-                $"\n\nWrite-back target: {instruction.GetWriteBackTargetRegister()}" +
-                $"\nALU result value: {m_LessonFlow.RuntimeSelection.aluResultValue}" +
-                "\n\nPress Continue to complete write-back.";
-        }
 
         return body;
     }
@@ -371,14 +504,55 @@ public class LessonGuideController : MonoBehaviour
             $"{step.explanation}";
     }
 
+    string BuildMemoryBody(InstructionFlowStep step)
+    {
+        var instruction = m_LessonFlow.CurrentInstruction;
+        if (instruction == null)
+            return string.Empty;
+
+        var memorySummary = instruction.touchesDataMemory
+            ? "This instruction uses the data-memory path. Review the memory controls here before moving on."
+            : "This instruction does not use data memory, so this phase is a conceptual checkpoint only.";
+
+        return
+            $"Memory Access\n\n" +
+            $"Instruction: {instruction.displayName}\n\n" +
+            $"Assembly: {instruction.assemblyInstructionText}\n\n" +
+            $"{memorySummary}\n\n" +
+            $"{step.explanation}";
+    }
+
     void CacheReferences()
     {
         m_AluController ??= FindFirstSceneObject<AluExecutionController>();
+        m_WriteBackController ??= FindFirstSceneObject<WriteBackController>();
 
         if (m_AluRoot == null)
         {
             var aluRootTransform = FindSceneTransform("ALU UI");
             m_AluRoot = aluRootTransform != null ? aluRootTransform.gameObject : null;
+        }
+
+        if (m_MemRoot == null)
+        {
+            var memRootTransform = FindSceneTransform("Mem UI");
+            m_MemRoot = memRootTransform != null ? memRootTransform.gameObject : null;
+        }
+
+        if (m_WriteBackRoot == null)
+        {
+            var writeBackRootTransform = FindSceneTransform("WB UI");
+            m_WriteBackRoot = writeBackRootTransform != null ? writeBackRootTransform.gameObject : null;
+        }
+
+        if (m_MemRoot != null)
+        {
+            m_MemBody ??= FindNamedText(m_MemRoot.transform, "Text Body");
+            m_MemFeedback ??= FindNamedText(m_MemRoot.transform, "Text Feedback");
+            m_MemActionButton ??= m_MemRoot.GetComponentInChildren<Button>(true);
+            m_MemActionLabel ??= m_MemActionButton != null
+                ? m_MemActionButton.GetComponentInChildren<TMP_Text>(true)
+                : null;
         }
     }
 

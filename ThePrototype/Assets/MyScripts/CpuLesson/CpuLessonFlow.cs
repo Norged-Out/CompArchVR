@@ -34,6 +34,7 @@ public class CpuLessonFlow : MonoBehaviour
     public InstructionRuntimeSelection RuntimeSelection => m_RuntimeSelection;
     public int CurrentStepIndex => m_CurrentStepIndex;
     public bool HasStarted => m_CurrentStepIndex >= 0;
+    public RegisterBank RegisterBank => m_RegisterBank;
 
     public InstructionFlowStep CurrentStep
     {
@@ -107,12 +108,6 @@ public class CpuLessonFlow : MonoBehaviour
         {
             case InstructionStepInteractionType.None:
             case InstructionStepInteractionType.ContinueButton:
-                // The current MVP uses a continue step for write-back. We apply
-                // the ALU result right before moving on so the updated register
-                // value is already visible during recap.
-                if (IsWriteBackStep(CurrentStep))
-                    ApplyWriteBackResult();
-
                 AdvanceToNextStep();
                 break;
 
@@ -122,6 +117,10 @@ public class CpuLessonFlow : MonoBehaviour
 
             case InstructionStepInteractionType.AluExecution:
                 SetFeedback("Configure the ALU, place the packets on both inputs, then execute the operation.", false);
+                break;
+
+            case InstructionStepInteractionType.WriteBackExecution:
+                SetFeedback("Configure the write-back controls, place the target register and final data packet, then execute the transfer.", false);
                 break;
 
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
@@ -164,6 +163,22 @@ public class CpuLessonFlow : MonoBehaviour
         m_RuntimeSelection.hasAluResult = true;
         SetFeedback($"ALU result produced: {resultValue}. Continue to write back.", false);
         AdvanceToNextStep();
+    }
+
+    /// <summary>
+    /// Applies the final write-back value after the authored WB prefab has
+    /// validated control signals and completed its transfer sequence.
+    /// </summary>
+    public void CompleteWriteBackExecution(string destinationRegister, int resultValue)
+    {
+        if (string.IsNullOrWhiteSpace(destinationRegister))
+            return;
+
+        m_RuntimeSelection.confirmedWriteBackRegister = destinationRegister;
+        m_RuntimeSelection.aluResultValue = resultValue;
+        m_RuntimeSelection.hasAluResult = true;
+        m_RegisterBank?.SetRegisterValue(destinationRegister, resultValue);
+        SetFeedback($"Write-back complete. {destinationRegister} now stores {resultValue}. Click Continue to finish the lesson.", false);
     }
 
     void RebindRegisterBank()
@@ -346,6 +361,10 @@ public class CpuLessonFlow : MonoBehaviour
                 SetFeedback("Configure the ALU, place the packets on both inputs, then execute the operation.", false);
                 break;
 
+            case InstructionStepInteractionType.WriteBackExecution:
+                SetFeedback("Configure the write-back controls, place the target register and final data packet, then execute the transfer.", false);
+                break;
+
             case InstructionStepInteractionType.WriteBackRegisterConfirmation:
                 SetFeedback(
                     $"Place {m_CurrentInstruction.GetExpectedRegisterName(CurrentStep.confirmationRegisterRole)} on the {GetScannerLabel(CurrentStep.confirmationRegisterRole)} scanner.",
@@ -387,19 +406,6 @@ public class CpuLessonFlow : MonoBehaviour
                 m_RegisterBank.ConfigureScannerRoles(Array.Empty<InstructionRegisterRole>());
                 break;
         }
-    }
-
-    void ApplyWriteBackResult()
-    {
-        if (m_RegisterBank == null || m_CurrentInstruction == null || !m_RuntimeSelection.hasAluResult)
-            return;
-
-        var destinationRegister = m_CurrentInstruction.GetWriteBackTargetRegister();
-        if (string.IsNullOrWhiteSpace(destinationRegister))
-            return;
-
-        m_RegisterBank.SetRegisterValue(destinationRegister, m_RuntimeSelection.aluResultValue);
-        m_RuntimeSelection.confirmedWriteBackRegister = destinationRegister;
     }
 
     string GetRegisterSelectionPrompt()
@@ -474,11 +480,6 @@ public class CpuLessonFlow : MonoBehaviour
             "Immediate",
             m_CurrentInstruction.expectedImmediateValue);
         return true;
-    }
-
-    static bool IsWriteBackStep(InstructionFlowStep step)
-    {
-        return step != null && step.highlightedNode == DatapathNodeId.WriteBack;
     }
 
     void SetFeedback(string message, bool isFailure)

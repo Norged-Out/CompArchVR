@@ -70,6 +70,11 @@ public abstract class PedestalScannerBase : MonoBehaviour
     protected Renderer BodyRenderer => m_BodyRenderer;
     protected bool IsStepActive => m_IsStepActive;
     protected bool IsLatchedSuccessful => m_IsLatchedSuccessful;
+    public Material InactiveMaterial => m_InactiveMaterial;
+    public Material IdleMaterial => m_IdleMaterial;
+    public Material OccupiedMaterial => m_OccupiedMaterial;
+    public Material SuccessMaterial => m_SuccessMaterial;
+    public Material FailureMaterial => m_FailureMaterial;
     protected virtual float RequiredStableSeconds => m_ScanDurationSeconds;
     protected virtual float PressedOffsetY => m_PressedOffsetY;
     protected T CurrentCandidateAs<T>() where T : Component => m_CurrentCandidate as T;

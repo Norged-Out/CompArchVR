@@ -20,6 +20,12 @@ public class RegisterScanner : PedestalScannerBase
     [Header("Role")]
 
     [SerializeField]
+    bool m_UseInLessonFlow = true;
+
+    [SerializeField]
+    bool m_AlwaysActiveInspector;
+
+    [SerializeField]
     InstructionRegisterRole m_RegisterRole = InstructionRegisterRole.None;
 
     [SerializeField]
@@ -62,6 +68,8 @@ public class RegisterScanner : PedestalScannerBase
     int m_LastResolvedValue;
 
     public InstructionRegisterRole RegisterRole => m_RegisterRole;
+    public bool UseInLessonFlow => m_UseInLessonFlow;
+    public bool AlwaysActiveInspector => m_AlwaysActiveInspector;
     public DataPacketToken SpawnedPacket => m_SpawnedPacket;
     public Transform DataPacketSpawnAnchor => m_DataPacketSpawnAnchor;
 
@@ -78,6 +86,9 @@ public class RegisterScanner : PedestalScannerBase
     {
         base.OnEnable();
         BindZoneHelper();
+
+        if (m_AlwaysActiveInspector)
+            SetStepActive(true);
     }
 
     protected override void OnValidate()
@@ -111,6 +122,9 @@ public class RegisterScanner : PedestalScannerBase
         {
             OnCandidateLost();
         }
+
+        if (m_AlwaysActiveInspector && IsLatchedSuccessful)
+            ResetScanner();
 
     }
 
@@ -307,6 +321,13 @@ public class RegisterScanner : PedestalScannerBase
         if (registerToken == null)
             return;
 
+        if (m_AlwaysActiveInspector)
+        {
+            m_LastResolvedValue = registerToken.RegisterValue;
+            MarkSuccess();
+            return;
+        }
+
         // Reaching the scan duration only means "candidate is stable".
         // The lesson flow still decides whether the scanned register is correct.
         m_OwningBank?.NotifyRegisterScanned(m_RegisterRole, registerToken);
@@ -380,6 +401,9 @@ public class RegisterScanner : PedestalScannerBase
 
     bool ShouldSpawnDataPacket()
     {
+        if (m_AlwaysActiveInspector)
+            return false;
+
         if (m_RegisterRole == InstructionRegisterRole.Rd)
             return false;
 
