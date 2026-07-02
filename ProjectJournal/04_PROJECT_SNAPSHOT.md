@@ -56,8 +56,10 @@ Current prototype features:
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
   - decode can now emit immediate packets from the second scanner spawn point for immediate-based instructions
+  - immediate packets can now pass through a physical `Immediate Extender` before ALU use
   - ALU input scanners can accept those packets
-  - ALU execution can compute an `add` result in code
+  - ALU execution can compute `add` and the currently tested `addi` path in code
+- authored ALU funct selection now exists through the UI dropdown used for the secondary instruction path
 - instruction definitions now explicitly support:
   - initial register values
   - expected immediate values
@@ -65,6 +67,7 @@ Current prototype features:
   - immediate packets carrying a simple sign-extension boolean for now
 - planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
+- `add` and `addi` have now both been tested successfully through the current loop
 - slim lesson scripts now reduced to:
   - `CpuLessonFlow`
   - `LessonGuideController`
@@ -150,14 +153,15 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- extend the current `add` framework into `addi` and `lw`:
+- build the real memory phase for `lw` on top of the now-working `add` and `addi` framework:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
 - keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- reuse the scanner / register / lesson state pattern for `addi` and `lw`
+- reuse the scanner / register / lesson state pattern for `lw`
+- keep the immediate extender and ALU funct dropdown as the baseline for immediate-based and secondary-path lessons
 - add a persistent cheatsheet/settings menu for previously closed guidance
 
 ## Personal Reminder

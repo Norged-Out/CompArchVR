@@ -8,6 +8,13 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class AluInputScanner : PedestalScannerBase
 {
+    public enum PacketIssue
+    {
+        None,
+        WrongPacketType,
+        ImmediateNotSignExtended,
+    }
+
     [SerializeField]
     DataPacketRole m_ExpectedPacketRole = DataPacketRole.ReadData1;
 
@@ -21,10 +28,12 @@ public class AluInputScanner : PedestalScannerBase
     float m_LocalPressedOffsetY = -0.02f;
 
     readonly System.Collections.Generic.HashSet<DataPacketToken> m_PacketsInZone = new();
+    PacketIssue m_CurrentIssue;
 
     public DataPacketRole ExpectedPacketRole => m_ExpectedPacketRole;
     public DataPacketToken AcceptedPacket { get; private set; }
     public int AcceptedValue => AcceptedPacket != null ? AcceptedPacket.Value : 0;
+    public PacketIssue CurrentIssue => m_CurrentIssue;
 
     public event System.Action<AluInputScanner, DataPacketToken> PacketAccepted;
 
@@ -65,6 +74,7 @@ public class AluInputScanner : PedestalScannerBase
     {
         m_PacketsInZone.Clear();
         ClearAcceptedPacket();
+        m_CurrentIssue = PacketIssue.None;
         base.ResetScanner();
     }
 
@@ -133,8 +143,27 @@ public class AluInputScanner : PedestalScannerBase
 
     protected override bool IsImmediateMismatch(Component candidate)
     {
-        return candidate is DataPacketToken dataPacketToken &&
-               dataPacketToken.PacketRole != m_ExpectedPacketRole;
+        if (candidate is not DataPacketToken dataPacketToken)
+        {
+            m_CurrentIssue = PacketIssue.WrongPacketType;
+            return true;
+        }
+
+        if (dataPacketToken.PacketRole != m_ExpectedPacketRole)
+        {
+            m_CurrentIssue = PacketIssue.WrongPacketType;
+            return true;
+        }
+
+        if (m_ExpectedPacketRole == DataPacketRole.Immediate &&
+            !dataPacketToken.IsSignExtended)
+        {
+            m_CurrentIssue = PacketIssue.ImmediateNotSignExtended;
+            return true;
+        }
+
+        m_CurrentIssue = PacketIssue.None;
+        return false;
     }
 
     protected override void OnImmediateMismatch(Component candidate)
@@ -145,6 +174,12 @@ public class AluInputScanner : PedestalScannerBase
     protected override void HandleScannerReset()
     {
         ClearAcceptedPacket();
+        m_CurrentIssue = PacketIssue.None;
+    }
+
+    protected override void OnCandidateLost()
+    {
+        m_CurrentIssue = PacketIssue.None;
     }
 
     protected override void HandleStableCandidate(Component candidate)
@@ -156,6 +191,7 @@ public class AluInputScanner : PedestalScannerBase
         // Once a packet has remained stable long enough, the scanner owns it
         // for the rest of the phase until the controller explicitly resets.
         AcceptedPacket = stableCandidate;
+        m_CurrentIssue = PacketIssue.None;
         AcceptedPacket.LatchInPlace(transform);
         PacketAccepted?.Invoke(this, stableCandidate);
         MarkSuccess();

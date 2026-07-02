@@ -70,6 +70,9 @@ public class AluExecutionController : MonoBehaviour
     [SerializeField]
     TMP_Text m_ExecuteButtonLabel;
 
+    [SerializeField]
+    TMP_Dropdown m_FunctDropdown;
+
     [Header("Timing")]
     [SerializeField]
     float m_ResultSpawnDelaySeconds = 1.25f;
@@ -95,6 +98,7 @@ public class AluExecutionController : MonoBehaviour
     int m_LastResultValue;
     string m_CurrentAluOpValue = "00";
     string m_CurrentAluSrcValue = "0";
+    AluOperation m_SelectedFunctOperation = AluOperation.Add;
 
     public event System.Action<int> ExecutionCompleted;
 
@@ -104,6 +108,7 @@ public class AluExecutionController : MonoBehaviour
     {
         CacheReferences();
         HookButtons();
+        HookDropdown();
         RefreshAllPresentation();
         SetFeedback(string.Empty, false);
     }
@@ -112,6 +117,7 @@ public class AluExecutionController : MonoBehaviour
     {
         CacheReferences();
         HookButtons();
+        HookDropdown();
         HookInputEvents(true);
         RefreshAllPresentation();
     }
@@ -120,6 +126,15 @@ public class AluExecutionController : MonoBehaviour
     {
         HookInputEvents(false);
         UnhookButtons();
+        UnhookDropdown();
+    }
+
+    void Update()
+    {
+        if (!m_IsPhaseActive || m_HasProducedResult || m_ComputeRoutine != null)
+            return;
+
+        RefreshUiTexts();
     }
 
     public void SetPhaseState(bool isActive, InstructionDefinition instruction)
@@ -207,6 +222,7 @@ public class AluExecutionController : MonoBehaviour
         m_HasProducedResult = false;
         m_IsAwaitingContinue = false;
         m_LastResultValue = 0;
+        m_SelectedFunctOperation = ResolveExpectedFunctOperation(m_CurrentInstruction);
         SetFeedback(string.Empty, false);
 
         if (m_ComputeRoutine != null)
@@ -250,7 +266,7 @@ public class AluExecutionController : MonoBehaviour
     {
         var leftValue = m_InputA != null ? m_InputA.AcceptedValue : 0;
         var rightValue = m_InputB != null ? m_InputB.AcceptedValue : 0;
-        var operation = ResolveOperation(m_CurrentInstruction, m_CurrentAluOpValue);
+        var operation = ResolveCurrentOperation();
 
         return operation switch
         {
@@ -313,6 +329,17 @@ public class AluExecutionController : MonoBehaviour
             return false;
         }
 
+        if (expectedAluOp == "10")
+        {
+            var expectedFunctOperation = ResolveExpectedFunctOperation(m_CurrentInstruction);
+            if (m_SelectedFunctOperation != expectedFunctOperation)
+            {
+                validationMessage =
+                    $"Funct selection is {GetOperationDisplayName(m_SelectedFunctOperation)}, but {m_CurrentInstruction.displayName} needs {GetOperationDisplayName(expectedFunctOperation)}.";
+                return false;
+            }
+        }
+
         return true;
     }
 
@@ -361,6 +388,13 @@ public class AluExecutionController : MonoBehaviour
             _ => "00",
         };
 
+        SetFeedback(string.Empty, false);
+        RefreshAllPresentation();
+    }
+
+    void HandleFunctDropdownChanged(int selectedIndex)
+    {
+        m_SelectedFunctOperation = GetDropdownOperation(selectedIndex);
         SetFeedback(string.Empty, false);
         RefreshAllPresentation();
     }
@@ -437,6 +471,15 @@ public class AluExecutionController : MonoBehaviour
         if (m_AluSrcStatusText != null)
             m_AluSrcStatusText.text = $"ALUSrc: {m_CurrentAluSrcValue}";
 
+        if (m_FunctDropdown != null)
+        {
+            var showFunctDropdown = m_CurrentAluOpValue == "10";
+            m_FunctDropdown.gameObject.SetActive(showFunctDropdown);
+            m_FunctDropdown.interactable = showFunctDropdown && !m_HasProducedResult;
+            if (showFunctDropdown)
+                SyncDropdownToCurrentOperation();
+        }
+
         if (m_Input1StatusText != null)
             m_Input1StatusText.text = BuildInputStatusText("Input 1", DataPacketRole.ReadData1, m_InputA);
 
@@ -452,8 +495,16 @@ public class AluExecutionController : MonoBehaviour
 
     string BuildInputStatusText(string inputLabel, DataPacketRole expectedRole, AluInputScanner scanner)
     {
-        if (scanner == null || scanner.AcceptedPacket == null)
+        if (scanner == null)
             return $"{inputLabel}: waiting for {GetRoleDisplayName(expectedRole)}";
+
+        if (scanner.AcceptedPacket == null)
+        {
+            if (scanner.CurrentIssue == AluInputScanner.PacketIssue.ImmediateNotSignExtended)
+                return $"{inputLabel}: Immediate detected (not sign-extended)";
+
+            return $"{inputLabel}: waiting for {GetRoleDisplayName(expectedRole)}";
+        }
 
         var signExtensionSuffix = scanner.AcceptedPacket.PacketRole == DataPacketRole.Immediate
             ? scanner.AcceptedPacket.IsSignExtended ? " (sign-extended)" : " (not sign-extended)"
@@ -463,7 +514,20 @@ public class AluExecutionController : MonoBehaviour
 
     string GetOperationDisplayName()
     {
-        return ResolveOperation(m_CurrentInstruction, m_CurrentAluOpValue) switch
+        return GetOperationDisplayName(ResolveCurrentOperation());
+    }
+
+    AluOperation ResolveCurrentOperation()
+    {
+        if (m_CurrentAluOpValue == "10")
+            return m_SelectedFunctOperation;
+
+        return ResolveOperation(m_CurrentInstruction, m_CurrentAluOpValue);
+    }
+
+    string GetOperationDisplayName(AluOperation operation)
+    {
+        return operation switch
         {
             AluOperation.Subtract => "Sub",
             AluOperation.And => "And",
@@ -482,6 +546,7 @@ public class AluExecutionController : MonoBehaviour
         m_FeedbackText.color = isFailure ? m_FailureFeedbackColor : m_SuccessFeedbackColor;
         m_FeedbackText.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
     }
+
 
     void HookButtons()
     {
@@ -502,6 +567,23 @@ public class AluExecutionController : MonoBehaviour
 
         if (m_ExecuteButton != null)
             m_ExecuteButton.onClick.RemoveListener(HandleExecutePressed);
+    }
+
+    void HookDropdown()
+    {
+        if (m_FunctDropdown == null)
+            return;
+
+        m_FunctDropdown.onValueChanged.RemoveListener(HandleFunctDropdownChanged);
+        m_FunctDropdown.onValueChanged.AddListener(HandleFunctDropdownChanged);
+    }
+
+    void UnhookDropdown()
+    {
+        if (m_FunctDropdown == null)
+            return;
+
+        m_FunctDropdown.onValueChanged.RemoveListener(HandleFunctDropdownChanged);
     }
 
     void HookInputEvents(bool subscribe)
@@ -554,7 +636,20 @@ public class AluExecutionController : MonoBehaviour
             m_ExecuteButtonLabel ??= m_ExecuteButton != null
                 ? m_ExecuteButton.GetComponentInChildren<TMP_Text>(true)
                 : null;
+            m_FunctDropdown ??= m_AluUiRoot.GetComponentInChildren<TMP_Dropdown>(true);
         }
+    }
+
+    void SyncDropdownToCurrentOperation()
+    {
+        if (m_FunctDropdown == null || m_FunctDropdown.options == null || m_FunctDropdown.options.Count == 0)
+            return;
+
+        var targetIndex = GetDropdownIndexForOperation(m_SelectedFunctOperation);
+        if (targetIndex < 0 || targetIndex >= m_FunctDropdown.options.Count)
+            targetIndex = 0;
+
+        m_FunctDropdown.SetValueWithoutNotify(targetIndex);
     }
 
     static void HookPhysicalButton(
@@ -609,6 +704,41 @@ public class AluExecutionController : MonoBehaviour
         if (aluOpValue == "01")
             return AluOperation.Subtract;
 
+        return ResolveExpectedFunctOperation(instruction);
+    }
+
+    AluOperation GetDropdownOperation(int selectedIndex)
+    {
+        if (m_FunctDropdown == null || selectedIndex < 0 || selectedIndex >= m_FunctDropdown.options.Count)
+            return AluOperation.Add;
+
+        var optionText = m_FunctDropdown.options[selectedIndex].text;
+        return optionText.ToLowerInvariant() switch
+        {
+            "subtract" => AluOperation.Subtract,
+            "sub" => AluOperation.Subtract,
+            "and" => AluOperation.And,
+            "or" => AluOperation.Or,
+            "slt" => AluOperation.SetOnLessThan,
+            "set on less than" => AluOperation.SetOnLessThan,
+            _ => AluOperation.Add,
+        };
+    }
+
+    static int GetDropdownIndexForOperation(AluOperation operation)
+    {
+        return operation switch
+        {
+            AluOperation.Subtract => 1,
+            AluOperation.And => 2,
+            AluOperation.Or => 3,
+            AluOperation.SetOnLessThan => 4,
+            _ => 0,
+        };
+    }
+
+    static AluOperation ResolveExpectedFunctOperation(InstructionDefinition instruction)
+    {
         if (instruction == null)
             return AluOperation.Add;
 

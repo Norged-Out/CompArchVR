@@ -1156,6 +1156,7 @@ MonoBehaviour:
   m_FeedbackText: {fileID: 0}
   m_ExecuteButton: {fileID: 0}
   m_ExecuteButtonLabel: {fileID: 0}
+  m_FunctDropdown: {fileID: 0}
   m_ResultSpawnDelaySeconds: 1.25
   m_ExecuteButtonText: Execute
   m_ResultReadyButtonText: Result Ready

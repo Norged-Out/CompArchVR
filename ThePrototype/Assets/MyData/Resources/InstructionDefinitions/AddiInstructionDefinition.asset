@@ -37,7 +37,7 @@ MonoBehaviour:
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
-    explanation: Draft flow for addi. Fetch begins at the Program Counter as usual.
+    explanation: The Program Counter holds the address of the next instruction. This is where the fetch phase begins.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -46,7 +46,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Instruction Memory
     highlightedNode: 2
-    explanation: addi is I-type, so the immediate field replaces rd and funct.
+    explanation: addi is an I-type instruction, so the immediate field is used instead of rd and funct.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -55,7 +55,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Registers + Immediate
     highlightedNode: 3
-    explanation: Decode addi by reading rs from the register file and preparing the immediate value as the second ALU operand. The destination rt is remembered for write-back later.
+    explanation: Decode addi by reading rs and preparing the immediate value as the second ALU operand. The destination rt is saved for write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 2
     blockProgressUntilValidated: 1
@@ -65,7 +65,16 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: ALU Execute
     highlightedNode: 4
-    explanation: addi should use the immediate input path into the ALU instead of a second register operand.
+    explanation: addi uses the immediate input path into the ALU instead of a second register operand.
+    advanceVisualHighlight: 1
+    requiredInteraction: 3
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Data Memory
+    highlightedNode: 5
+    explanation: addi does not touch Data Memory. This checkpoint still exists so the learner sees that the memory path is skipped before write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -74,10 +83,19 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Write Back
     highlightedNode: 6
-    explanation: The ALU result should write back to rt rather than rd.
+    explanation: The ALU result writes back to rt rather than rd.
     advanceVisualHighlight: 1
-    requiredInteraction: 6
+    requiredInteraction: 4
     blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Recap
+    highlightedNode: 6
+    explanation: Recap: addi fetched the instruction, read rs, used the sign-extended immediate as the second ALU input, skipped Data Memory, and wrote the result to rt.
+    advanceVisualHighlight: 1
+    requiredInteraction: 5
+    blockProgressUntilValidated: 0
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 

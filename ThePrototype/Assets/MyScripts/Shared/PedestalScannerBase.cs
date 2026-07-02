@@ -58,6 +58,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
 
     Vector3 m_BodyRestLocalPosition;
     Component m_CurrentCandidate;
+    Component m_CurrentMismatchCandidate;
     Coroutine m_FailureRoutine;
     float m_CurrentScanTime;
     bool m_IsStepActive;
@@ -110,9 +111,9 @@ public abstract class PedestalScannerBase : MonoBehaviour
         if (candidate == null)
         {
             m_CurrentCandidate = null;
+            m_CurrentMismatchCandidate = null;
             m_CurrentScanTime = 0f;
-            if (m_VisualState != ScannerVisualState.Failure)
-                SetVisualState(ScannerVisualState.Idle);
+            SetVisualState(ScannerVisualState.Idle);
             OnCandidateLost();
             return;
         }
@@ -121,10 +122,16 @@ public abstract class PedestalScannerBase : MonoBehaviour
         {
             m_CurrentCandidate = null;
             m_CurrentScanTime = 0f;
+
+            if (candidate != m_CurrentMismatchCandidate)
+                m_CurrentMismatchCandidate = candidate;
+
             SetVisualState(ScannerVisualState.Failure);
             OnImmediateMismatch(candidate);
             return;
         }
+
+        m_CurrentMismatchCandidate = null;
 
         if (candidate != m_CurrentCandidate)
         {
@@ -149,6 +156,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
         m_IsAwaitingValidation = false;
         m_IsLatchedSuccessful = false;
         m_CurrentCandidate = null;
+        m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
 
         if (m_FailureRoutine != null)
@@ -164,6 +172,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
     public void ResetScanner()
     {
         m_CurrentCandidate = null;
+        m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
         m_IsAwaitingValidation = false;
         m_IsLatchedSuccessful = false;

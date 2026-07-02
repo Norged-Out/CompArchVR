@@ -275,8 +275,6 @@ public class WriteBackController : MonoBehaviour
                 DestroyImmediate(packet.gameObject);
         }
 
-        m_PacketScanner?.ConsumeAcceptedPacket();
-
         m_LastTargetRegister = destinationRegister;
         m_LastTransferredValue = packetValue;
         m_LastTransferredPacketRole = packetRole;
@@ -284,11 +282,12 @@ public class WriteBackController : MonoBehaviour
         m_IsAwaitingContinue = true;
         m_TransferRoutine = null;
 
-        WriteBackApplied?.Invoke(destinationRegister, packetValue);
+        m_PacketScanner?.ConsumeAcceptedPacket();
         SetFeedback(
             $"Write-back complete. {destinationRegister} now stores {packetValue}. Click Continue to close the phase.",
             false);
         RefreshPresentation();
+        WriteBackApplied?.Invoke(destinationRegister, packetValue);
     }
 
     bool TryValidateSetup(out string validationMessage)
@@ -371,12 +370,18 @@ public class WriteBackController : MonoBehaviour
 
     void HandleRegisterAccepted(WriteBackRegisterScanner _, RegisterToken __)
     {
+        if (m_HasAppliedWriteBack)
+            return;
+
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }
 
     void HandlePacketAccepted(WriteBackPacketScanner _, DataPacketToken __)
     {
+        if (m_HasAppliedWriteBack)
+            return;
+
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }

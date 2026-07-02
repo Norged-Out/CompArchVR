@@ -10,15 +10,18 @@ Current working scene:
 
 Current prototype focus:
 - playable `add` lesson loop in `Testing Ground`
+- playable `addi` lesson loop now validated alongside `add`
 - scene-authored `Intro UI` and `Register Setup UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
 - register scanner validation path for decode-stage source operands
 - first-pass ALU execution phase now wired with authored ALU UI, physical ALU buttons, and result spawning
+- immediate packet generation and sign-extension path now working for `addi`
+- ALU funct-selection path now working through the authored dropdown for the secondary instruction path
 - dedicated write-back phase now present through a `WB` prefab and authored `WB UI`
 - `Mem UI` exists and is currently functioning as an explanatory checkpoint
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing `addi` and `lw` as the next two instruction targets
+- preparing `lw` as the next major instruction target
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
@@ -88,6 +91,37 @@ Next:
 Risks / Notes:
 - the sign-extension path is intentionally simple for now
 - the next design pass should focus on clarity and reuse, not another rushed architectural rewrite
+
+### 2026-07-02 - addi Immediate Path And Secondary Instruction Flow Stabilized
+
+Completed:
+- validated `addi` as a real secondary lesson path instead of only keeping `add` working
+- fixed the lesson-flow regression that had been skipping ALU / memory and jumping straight to write-back
+- re-stabilized the authored phase order so `add` and `addi` both move through:
+  - `Intro UI`
+  - `Register Setup UI`
+  - `ALU UI`
+  - `Mem UI`
+  - `WB UI`
+- added the physical `Immediate Extender` path so immediate packets can be sign-extended before ALU execution
+- updated ALU-side packet validation so immediate inputs are rejected cleanly until sign extension is complete
+- added clearer ALU-side immediate status messaging so the learner can tell when the wrong immediate state is present
+- wired the authored ALU funct dropdown so the secondary instruction path can drive the expected ALU operation more explicitly
+- confirmed that the current `add` and `addi` loops are now good enough to stop on for the day
+
+Changed:
+- immediate handling is no longer only a quiet boolean in code; it now has a visible physical interaction path through the extender
+- the project now has one register-register path (`add`) and one immediate-based path (`addi`) functioning in the same lesson framework
+- the next bottleneck is no longer decode / ALU sequencing; it is the actual memory-phase buildout for `lw`
+
+Next:
+- build the real memory interaction for `lw`
+- decide how much of the write-up/reference content should move into a persistent cheatsheet or settings panel
+- revisit any remaining UI clarity issues only if they materially affect the next checkpoint
+
+Risks / Notes:
+- sign extension is still represented simply in the data model even though the learner now interacts with a physical extender
+- `lw` remains the largest unfinished checkpoint item because memory scanning, output, and write-back routing still need real interaction logic
 
 ### 2026-06-29 - Supervisor Demo Completed, Next Target Set
 

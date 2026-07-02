@@ -12,6 +12,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class CpuLessonFlow : MonoBehaviour
 {
+    const string k_LogPrefix = "[CpuLessonFlow]";
+
     [SerializeField]
     InstructionDefinition m_CurrentInstruction;
 
@@ -26,6 +28,8 @@ public class CpuLessonFlow : MonoBehaviour
 
     int m_CurrentStepIndex = -1;
     int m_CurrentRegisterSelectionIndex;
+    bool m_RegisterSelectionReadyToContinue;
+    int m_LastAdvanceFrame = -1;
 
     public event Action<CpuLessonFlow> StepChanged;
     public event Action<string, bool> FeedbackChanged;
@@ -35,6 +39,7 @@ public class CpuLessonFlow : MonoBehaviour
     public int CurrentStepIndex => m_CurrentStepIndex;
     public bool HasStarted => m_CurrentStepIndex >= 0;
     public RegisterBank RegisterBank => m_RegisterBank;
+    public bool RegisterSelectionReadyToContinue => m_RegisterSelectionReadyToContinue;
 
     public InstructionFlowStep CurrentStep
     {
@@ -56,6 +61,26 @@ public class CpuLessonFlow : MonoBehaviour
     {
         if (m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
+    }
+
+    /// <summary>
+    /// Lets the authored intro UI decide which instruction asset should drive
+    /// the next walkthrough.
+    /// </summary>
+    public void SetCurrentInstruction(InstructionDefinition instruction)
+    {
+        if (instruction == null || instruction == m_CurrentInstruction)
+            return;
+
+        m_CurrentInstruction = instruction;
+        m_RuntimeSelection.definition = m_CurrentInstruction;
+
+        // If the learner changes the selected lesson mid-run, restart cleanly
+        // so scene objects and runtime state cannot drift between instructions.
+        if (HasStarted)
+            ResetLesson();
+
+        StepChanged?.Invoke(this);
     }
 
     void OnEnable()
@@ -80,10 +105,14 @@ public class CpuLessonFlow : MonoBehaviour
         if (m_CurrentInstruction == null || m_CurrentInstruction.flowSteps == null || m_CurrentInstruction.flowSteps.Length == 0)
             return;
 
+        Debug.Log($"{k_LogPrefix} StartLesson | instruction={m_CurrentInstruction.displayName} assembly={m_CurrentInstruction.assemblyInstructionText} frame={Time.frameCount}", this);
+
         RebindRegisterBank();
         m_RuntimeSelection.definition = m_CurrentInstruction;
         m_RuntimeSelection.ResetOperands();
         m_CurrentRegisterSelectionIndex = 0;
+        m_RegisterSelectionReadyToContinue = false;
+        m_LastAdvanceFrame = -1;
         m_CurrentStepIndex = 0;
 
         if (m_RegisterBank != null)
@@ -104,6 +133,10 @@ public class CpuLessonFlow : MonoBehaviour
         if (!HasStarted || CurrentStep == null)
             return;
 
+        Debug.Log(
+            $"{k_LogPrefix} Advance requested | stepIndex={m_CurrentStepIndex} step={CurrentStep.stepName} interaction={CurrentStep.requiredInteraction} readyToContinue={m_RegisterSelectionReadyToContinue} frame={Time.frameCount}",
+            this);
+
         switch (CurrentStep.requiredInteraction)
         {
             case InstructionStepInteractionType.None:
@@ -112,18 +145,21 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.RegisterSelection:
-                SetFeedback(GetRegisterSelectionPrompt(), true);
+                if (m_RegisterSelectionReadyToContinue)
+                    AdvanceToNextStep();
+                else
+                    SetFeedback(GetRegisterSelectionPrompt(), true);
                 break;
 
             case InstructionStepInteractionType.AluExecution:
-                SetFeedback("Configure the ALU, place the packets on both inputs, then execute the operation.", false);
+                SetFeedback("Set the ALU controls, place the inputs, and execute the operation.", false);
                 break;
 
             case InstructionStepInteractionType.WriteBackExecution:
                 if (!string.IsNullOrWhiteSpace(m_RuntimeSelection.confirmedWriteBackRegister) && m_RuntimeSelection.hasAluResult)
                     AdvanceToNextStep();
                 else
-                    SetFeedback("Configure the write-back controls, place the target register and final data packet, then execute the transfer.", false);
+                    SetFeedback("Set the write-back controls, place the register and result packet, then execute the transfer.", false);
                 break;
 
             case InstructionStepInteractionType.Completion:
@@ -134,6 +170,8 @@ public class CpuLessonFlow : MonoBehaviour
 
     public void ResetLesson()
     {
+        Debug.Log($"{k_LogPrefix} ResetLesson | frame={Time.frameCount}", this);
+
         if (m_RegisterBank != null)
         {
             m_RegisterBank.ResetAllRegisters();
@@ -143,6 +181,8 @@ public class CpuLessonFlow : MonoBehaviour
         m_RuntimeSelection.definition = m_CurrentInstruction;
         m_RuntimeSelection.ResetOperands();
         m_CurrentRegisterSelectionIndex = 0;
+        m_RegisterSelectionReadyToContinue = false;
+        m_LastAdvanceFrame = -1;
         m_CurrentStepIndex = -1;
         StepChanged?.Invoke(this);
         SetFeedback(string.Empty, false);
@@ -155,6 +195,8 @@ public class CpuLessonFlow : MonoBehaviour
 
         if (CurrentStep.requiredInteraction != InstructionStepInteractionType.AluExecution)
             return;
+
+        Debug.Log($"{k_LogPrefix} CompleteAluExecution | result={resultValue} stepIndex={m_CurrentStepIndex} step={CurrentStep.stepName} frame={Time.frameCount}", this);
 
         m_RuntimeSelection.aluResultValue = resultValue;
         m_RuntimeSelection.hasAluResult = true;
@@ -171,11 +213,13 @@ public class CpuLessonFlow : MonoBehaviour
         if (string.IsNullOrWhiteSpace(destinationRegister))
             return;
 
+        Debug.Log($"{k_LogPrefix} CompleteWriteBackExecution | register={destinationRegister} value={resultValue} frame={Time.frameCount}", this);
+
         m_RuntimeSelection.confirmedWriteBackRegister = destinationRegister;
         m_RuntimeSelection.aluResultValue = resultValue;
         m_RuntimeSelection.hasAluResult = true;
         m_RegisterBank?.SetRegisterValue(destinationRegister, resultValue);
-        SetFeedback($"Write-back complete. {destinationRegister} now stores {resultValue}. Click Continue to finish the lesson.", false);
+        SetFeedback($"Write-back complete. {destinationRegister} now stores {resultValue}. Press Continue to finish.", false);
         StepChanged?.Invoke(this);
     }
 
@@ -217,6 +261,7 @@ public class CpuLessonFlow : MonoBehaviour
         switch (CurrentStep.requiredInteraction)
         {
             case InstructionStepInteractionType.RegisterSelection:
+                Debug.Log($"{k_LogPrefix} HandleRegisterScanned | role={scannedRole} register={registerName} selectionIndex={m_CurrentRegisterSelectionIndex} step={CurrentStep.stepName} frame={Time.frameCount}", this);
                 ValidateRegisterSelection(scannedRole, registerName, true);
                 break;
         }
@@ -235,7 +280,7 @@ public class CpuLessonFlow : MonoBehaviour
         {
             m_RegisterBank?.FlashScannerFailure(scannedRole);
             SetFeedback(
-                $"Wrong pedestal. Put {m_CurrentInstruction.GetExpectedRegisterName(expectedRole)} on {GetScannerLabel(expectedRole)}.",
+                $"Use {GetScannerLabel(expectedRole)} for {m_CurrentInstruction.GetExpectedRegisterName(expectedRole)}.",
                 true);
             return;
         }
@@ -248,7 +293,7 @@ public class CpuLessonFlow : MonoBehaviour
                 m_RegisterBank?.FlashFailure(registerName);
 
             SetFeedback(
-                $"Incorrect. {result.expectedRole} should be {result.expectedRegister}, not {registerName}.",
+                $"Incorrect. Expected {result.expectedRegister}, not {registerName}.",
                 true);
             return;
         }
@@ -260,8 +305,8 @@ public class CpuLessonFlow : MonoBehaviour
         // register is still validated here, but it should never spawn output.
         var scannedValue = m_RegisterBank != null ? m_RegisterBank.GetRegisterValue(registerName) : 0;
         var successMessage = ShouldSpawnPacket(result.expectedRole)
-            ? $"Spawning {GetPacketLabel(result.expectedRole)} packet with value {scannedValue}."
-            : $"{registerName} confirmed for {GetScannerLabel(result.expectedRole)}.";
+            ? $"{GetPacketLabel(result.expectedRole)} packet ready: {scannedValue}."
+            : $"{registerName} confirmed on {GetScannerLabel(result.expectedRole)}.";
 
         if (cameFromScanner)
             m_RegisterBank?.SetScannerSuccess(scannedRole);
@@ -270,16 +315,19 @@ public class CpuLessonFlow : MonoBehaviour
 
         if (result.completesStep)
         {
+            m_RegisterSelectionReadyToContinue = true;
             var completionMessage = successMessage;
             if (TrySpawnImmediatePacket())
-                completionMessage += $" Immediate packet spawned with value {m_CurrentInstruction.expectedImmediateValue}.";
+                completionMessage += $" Immediate packet ready: {m_CurrentInstruction.expectedImmediateValue}. Run it through the Immediate Extender before the ALU step.";
 
-            SetFeedback($"{completionMessage} Registers decoded correctly. Continue to the next stage.", false);
-            AdvanceToNextStep();
+            SetFeedback($"{completionMessage} Decode is complete. Press Continue.", false);
+            Debug.Log($"{k_LogPrefix} Register selection complete | step={CurrentStep.stepName} nextStepPending=true frame={Time.frameCount}", this);
+            StepChanged?.Invoke(this);
             return;
         }
 
-        SetFeedback($"{successMessage} Now place {result.nextRegister} on {GetScannerLabel(result.nextRole)}.", false);
+        m_RegisterSelectionReadyToContinue = false;
+        SetFeedback($"{successMessage} Next: place {result.nextRegister} on {GetScannerLabel(result.nextRole)}.", false);
         StepChanged?.Invoke(this);
     }
 
@@ -288,8 +336,24 @@ public class CpuLessonFlow : MonoBehaviour
         if (m_CurrentInstruction == null || m_CurrentInstruction.flowSteps == null)
             return;
 
+        // UI panels are toggled as part of progression. Without a small
+        // debounce, the same click can occasionally be seen twice while panels
+        // swap, which makes the lesson jump over authored intermediate steps.
+        if (m_LastAdvanceFrame == Time.frameCount)
+        {
+            Debug.Log($"{k_LogPrefix} AdvanceToNextStep blocked by debounce | currentStepIndex={m_CurrentStepIndex} frame={Time.frameCount}", this);
+            return;
+        }
+
+        m_LastAdvanceFrame = Time.frameCount;
+        var previousStepName = CurrentStep != null ? CurrentStep.stepName : "<none>";
+        var previousStepIndex = m_CurrentStepIndex;
+
         m_CurrentStepIndex++;
         m_CurrentRegisterSelectionIndex = 0;
+        m_RegisterSelectionReadyToContinue = false;
+
+        Debug.Log($"{k_LogPrefix} AdvanceToNextStep | fromIndex={previousStepIndex} fromStep={previousStepName} toIndex={m_CurrentStepIndex} frame={Time.frameCount}", this);
 
         if (m_CurrentStepIndex >= m_CurrentInstruction.flowSteps.Length)
         {
@@ -304,6 +368,9 @@ public class CpuLessonFlow : MonoBehaviour
     void PresentCurrentStep()
     {
         ConfigureScannersForCurrentStep();
+        Debug.Log(
+            $"{k_LogPrefix} PresentCurrentStep | stepIndex={m_CurrentStepIndex} step={CurrentStep?.stepName} interaction={CurrentStep?.requiredInteraction} highlightedNode={CurrentStep?.highlightedNode} frame={Time.frameCount}",
+            this);
         StepChanged?.Invoke(this);
 
         switch (CurrentStep.requiredInteraction)
@@ -317,12 +384,12 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.AluExecution:
-                SetFeedback("Configure the ALU, place the packets on both inputs, then execute the operation.", false);
+                SetFeedback("Set the ALU controls, place the inputs, and execute the operation.", false);
                 break;
 
             case InstructionStepInteractionType.WriteBackExecution:
                 SetFeedback(
-                    $"Write-back target: {m_CurrentInstruction.GetWriteBackTargetRegister()}. Final source: {GetPacketLabel(m_CurrentInstruction.GetWriteBackPacketRole())}. Configure the controls, place both inputs, then execute the transfer.",
+                    $"Write-back target: {m_CurrentInstruction.GetWriteBackTargetRegister()}. Source: {GetPacketLabel(m_CurrentInstruction.GetWriteBackPacketRole())}. Set the controls, place both inputs, and execute the transfer.",
                     false);
                 break;
 
@@ -350,6 +417,7 @@ public class CpuLessonFlow : MonoBehaviour
         switch (CurrentStep.requiredInteraction)
         {
             case InstructionStepInteractionType.RegisterSelection:
+                m_RegisterSelectionReadyToContinue = false;
                 ConfigureRegisterDecodeScanners();
                 break;
 

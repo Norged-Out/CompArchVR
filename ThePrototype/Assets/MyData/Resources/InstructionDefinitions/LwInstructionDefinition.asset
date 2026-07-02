@@ -37,7 +37,7 @@ MonoBehaviour:
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
-    explanation: Draft flow for lw. Fetch still starts from the Program Counter.
+    explanation: The Program Counter holds the address of the next instruction. This is where the fetch phase begins.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -46,7 +46,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Instruction Memory
     highlightedNode: 2
-    explanation: lw is I-type and uses the immediate field as an address offset.
+    explanation: lw is an I-type instruction and uses the immediate field as an address offset.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -55,7 +55,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Base Register + Offset
     highlightedNode: 3
-    explanation: Decode lw by reading the base register rs and preparing the immediate offset as the second ALU operand. The destination rt is remembered for write-back later.
+    explanation: Decode lw by reading the base register rs and preparing the immediate offset as the second ALU operand. The destination rt is saved for write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 2
     blockProgressUntilValidated: 1
@@ -67,14 +67,14 @@ MonoBehaviour:
     highlightedNode: 4
     explanation: The ALU adds the base register value and the sign-extended immediate to compute the memory address.
     advanceVisualHighlight: 1
-    requiredInteraction: 1
+    requiredInteraction: 3
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
   - stepName: Data Memory
     highlightedNode: 5
-    explanation: Data Memory is actively used by lw, unlike add. This is why the scene now includes a dedicated Data Memory placeholder.
+    explanation: lw uses Data Memory. The address from the ALU is used to read the stored word.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -85,8 +85,17 @@ MonoBehaviour:
     highlightedNode: 6
     explanation: The loaded memory value writes back to rt.
     advanceVisualHighlight: 1
-    requiredInteraction: 6
+    requiredInteraction: 4
     blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Recap
+    highlightedNode: 6
+    explanation: Recap: lw fetched the instruction, read the base register, added the sign-extended offset in the ALU, read Data Memory, and wrote the loaded value to rt.
+    advanceVisualHighlight: 1
+    requiredInteraction: 5
+    blockProgressUntilValidated: 0
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 

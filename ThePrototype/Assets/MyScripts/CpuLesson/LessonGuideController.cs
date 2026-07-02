@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 /// <summary>
 /// Drives the authored lesson guide panels already placed in Testing Ground.
@@ -10,6 +11,7 @@ using UnityEngine.UI;
 public class LessonGuideController : MonoBehaviour
 {
     const float k_ActionButtonHeight = 56f;
+    const string k_LogPrefix = "[LessonGuideController]";
 
     [SerializeField]
     CpuLessonFlow m_LessonFlow;
@@ -38,6 +40,9 @@ public class LessonGuideController : MonoBehaviour
 
     [SerializeField]
     TMP_Text m_IntroActionLabel;
+
+    [SerializeField]
+    TMP_Dropdown m_InstructionDropdown;
 
     [Header("Register Setup UI")]
     [SerializeField]
@@ -85,10 +90,15 @@ public class LessonGuideController : MonoBehaviour
     [SerializeField]
     WriteBackController m_WriteBackController;
 
+    readonly List<InstructionDefinition> m_AvailableInstructions = new();
+    bool m_IsRefreshingInstructionDropdown;
+
     void Awake()
     {
         CacheReferences();
+        PopulateInstructionDropdown();
         HookButtons();
+        HookDropdowns();
         EnsureButtonLayout(m_IntroActionButton);
         EnsureButtonLayout(m_RegisterActionButton);
         EnsureButtonLayout(m_MemActionButton);
@@ -98,6 +108,8 @@ public class LessonGuideController : MonoBehaviour
     void OnEnable()
     {
         CacheReferences();
+        PopulateInstructionDropdown();
+        HookDropdowns();
 
         if (m_AluController != null)
             m_AluController.ExecutionCompleted += HandleAluExecutionCompleted;
@@ -155,10 +167,21 @@ public class LessonGuideController : MonoBehaviour
         }
     }
 
+    void HookDropdowns()
+    {
+        if (m_InstructionDropdown == null)
+            return;
+
+        m_InstructionDropdown.onValueChanged.RemoveListener(HandleInstructionChanged);
+        m_InstructionDropdown.onValueChanged.AddListener(HandleInstructionChanged);
+    }
+
     void HandleIntroActionPressed()
     {
         if (m_LessonFlow == null)
             return;
+
+        Debug.Log($"{k_LogPrefix} Intro button pressed | hasStarted={m_LessonFlow.HasStarted} step={m_LessonFlow.CurrentStep?.stepName} frame={Time.frameCount}", this);
 
         if (!m_LessonFlow.HasStarted)
             m_LessonFlow.StartLesson();
@@ -171,6 +194,8 @@ public class LessonGuideController : MonoBehaviour
         if (m_LessonFlow == null)
             return;
 
+        Debug.Log($"{k_LogPrefix} Register button pressed | hasStarted={m_LessonFlow.HasStarted} step={m_LessonFlow.CurrentStep?.stepName} frame={Time.frameCount}", this);
+
         if (!m_LessonFlow.HasStarted)
             m_LessonFlow.StartLesson();
         else
@@ -182,14 +207,29 @@ public class LessonGuideController : MonoBehaviour
         if (m_LessonFlow == null)
             return;
 
+        Debug.Log($"{k_LogPrefix} Mem button pressed | hasStarted={m_LessonFlow.HasStarted} step={m_LessonFlow.CurrentStep?.stepName} frame={Time.frameCount}", this);
+
         if (!m_LessonFlow.HasStarted)
             m_LessonFlow.StartLesson();
         else
             m_LessonFlow.Advance();
     }
 
+    void HandleInstructionChanged(int selectedIndex)
+    {
+        if (m_IsRefreshingInstructionDropdown)
+            return;
+
+        if (selectedIndex < 0 || selectedIndex >= m_AvailableInstructions.Count)
+            return;
+
+        m_LessonFlow?.SetCurrentInstruction(m_AvailableInstructions[selectedIndex]);
+        RefreshView();
+    }
+
     void HandleStepChanged(CpuLessonFlow _)
     {
+        Debug.Log($"{k_LogPrefix} StepChanged | step={m_LessonFlow?.CurrentStep?.stepName} frame={Time.frameCount}", this);
         RefreshView();
     }
 
@@ -266,6 +306,10 @@ public class LessonGuideController : MonoBehaviour
         var showMemoryPanel = ShouldShowMemoryPanel();
         var showWriteBackPanel = ShouldShowWriteBackPanel();
 
+        Debug.Log(
+            $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} register={showRegisterPanel} alu={showAluPanel} mem={showMemoryPanel} wb={showWriteBackPanel} frame={Time.frameCount}",
+            this);
+
         // Panels are authored in the scene and simply toggled on/off as the
         // lesson advances. That keeps layout work in edit mode instead of runtime.
         if (m_RegisterRoot != null)
@@ -301,9 +345,11 @@ public class LessonGuideController : MonoBehaviour
                 m_WriteBackRoot.SetActive(false);
             SetText(
                 m_IntroBody,
-                $"Lesson Introduction\n\nSelected instruction: {m_LessonFlow.CurrentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin the walkthrough.");
+                $"Lesson Introduction\n\nSelected instruction: {m_LessonFlow.CurrentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin.");
             SetText(m_IntroFeedback, string.Empty);
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_StartButtonLabel, true);
+            if (m_InstructionDropdown != null)
+                m_InstructionDropdown.interactable = true;
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
             SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
@@ -315,6 +361,9 @@ public class LessonGuideController : MonoBehaviour
         var step = m_LessonFlow.CurrentStep;
         if (step == null)
             return;
+
+        if (m_InstructionDropdown != null)
+            m_InstructionDropdown.interactable = false;
 
         if (showAluPanel)
         {
@@ -359,7 +408,8 @@ public class LessonGuideController : MonoBehaviour
                 m_IntroActionButton,
                 m_IntroActionLabel,
                 step.requiredInteraction == InstructionStepInteractionType.Completion ? m_RestartButtonLabel : m_ContinueButtonLabel,
-                step.requiredInteraction == InstructionStepInteractionType.ContinueButton || step.requiredInteraction == InstructionStepInteractionType.Completion);
+                step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
+                step.requiredInteraction == InstructionStepInteractionType.Completion);
             SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
             SetButtonState(m_MemActionButton, m_MemActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
@@ -370,7 +420,9 @@ public class LessonGuideController : MonoBehaviour
 
         SetText(m_RegisterBody, BuildRegisterBody(step));
         var showContinue = step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
-                           step.requiredInteraction == InstructionStepInteractionType.Completion;
+                           step.requiredInteraction == InstructionStepInteractionType.Completion ||
+                           (step.requiredInteraction == InstructionStepInteractionType.RegisterSelection &&
+                            m_LessonFlow.RegisterSelectionReadyToContinue);
         SetButtonState(
             m_RegisterActionButton,
             m_RegisterActionLabel,
@@ -436,7 +488,7 @@ public class LessonGuideController : MonoBehaviour
             $"{step.explanation}";
 
         if (step.stepName.IndexOf("Fetch", System.StringComparison.OrdinalIgnoreCase) >= 0)
-            body += "\n\nPress Continue when you are ready to move into instruction decode.";
+            body += "\n\nPress Continue to move into instruction decode.";
 
         return body;
     }
@@ -450,8 +502,8 @@ public class LessonGuideController : MonoBehaviour
         if (step.highlightedNode == DatapathNodeId.InstructionMemory)
         {
             var decodeFocus = instruction.usesImmediate
-                ? "Decode the fields, identify rs, and note that operand 2 will come from the immediate path rather than a second register read."
-                : "Decode the fields and identify which source registers will feed the ALU.";
+                ? "Identify rs, rt, and the immediate field. Operand 2 will come from the immediate path instead of a second register read."
+                : "Identify rs, rt, and the destination register for this instruction.";
 
             return
                 $"Instruction Decode\n\n" +
@@ -481,6 +533,7 @@ public class LessonGuideController : MonoBehaviour
             {
                 registerLines += $"Operand 2 <- immediate ({instruction.expectedImmediateValue})\n";
                 registerLines += $"Write-back target remembered for later <- rt ({instruction.expectedRt})\n";
+                registerLines += "Immediate packet <- spawned automatically, then sent through the Immediate Extender\n";
             }
             else if (instruction.usesDestinationRegister)
             {
@@ -491,7 +544,7 @@ public class LessonGuideController : MonoBehaviour
                 $"Instruction Decode\n\n" +
                 $"Instruction: {instruction.displayName}\n\n" +
                 $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                $"Decode the operands by placing the required source registers on the active scanners.\n\n" +
+                $"Place the required source registers on the active scanners.\n\n" +
                 $"{registerLines}\n" +
                 $"{step.explanation}";
         }
@@ -510,15 +563,15 @@ public class LessonGuideController : MonoBehaviour
             return string.Empty;
 
         var memorySummary = instruction.touchesDataMemory
-            ? "This instruction uses the data-memory path. Review the memory controls here before moving on."
-            : "This instruction does not use data memory, so this phase is a conceptual checkpoint only.";
+            ? "This instruction uses the data-memory path."
+            : "This instruction skips the data-memory path.";
 
         return
             $"Memory Access\n\n" +
             $"Instruction: {instruction.displayName}\n\n" +
             $"Assembly: {instruction.assemblyInstructionText}\n\n" +
             $"{memorySummary}\n\n" +
-            $"For this step, use the panel feedback to confirm whether memory is actually involved before moving on.\n\n" +
+            $"Review this stage, then continue when ready.\n\n" +
             $"{step.explanation}";
     }
 
@@ -554,6 +607,54 @@ public class LessonGuideController : MonoBehaviour
                 ? m_MemActionButton.GetComponentInChildren<TMP_Text>(true)
                 : null;
         }
+
+        if (m_InstructionDropdown == null && m_IntroRoot != null)
+            m_InstructionDropdown = m_IntroRoot.GetComponentInChildren<TMP_Dropdown>(true);
+    }
+
+    void PopulateInstructionDropdown()
+    {
+        if (m_InstructionDropdown == null || m_LessonFlow == null)
+            return;
+
+        m_AvailableInstructions.Clear();
+        var loadedInstructions = Resources.LoadAll<InstructionDefinition>("InstructionDefinitions");
+        if (loadedInstructions != null && loadedInstructions.Length > 0)
+        {
+            m_AvailableInstructions.AddRange(loadedInstructions);
+            m_AvailableInstructions.Sort((left, right) =>
+                string.Compare(left != null ? left.displayName : string.Empty,
+                    right != null ? right.displayName : string.Empty,
+                    System.StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (m_AvailableInstructions.Count == 0 && m_LessonFlow.CurrentInstruction != null)
+            m_AvailableInstructions.Add(m_LessonFlow.CurrentInstruction);
+
+        m_IsRefreshingInstructionDropdown = true;
+        m_InstructionDropdown.ClearOptions();
+
+        var optionLabels = new List<string>();
+        foreach (var instruction in m_AvailableInstructions)
+            optionLabels.Add(instruction != null ? instruction.displayName : "Instruction");
+
+        if (optionLabels.Count > 0)
+            m_InstructionDropdown.AddOptions(optionLabels);
+
+        var currentIndex = 0;
+        for (var index = 0; index < m_AvailableInstructions.Count; index++)
+        {
+            if (m_AvailableInstructions[index] == m_LessonFlow.CurrentInstruction)
+            {
+                currentIndex = index;
+                break;
+            }
+        }
+
+        if (m_InstructionDropdown.options.Count > 0)
+            m_InstructionDropdown.SetValueWithoutNotify(currentIndex);
+
+        m_IsRefreshingInstructionDropdown = false;
     }
 
     static void SetText(TMP_Text target, string text)

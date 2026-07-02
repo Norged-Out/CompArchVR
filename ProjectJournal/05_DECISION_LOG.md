@@ -494,6 +494,34 @@ Implication:
 - immediate packets can be validated by later phases as either sign-extended or not
 - a future physical sign-extension station can update that same packet state instead of forcing a data-model rewrite
 
+## 2026-07-02 - Immediate Sign Extension Should Be Taught Through A Physical Extender, But Still Stored As A Simple Packet State
+
+Decision:
+- keep the datapacket data model simple with a sign-extension boolean
+- teach the learner the concept through a dedicated physical `Immediate Extender`
+
+Why:
+- this preserves a clean implementation path for `addi` and later `lw`
+- it gives the learner an explicit interaction for sign extension instead of hiding the concept entirely in code
+- it avoids another data-model rewrite while still making the phase visible and teachable
+
+Implication:
+- ALU-side validation should reject an immediate packet until the extender has marked it sign-extended
+- later memory/branch work can reuse the same packet state instead of inventing a second immediate representation
+
+## 2026-07-02 - The Next Checkpoint Focus Is Memory, Not More Refactoring
+
+Decision:
+- treat `lw` memory-phase implementation as the next main work item
+
+Why:
+- `add` and `addi` are now both functioning through the current authored lesson loop
+- the biggest remaining checkpoint risk is not lesson sequencing anymore; it is the lack of a real memory interaction
+
+Implication:
+- the next session should prioritize memory scanning, memory output, and `lw` handoff into write-back
+- further cleanup or polish should stay secondary unless it directly blocks the memory lesson
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

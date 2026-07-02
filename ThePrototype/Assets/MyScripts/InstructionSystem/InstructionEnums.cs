@@ -77,12 +77,12 @@ public enum DatapathNodeId
 /// </summary>
 public enum InstructionStepInteractionType
 {
-    None,
-    ContinueButton,
-    RegisterSelection,
-    Completion,
-    AluExecution,
-    WriteBackExecution,
+    None = 0,
+    ContinueButton = 1,
+    RegisterSelection = 2,
+    AluExecution = 3,
+    WriteBackExecution = 4,
+    Completion = 5,
 }
 
 /// <summary>

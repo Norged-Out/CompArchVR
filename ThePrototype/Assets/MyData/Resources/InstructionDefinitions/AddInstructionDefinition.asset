@@ -39,7 +39,7 @@ MonoBehaviour:
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
-    explanation: The Program Counter holds the address of the next instruction to fetch. Start the add walkthrough by reading the current PC value.
+    explanation: The Program Counter holds the address of the next instruction. This is where the fetch phase begins.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -48,7 +48,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Instruction Memory
     highlightedNode: 2
-    explanation: Instruction Memory uses the PC address to fetch the add instruction. For this first pass, the bit-field breakdown is shown in the lesson UI instead of making you manually build the full encoding.
+    explanation: Instruction Memory uses the PC value to fetch the add instruction. The lesson UI shows the field breakdown for reference.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -57,7 +57,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Register Selection
     highlightedNode: 3
-    explanation: Decode the source operands for add. Scan rs and rt now so their values become Read Data 1 and Read Data 2 packets. The destination rd is remembered for write-back later.
+    explanation: Decode add by reading rs and rt. Their values will become Read Data 1 and Read Data 2 packets. The destination rd is saved for write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 2
     blockProgressUntilValidated: 1
@@ -70,7 +70,7 @@ MonoBehaviour:
     highlightedNode: 4
     explanation: The ALU adds the values from rs and rt. Because add is R-type, it does not use an immediate and it does not touch Data Memory.
     advanceVisualHighlight: 1
-    requiredInteraction: 5
+    requiredInteraction: 3
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
@@ -86,18 +86,18 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Write Back
     highlightedNode: 6
-    explanation: The ALU result is written back to rd. Use the lesson guide to confirm the destination register and final value before continuing.
+    explanation: The ALU result is written back to rd. Confirm the destination register and final value before continuing.
     advanceVisualHighlight: 1
-    requiredInteraction: 6
+    requiredInteraction: 4
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
   - stepName: Recap
     highlightedNode: 6
-    explanation: Recap: add fetched the instruction, read rs and rt from the register file, used the ALU to add them, skipped Data Memory, and wrote the result back to rd.
+    explanation: Recap: add fetched the instruction, read rs and rt, used the ALU to add them, skipped Data Memory, and wrote the result to rd.
     advanceVisualHighlight: 1
-    requiredInteraction: 4
+    requiredInteraction: 5
     blockProgressUntilValidated: 0
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
