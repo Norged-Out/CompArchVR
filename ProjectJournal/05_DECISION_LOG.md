@@ -566,6 +566,33 @@ Implication:
 - only `lw` and `sw` should open the real `Mem UI` / `Memory Unit`
 - `sw` should end with recap after Mem rather than visiting write-back
 
+## 2026-07-05 - Immediate Packets Should Spawn From The Immediate Extender
+
+Decision:
+- move immediate packet spawning away from the second register scanner and onto the authored `Immediate Extender`
+
+Why:
+- this separates source-register scanning from immediate-path interaction more cleanly
+- it avoids overlap/confusion when immediate-bearing instructions also need other packet behavior during decode
+
+Implication:
+- immediate-based decode should finish by telling the learner to press Continue
+- that Continue action should spawn the immediate packet at the extender, where sign extension can then become a visible physical sub-step
+
+## 2026-07-05 - Datapackets Should Be Consumed By The Phase That Actually Uses Them
+
+Decision:
+- once a datapacket has served its purpose in a phase, that phase should consume it
+
+Why:
+- leaving spent packets behind caused clutter and confusing leftovers between instruction runs
+- datapath packets are easier to reason about when they exist only while they are still logically "in flight"
+
+Implication:
+- ALU should consume accepted input packets after producing the ALU result
+- Memory should consume accepted address/store-data packets after finishing its transfer
+- write-back remains responsible for the final register-value change at the end of the flow
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

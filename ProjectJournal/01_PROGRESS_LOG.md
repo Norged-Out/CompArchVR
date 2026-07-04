@@ -13,6 +13,7 @@ Current prototype focus:
 - playable `addi` lesson loop now validated alongside `add`
 - playable `lw` lesson loop now validated with real memory-bank addressing
 - playable `sw` lesson loop now validated with real memory writes back into the shared bank
+- playable `sub`, `and`, `or`, and `slt` lesson loops now validated through the shared ALU path
 - scene-authored `Intro UI` and `Register Setup UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
@@ -23,8 +24,9 @@ Current prototype focus:
 - dedicated write-back phase now present through a `WB` prefab and authored `WB UI`
 - dedicated memory phase now present through a `Memory Unit`, `Data Memory` bank, and authored `Mem UI`
 - memory phase is now concluded as a real interaction step for both `lw` and `sw`
+- datapackets are now cleaned up when the phase that consumed them actually finishes
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing the wider instruction pass after finishing `sw`
+- preparing post-demo polish and the next feature pass after the now-working instruction set
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
@@ -32,6 +34,7 @@ Current milestone:
 - desired target for that checkpoint:
   - `addi` working
   - `lw` working
+  - now exceeded with `sw` plus the remaining core ALU instructions working too
 
 ## Latest Summary
 
@@ -49,7 +52,7 @@ The project now has:
 - control decode scene content still exists, but the active lesson path is now being simplified around fetch -> decode -> execute -> write-back
 - a smaller lesson architecture centered on focused lesson and register scripts
 - cleaned instruction assets for `add`, `addi`, and `lw`
-- cleaned instruction assets for `sw`
+- cleaned instruction assets for `sw`, `sub`, `and`, `or`, and `slt`
 - a working first-pass `ALU` execution loop for `add`:
   - register scanners emit `Read Data 1` / `Read Data 2` packets
   - authored ALU input zones accept the correct packet types through child trigger scanners
@@ -70,6 +73,10 @@ The project now has:
 - a simple sign-extension placeholder path in code:
   - immediate packets now carry a boolean that later phases can validate
   - this keeps `addi` / `lw` unblocked before a physical sign-extension interaction is authored
+- datapacket lifetime is now better matched to datapath use:
+  - ALU consumes its accepted input packets once the ALU result is produced
+  - Memory consumes address/store packets once the memory interaction has completed
+  - write-back still owns the final register value update
 
 ### 2026-06-29 - V1 Closed Out, V2 Design Started
 
@@ -188,6 +195,42 @@ Next:
 Risks / Notes:
 - memory persistence across lesson restarts is currently considered a feature, not a bug
 - later lesson modes may still want an optional "reset memory bank" path if testing repeatability becomes more important than continuity
+
+### 2026-07-05 - Remaining ALU Instructions Added And Packet Lifetime Cleaned Up
+
+Completed:
+- added `sub`, `and`, `or`, and `slt` as real instruction-definition-driven lesson paths
+- validated that the existing fetch -> decode -> execute -> write-back structure can now support:
+  - multiple R-type ALU operations
+  - immediate execution through the extender path
+  - memory-bearing instructions through the shared Mem phase
+- updated lesson flow so non-memory instructions skip Mem cleanly while still telling the learner what the next phase will be
+- updated lesson flow so `sw` skips write-back and ends with recap instead
+- moved immediate packet spawning to the `Immediate Extender` instead of piggybacking on the second register scanner
+- cleaned datapacket lifetime so packets are consumed only when their owning phase has actually used them
+- kept the current working set validated across:
+  - `add`
+  - `addi`
+  - `lw`
+  - `sw`
+  - `sub`
+  - `and`
+  - `or`
+  - `slt`
+
+Changed:
+- immediate-based decode now finishes by prompting the learner to press Continue, which spawns the immediate packet at the authored extender
+- ALU and memory feedback now more clearly announce whether the next stage is Memory Access, Write Back, or recap
+- the current prototype is no longer only a three-instruction V1 slice; it is now a broader, still-guided single-cycle datapath lesson set
+
+Next:
+- post-demo polish and cleanup
+- decide the final pedagogical home of `RegDst` and `ALUSrc`
+- design the next meaningful extension rather than inflating complexity for its own sake
+
+Risks / Notes:
+- the lesson framework is now broad enough that wording clarity matters more than raw phase existence
+- future work should continue favoring reusable instruction definitions over one-off phase hacks
 
 
 Next:

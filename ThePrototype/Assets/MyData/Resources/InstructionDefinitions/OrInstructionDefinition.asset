@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
+  m_Name: OrInstructionDefinition
+  m_EditorClassIdentifier: 
+  displayName: or
+  mnemonic: 3
+  format: 0
+  category: 1
+  summary: Bitwise-OR rs and rt, then write the result into rd.
+  assemblyInstructionText: or t2, t0, t1
+  fieldBreakdownText: "opcode: 000000\nrs: t0\nrt: t1\nrd: t2\nfunct: 100101"
+  opcodeBits: 000000
+  functBits: 100101
+  expectedRs: t0
+  expectedRt: t1
+  expectedRd: t2
+  expectedImmediateValue: 0
+  touchesDataMemory: 0
+  writesRegisterFile: 1
+  usesImmediate: 0
+  usesDestinationRegister: 1
+  initialRegisterValues:
+  - registerId: t0
+    value: 12
+  - registerId: t1
+    value: 10
+  - registerId: t2
+    value: 0
+  flowSteps:
+  - stepName: Fetch
+    highlightedNode: 1
+    explanation: The Program Counter supplies the address of the next instruction so Instruction Memory can fetch or.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Instruction Memory
+    highlightedNode: 2
+    explanation: or is an R-type instruction, so the funct field selects the bitwise OR operation.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Register Selection
+    highlightedNode: 3
+    explanation: Read rs and rt from the register file. rd is remembered for write-back.
+    advanceVisualHighlight: 1
+    requiredInteraction: 2
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections:
+    - 1
+    - 2
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: ALU Execute
+    highlightedNode: 4
+    explanation: The ALU performs a bitwise OR between rs and rt. Data Memory is skipped.
+    advanceVisualHighlight: 1
+    requiredInteraction: 3
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Data Memory
+    highlightedNode: 5
+    explanation: or does not touch Data Memory. The lesson will skip this phase and continue to write-back.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Write Back
+    highlightedNode: 6
+    explanation: The bitwise-OR result is written back to rd.
+    advanceVisualHighlight: 1
+    requiredInteraction: 4
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Recap
+    highlightedNode: 6
+    explanation: Recap: or fetched the instruction, read rs and rt, combined them with a bitwise OR in the ALU, skipped Data Memory, and wrote the result to rd.
+    advanceVisualHighlight: 1
+    requiredInteraction: 5
+    blockProgressUntilValidated: 0
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 

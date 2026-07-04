@@ -78,6 +78,25 @@ public class AluInputScanner : PedestalScannerBase
         base.ResetScanner();
     }
 
+    /// <summary>
+    /// Consumes the currently accepted packet after the ALU has used it.
+    /// This destroys the physical packet object and returns the hand to its
+    /// idle state so later instructions start with a clean execution stage.
+    /// </summary>
+    public void ConsumeAcceptedPacket()
+    {
+        var packetToConsume = AcceptedPacket;
+        if (packetToConsume != null)
+        {
+            if (Application.isPlaying)
+                Destroy(packetToConsume.gameObject);
+            else
+                DestroyImmediate(packetToConsume.gameObject);
+        }
+
+        ResetScanner();
+    }
+
     public void NotifyPacketEntered(DataPacketToken dataPacketToken)
     {
         if (dataPacketToken != null)

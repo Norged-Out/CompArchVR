@@ -255,10 +255,15 @@ public class AluExecutionController : MonoBehaviour
         m_IsAwaitingContinue = true;
         m_ComputeRoutine = null;
 
+        // Once the ALU has produced its result, both input packets have served
+        // their purpose and should leave the execution stage.
+        m_InputA?.ConsumeAcceptedPacket();
+        m_InputB?.ConsumeAcceptedPacket();
+
         if (m_ComputeParticles != null)
             m_ComputeParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
 
-        SetFeedback($"ALU result ready: {resultValue}. Click Continue to proceed to write-back.", false);
+        SetFeedback(GetPostExecuteFeedback(resultValue), false);
         RefreshAllPresentation();
     }
 
@@ -462,7 +467,7 @@ public class AluExecutionController : MonoBehaviour
                 $"4. Place {input2RoleName} on Input 2.\n" +
                 $"5. {input2Note}\n" +
                 $"6. For this instruction, ALUOp should be {GetExpectedAluOpValue(m_CurrentInstruction)} and ALUSrc should be {(m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate ? "1" : "0")}.\n" +
-                "7. Press Execute to produce the ALU result packet.";
+                $"7. Press Execute to produce the ALU result packet.\n8. Next: {GetNextPhaseLabel()}.";
         }
 
         if (m_AluOpStatusText != null)
@@ -535,6 +540,31 @@ public class AluExecutionController : MonoBehaviour
             AluOperation.SetOnLessThan => "Slt",
             _ => "Add",
         };
+    }
+
+    string GetPostExecuteFeedback(int resultValue)
+    {
+        if (m_CurrentInstruction == null)
+            return $"ALU result ready: {resultValue}. Click Continue.";
+
+        if (m_CurrentInstruction.UsesInteractiveMemoryPhase())
+            return $"ALU result ready: {resultValue}. Click Continue to proceed to Memory Access.";
+
+        if (m_CurrentInstruction.UsesWriteBackPhase())
+            return $"ALU result ready: {resultValue}. Memory Access is skipped for this instruction. Click Continue to proceed to Write Back.";
+
+        return $"ALU result ready: {resultValue}. Click Continue to proceed to the recap.";
+    }
+
+    string GetNextPhaseLabel()
+    {
+        if (m_CurrentInstruction == null)
+            return "Continue";
+
+        if (m_CurrentInstruction.UsesInteractiveMemoryPhase())
+            return "Memory Access";
+
+        return m_CurrentInstruction.UsesWriteBackPhase() ? "Write Back" : "Recap";
     }
 
     void SetFeedback(string message, bool isFailure)

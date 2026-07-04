@@ -74,7 +74,11 @@ Current prototype features:
   - `addi`
   - `lw`
   - `sw`
-- `add`, `addi`, `lw`, and `sw` have now all been tested successfully through the current loop
+  - `sub`
+  - `and`
+  - `or`
+  - `slt`
+- `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, and `slt` have now all been tested successfully through the current loop
 - `lw` now uses a real MIPS-style memory address path:
   - base register contains a data-segment address
   - immediate acts as offset
@@ -125,6 +129,7 @@ Why:
 - the desired target for that checkpoint is:
   - `addi` working
   - `lw` working
+  - this target has effectively been passed already, with `sw` and the remaining core ALU instructions now working too
 
 ## If Starting A New Chat
 
@@ -151,6 +156,7 @@ Before stopping:
 - how immediate generation and sign extension should be visualized physically for `addi` and `lw`
 - what the cleanest ALU-control teaching interaction should be beyond the current `ALUOp` / `ALUSrc` layer
 - what the cleanest memory interaction should be for `lw` / `sw`, especially when handling address packets, memory-data packets, and store-data packets
+- what the cleanest next post-demo feature target should be now that the current instruction set is broader than the original checkpoint goal
 - whether instruction choice is user-selected, randomized, or both
 - the exact acceptance rule for pedestal validation:
   - immediate on release
@@ -164,14 +170,14 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- build the next instruction expansion on top of the now-working `add` / `addi` / `lw` / `sw` set:
+- decide the next post-demo expansion on top of the now-working instruction set:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
 - keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- reuse the scanner / register / lesson state pattern for the next instruction families
+- reuse the scanner / register / lesson state pattern for any new instruction families
 - keep the immediate extender and ALU funct dropdown as the baseline for immediate-based and secondary-path lessons
 - add a persistent cheatsheet/settings menu for previously closed guidance
 
