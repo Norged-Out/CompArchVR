@@ -11,6 +11,7 @@ Current working scene:
 Current prototype focus:
 - playable `add` lesson loop in `Testing Ground`
 - playable `addi` lesson loop now validated alongside `add`
+- playable `lw` lesson loop now validated with real memory-bank addressing
 - scene-authored `Intro UI` and `Register Setup UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
@@ -19,9 +20,9 @@ Current prototype focus:
 - immediate packet generation and sign-extension path now working for `addi`
 - ALU funct-selection path now working through the authored dropdown for the secondary instruction path
 - dedicated write-back phase now present through a `WB` prefab and authored `WB UI`
-- `Mem UI` exists and is currently functioning as an explanatory checkpoint
+- dedicated memory phase now present through a `Memory Unit`, `Data Memory` bank, and authored `Mem UI`
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing `lw` as the next major instruction target
+- preparing `sw` as the next major instruction target
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
@@ -113,6 +114,45 @@ Changed:
 - immediate handling is no longer only a quiet boolean in code; it now has a visible physical interaction path through the extender
 - the project now has one register-register path (`add`) and one immediate-based path (`addi`) functioning in the same lesson framework
 - the next bottleneck is no longer decode / ALU sequencing; it is the actual memory-phase buildout for `lw`
+
+### 2026-07-04 - lw Memory Phase Validated End-To-End
+
+Completed:
+- finished the real memory interaction path for `lw`
+- validated a real MIPS-style address flow instead of tiny prototype-only offsets
+- updated the `lw` lesson setup so:
+  - base register holds a data-segment address
+  - immediate acts as the byte offset
+  - ALU result maps cleanly into the authored 24-word memory bank
+- finished the dedicated `Memory Unit` + `Data Memory` bank interaction loop:
+  - address input pedestal
+  - optional data input pedestal for future store support
+  - `MemRead` / `MemWrite` controls
+  - central address/value readout
+  - addressed-word highlighting
+  - memory-data packet spawn for write-back
+- fixed the memory-phase UI ownership conflict so the `MemoryUnitController` now owns Mem UI behavior directly
+- fixed the pipe animation so it now behaves as:
+  - idle
+  - one-time waiting sweep
+  - transfer success sweep
+  - back to idle only when the phase ends
+- kept the memory output packet alive after Mem so `lw` can actually complete WB
+- confirmed that `add`, `addi`, and `lw` are now all functioning through the current lesson loop
+
+Changed:
+- memory addresses are now presented in hex while stored values stay decimal
+- hover-preview behavior in the memory bank now defers to the addressed-word preview once a real address has been scanned
+- the memory phase is no longer just an explanatory checkpoint; it is now a real interaction step in the lesson
+
+Next:
+- build `sw` on top of the now-working memory bank + memory unit structure
+- refine memory-bank presentation and reference UI only if it materially helps the next checkpoint
+- continue treating guide UI and interaction UI as separate concerns where practical
+
+Risks / Notes:
+- the current 24-word memory bank is enough for the present lesson targets, but later scaling may need better authoring utilities
+- `lw` now assumes a real data-segment-style base address and should keep doing so unless the whole pedagogy changes on purpose
 
 Next:
 - build the real memory interaction for `lw`

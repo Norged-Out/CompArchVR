@@ -31,7 +31,7 @@ MonoBehaviour:
   usesDestinationRegister: 0
   initialRegisterValues:
   - registerId: t0
-    value: 100
+    value: 268500992
   - registerId: t1
     value: 0
   flowSteps:

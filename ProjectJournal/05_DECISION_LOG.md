@@ -522,6 +522,37 @@ Implication:
 - the next session should prioritize memory scanning, memory output, and `lw` handoff into write-back
 - further cleanup or polish should stay secondary unless it directly blocks the memory lesson
 
+## 2026-07-04 - Memory Unit Owns Mem UI Directly
+
+Decision:
+- let `MemoryUnitController` be the only script that owns the authored `Mem UI` interaction state
+
+Why:
+- sharing Mem UI responsibility between the lesson-guide layer and the memory-phase controller caused button visibility and phase-state conflicts
+- the memory phase now has enough real interaction logic that it should manage its own UI state directly
+
+Implication:
+- `LessonGuideController` should only decide whether the Mem panel is shown
+- `MemoryUnitController` should own:
+  - Mem body/status/feedback text
+  - Mem action button state
+  - Mem phase progression handoff
+
+## 2026-07-04 - lw Uses Real Data-Segment Addresses
+
+Decision:
+- keep `lw` aligned with real MIPS-style addressing instead of simplifying memory addresses down to tiny local offsets
+
+Why:
+- the user wants the memory bank to resemble the MARS / MIPS mental model
+- the authored 24-word memory bank already maps cleanly to a contiguous data-segment slice
+- this makes ALU-result packets and memory lookup behavior easier to explain alongside outside tools
+
+Implication:
+- base registers used by memory instructions should hold real data-segment addresses such as `0x10010000`
+- immediates remain offsets
+- the ALU result should be a full mapped address before memory lookup occurs
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

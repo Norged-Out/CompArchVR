@@ -47,7 +47,9 @@ Current prototype features:
   - result packet spawning with role `ALU Result`
   - one extra continue click after success before write-back
 - authored memory/write-back path now exists:
-  - a dedicated `Mem UI` explanatory checkpoint
+  - a dedicated `Mem UI`
+  - a dedicated `Memory Unit` prefab
+  - a dedicated `Data Memory` bank prefab with 24 authored words
   - a dedicated `WB` prefab
   - a dedicated `WB UI`
   - a bonus loose register scanner for value inspection / confirmation
@@ -67,7 +69,11 @@ Current prototype features:
   - immediate packets carrying a simple sign-extension boolean for now
 - planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
-- `add` and `addi` have now both been tested successfully through the current loop
+- `add`, `addi`, and `lw` have now all been tested successfully through the current loop
+- `lw` now uses a real MIPS-style memory address path:
+  - base register contains a data-segment address
+  - immediate acts as offset
+  - ALU result maps into the authored data-memory bank
 - slim lesson scripts now reduced to:
   - `CpuLessonFlow`
   - `LessonGuideController`
@@ -153,14 +159,14 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- build the real memory phase for `lw` on top of the now-working `add` and `addi` framework:
+- build `sw` on top of the now-working `add`, `addi`, and `lw` framework:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
 - keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- reuse the scanner / register / lesson state pattern for `lw`
+- reuse the scanner / register / lesson state pattern for memory-heavy instructions
 - keep the immediate extender and ALU funct dropdown as the baseline for immediate-based and secondary-path lessons
 - add a persistent cheatsheet/settings menu for previously closed guidance
 

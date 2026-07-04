@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5033044483061681566}
   m_Layer: 0
-  m_Name: Memory Data Spawn
+  m_Name: Spawn Point
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -41,7 +41,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7088465835607753273}
   - component: {fileID: 8465295019629140824}
-  - component: {fileID: 4285001913610783380}
+  - component: {fileID: 2783849543063190550}
   m_Layer: 0
   m_Name: Scan Zone
   m_TagString: Untagged
@@ -85,7 +85,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3, y: 2, z: 2}
   m_Center: {x: 0, y: -1, z: -0.5}
---- !u!114 &4285001913610783380
+--- !u!114 &2783849543063190550
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -94,9 +94,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 1471692284639993154}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6657d9b5535b46268ee8cb0f5893c23e, type: 3}
+  m_Script: {fileID: 11500000, guid: 0d2e68140963b3247b2625958567fd30, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WriteBackRegisterScannerZone
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryPacketScannerZone
 --- !u!1 &1501059461289941892
 GameObject:
   m_ObjectHideFlags: 0
@@ -222,7 +222,7 @@ GameObject:
   - component: {fileID: 4055626674858858594}
   - component: {fileID: 5737826233557989919}
   m_Layer: 0
-  m_Name: Cube_Small_Purple
+  m_Name: Memory Data Pedestal
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1186,6 +1186,7 @@ GameObject:
   - component: {fileID: 3216959825443256955}
   - component: {fileID: 4708226339509877080}
   - component: {fileID: 1427603830217671358}
+  - component: {fileID: 8624324151712736963}
   m_Layer: 0
   m_Name: Memory Unit
   m_TagString: Untagged
@@ -1260,6 +1261,40 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.7800004, y: 0.09000001, z: 0.6000004}
   m_Center: {x: -0.00000014901161, y: 0.08999999, z: -0.000000059604645}
+--- !u!114 &8624324151712736963
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6524586531415313360}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2ad1a06ff50576947a6cc3b2c5aec810, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryUnitController
+  m_AddressScanner: {fileID: 2834090301039670117}
+  m_DataScanner: {fileID: 8484546047887632578}
+  m_MemoryDataSpawnTransform: {fileID: 5033044483061681566}
+  m_TransferParticles: {fileID: 1846259045846916847}
+  m_MemoryDataPacketPrefab: {fileID: 2850044229737508648, guid: 2874c88f5adc40788d4b1d6bb0a6c80f, type: 3}
+  m_MemoryBank: {fileID: 0}
+  m_MemReadButtonRoot: {fileID: 1364021660308291361}
+  m_MemWriteButtonRoot: {fileID: 3582767479301052988}
+  m_MemUiRoot: {fileID: 0}
+  m_BodyText: {fileID: 0}
+  m_MemReadStatusText: {fileID: 0}
+  m_MemWriteStatusText: {fileID: 0}
+  m_AddressStatusText: {fileID: 0}
+  m_DataStatusText: {fileID: 0}
+  m_FeedbackText: {fileID: 0}
+  m_ActionButton: {fileID: 0}
+  m_ActionButtonLabel: {fileID: 0}
+  m_DataSpawnDelaySeconds: 0.75
+  m_ExecuteButtonText: Execute Memory
+  m_ContinueButtonText: Continue
+  m_SuccessFeedbackColor: {r: 0.78, g: 0.96, b: 0.82, a: 1}
+  m_FailureFeedbackColor: {r: 1, g: 0.55, b: 0.55, a: 1}
 --- !u!1 &7143373270525491421
 GameObject:
   m_ObjectHideFlags: 0
@@ -6115,7 +6150,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4967150500449203451}
   - component: {fileID: 4285388186165402339}
-  - component: {fileID: 269960406879826287}
+  - component: {fileID: 7767309796304511655}
   m_Layer: 0
   m_Name: Scan Zone
   m_TagString: Untagged
@@ -6159,7 +6194,7 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 3, y: 2, z: 2}
   m_Center: {x: 0, y: -1, z: -0.5}
---- !u!114 &269960406879826287
+--- !u!114 &7767309796304511655
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -6168,9 +6203,9 @@ MonoBehaviour:
   m_GameObject: {fileID: 7556708934196716848}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6657d9b5535b46268ee8cb0f5893c23e, type: 3}
+  m_Script: {fileID: 11500000, guid: 0794f60f8daa2c949954749087b033be, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WriteBackRegisterScannerZone
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryAddressScannerZone
 --- !u!1 &7842459417284233527
 GameObject:
   m_ObjectHideFlags: 0
@@ -6442,13 +6477,48 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4979550671179526, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7088465835607753273}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1598848506094552, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8484546047887632578}
   m_SourcePrefab: {fileID: 100100000, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
+--- !u!23 &5874352549282000587 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 23321762944091716, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
+  m_PrefabInstance: {fileID: 5897252056230307983}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &5892554804779624329 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4979550671179526, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
   m_PrefabInstance: {fileID: 5897252056230307983}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &5895934999631088471 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1598848506094552, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
+  m_PrefabInstance: {fileID: 5897252056230307983}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &8484546047887632578
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5895934999631088471}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6cee006f2051e8f41848702b3adec3f5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryPacketScanner
+  m_TargetRenderer: {fileID: 5874352549282000587}
+  m_TargetMaterialIndex: 2
+  m_InactiveMaterial: {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
+  m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
+  m_OccupiedMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
+  m_SuccessMaterial: {fileID: 2100000, guid: 1a63d72c6152ef54493960acf859fc4a, type: 2}
+  m_FailureMaterial: {fileID: 2100000, guid: 52e4708390753da4d9c262a4a102d958, type: 2}
+  m_RequiredStableSeconds: 1
+  m_ScanZone: {fileID: 8465295019629140824}
+  m_ExpectedPacketRole: 3
 --- !u!1001 &6936773492214909041
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6684,10 +6754,45 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 4979550671179526, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
       insertIndex: -1
       addedObject: {fileID: 4967150500449203451}
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1598848506094552, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2834090301039670117}
   m_SourcePrefab: {fileID: 100100000, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
 --- !u!4 &8657227047749833390 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4979550671179526, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
+  m_PrefabInstance: {fileID: 8661854739399302568}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1 &8660625333511044720 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1598848506094552, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
+  m_PrefabInstance: {fileID: 8661854739399302568}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2834090301039670117
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8660625333511044720}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ca4b626accd987648851465c321029aa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryAddressScanner
+  m_TargetRenderer: {fileID: 8676129685714525164}
+  m_TargetMaterialIndex: 2
+  m_InactiveMaterial: {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
+  m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
+  m_OccupiedMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
+  m_SuccessMaterial: {fileID: 2100000, guid: 1a63d72c6152ef54493960acf859fc4a, type: 2}
+  m_FailureMaterial: {fileID: 2100000, guid: 52e4708390753da4d9c262a4a102d958, type: 2}
+  m_RequiredStableSeconds: 1
+  m_ScanZone: {fileID: 4285388186165402339}
+  m_ExpectedPacketRole: 4
+--- !u!23 &8676129685714525164 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: 23321762944091716, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}
   m_PrefabInstance: {fileID: 8661854739399302568}
   m_PrefabAsset: {fileID: 0}
