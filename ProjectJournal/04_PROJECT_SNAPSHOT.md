@@ -69,7 +69,12 @@ Current prototype features:
   - immediate packets carrying a simple sign-extension boolean for now
 - planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
 - draft instruction assets for `add`, `addi`, and `lw`
-- `add`, `addi`, and `lw` have now all been tested successfully through the current loop
+- instruction assets now exist for:
+  - `add`
+  - `addi`
+  - `lw`
+  - `sw`
+- `add`, `addi`, `lw`, and `sw` have now all been tested successfully through the current loop
 - `lw` now uses a real MIPS-style memory address path:
   - base register contains a data-segment address
   - immediate acts as offset
@@ -159,14 +164,14 @@ Before stopping:
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- build `sw` on top of the now-working `add`, `addi`, and `lw` framework:
+- build the next instruction expansion on top of the now-working `add` / `addi` / `lw` / `sw` set:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
 - keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- reuse the scanner / register / lesson state pattern for memory-heavy instructions
+- reuse the scanner / register / lesson state pattern for the next instruction families
 - keep the immediate extender and ALU funct dropdown as the baseline for immediate-based and secondary-path lessons
 - add a persistent cheatsheet/settings menu for previously closed guidance
 

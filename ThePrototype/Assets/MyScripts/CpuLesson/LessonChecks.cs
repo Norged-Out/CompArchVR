@@ -63,7 +63,7 @@ public static class LessonChecks
         if (step.requiredRegisterSelections != null && step.requiredRegisterSelections.Length > 0)
             return step.requiredRegisterSelections;
 
-        if (instruction != null && instruction.usesImmediate)
+        if (instruction != null && instruction.usesImmediate && instruction.mnemonic != InstructionMnemonic.Sw)
             return k_ImmediateRegisterReadOrder;
 
         return k_RegisterReadOrder;

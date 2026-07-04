@@ -1276,7 +1276,6 @@ MonoBehaviour:
   m_AddressScanner: {fileID: 2834090301039670117}
   m_DataScanner: {fileID: 8484546047887632578}
   m_MemoryDataSpawnTransform: {fileID: 5033044483061681566}
-  m_TransferParticles: {fileID: 1846259045846916847}
   m_MemoryDataPacketPrefab: {fileID: 2850044229737508648, guid: 2874c88f5adc40788d4b1d6bb0a6c80f, type: 3}
   m_MemoryBank: {fileID: 0}
   m_MemReadButtonRoot: {fileID: 1364021660308291361}

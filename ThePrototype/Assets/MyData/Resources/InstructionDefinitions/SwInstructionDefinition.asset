@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
+  m_Name: SwInstructionDefinition
+  m_EditorClassIdentifier: 
+  displayName: sw
+  mnemonic: 9
+  format: 1
+  category: 2
+  summary: Store a register value into Data Memory using a base register plus immediate offset.
+  assemblyInstructionText: sw t1, 12(t0)
+  fieldBreakdownText: "opcode: 101011\nrs: t0\nrt: t1\nimmediate: 12"
+  opcodeBits: 101011
+  functBits: 
+  expectedRs: t0
+  expectedRt: t1
+  expectedRd: 
+  expectedImmediateValue: 12
+  touchesDataMemory: 1
+  writesRegisterFile: 0
+  usesImmediate: 1
+  usesDestinationRegister: 0
+  initialRegisterValues:
+  - registerId: t0
+    value: 268500992
+  - registerId: t1
+    value: 55
+  flowSteps:
+  - stepName: Fetch
+    highlightedNode: 1
+    explanation: The Program Counter points at the next instruction. Fetch begins by using that address to retrieve sw from Instruction Memory.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Instruction Memory
+    highlightedNode: 2
+    explanation: sw is an I-type instruction. rs is the base register, rt is the value that will be stored, and the immediate is the address offset.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Base Register + Store Data
+    highlightedNode: 3
+    explanation: Decode sw by reading rs for the base address and rt for the value to store. The immediate packet is also prepared as the ALU offset.
+    advanceVisualHighlight: 1
+    requiredInteraction: 2
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections:
+    - 1
+    - 2
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Address Calculation
+    highlightedNode: 4
+    explanation: The ALU adds the base register value and the sign-extended immediate to compute the target memory address.
+    advanceVisualHighlight: 1
+    requiredInteraction: 3
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Data Memory
+    highlightedNode: 5
+    explanation: sw writes the selected register value into Data Memory at the computed address.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Recap
+    highlightedNode: 0
+    explanation: Recap: sw fetched the instruction, read the base register and store-data register, used the ALU to compute the address, and wrote the value into Data Memory.
+    advanceVisualHighlight: 1
+    requiredInteraction: 5
+    blockProgressUntilValidated: 0
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 

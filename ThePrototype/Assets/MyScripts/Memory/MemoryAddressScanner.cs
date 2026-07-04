@@ -56,6 +56,23 @@ public class MemoryAddressScanner : MemoryPillarScannerBase
         base.ResetScanner();
     }
 
+    /// <summary>
+    /// Consumes the latched address packet once the memory stage has used it.
+    /// </summary>
+    public void ConsumeAcceptedPacket()
+    {
+        var packetToConsume = AcceptedPacket;
+        if (packetToConsume != null)
+        {
+            if (Application.isPlaying)
+                Destroy(packetToConsume.gameObject);
+            else
+                DestroyImmediate(packetToConsume.gameObject);
+        }
+
+        ResetScanner();
+    }
+
     public void NotifyPacketEntered(DataPacketToken dataPacketToken)
     {
         if (dataPacketToken != null)

@@ -24,6 +24,9 @@ public class CpuLessonFlow : MonoBehaviour
     RegisterBank m_RegisterBank;
 
     [SerializeField]
+    ImmediateExtender m_ImmediateExtender;
+
+    [SerializeField]
     InstructionRuntimeSelection m_RuntimeSelection = new();
 
     int m_CurrentStepIndex = -1;
@@ -61,6 +64,8 @@ public class CpuLessonFlow : MonoBehaviour
     {
         if (m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
+
+        CacheSceneReferences();
     }
 
     /// <summary>
@@ -85,6 +90,7 @@ public class CpuLessonFlow : MonoBehaviour
 
     void OnEnable()
     {
+        CacheSceneReferences();
         RebindRegisterBank();
     }
 
@@ -145,10 +151,21 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.RegisterSelection:
-                if (m_RegisterSelectionReadyToContinue)
-                    AdvanceToNextStep();
-                else
+                if (!m_RegisterSelectionReadyToContinue)
+                {
                     SetFeedback(GetRegisterSelectionPrompt(), true);
+                    break;
+                }
+
+                if (m_CurrentInstruction != null &&
+                    m_CurrentInstruction.usesImmediate &&
+                    !TrySpawnImmediatePacket())
+                {
+                    SetFeedback("Immediate Extender is missing its packet prefab or spawn anchor.", true);
+                    break;
+                }
+
+                AdvanceToNextStep();
                 break;
 
             case InstructionStepInteractionType.AluExecution:
@@ -200,7 +217,7 @@ public class CpuLessonFlow : MonoBehaviour
 
         m_RuntimeSelection.aluResultValue = resultValue;
         m_RuntimeSelection.hasAluResult = true;
-        SetFeedback($"ALU result produced: {resultValue}. Continue to write back.", false);
+        SetFeedback(GetPostAluContinuePrompt(resultValue), false);
         AdvanceToNextStep();
     }
 
@@ -317,8 +334,9 @@ public class CpuLessonFlow : MonoBehaviour
         {
             m_RegisterSelectionReadyToContinue = true;
             var completionMessage = successMessage;
-            if (TrySpawnImmediatePacket())
-                completionMessage += $" Immediate packet ready: {m_CurrentInstruction.expectedImmediateValue}. Run it through the Immediate Extender before the ALU step.";
+
+            if (m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate)
+                completionMessage += $" Press Continue to spawn the Immediate packet at the Immediate Extender.";
 
             SetFeedback($"{completionMessage} Decode is complete. Press Continue.", false);
             Debug.Log($"{k_LogPrefix} Register selection complete | step={CurrentStep.stepName} nextStepPending=true frame={Time.frameCount}", this);
@@ -353,6 +371,15 @@ public class CpuLessonFlow : MonoBehaviour
         m_CurrentRegisterSelectionIndex = 0;
         m_RegisterSelectionReadyToContinue = false;
 
+        while (m_CurrentStepIndex < m_CurrentInstruction.flowSteps.Length &&
+               ShouldSkipStep(m_CurrentInstruction.flowSteps[m_CurrentStepIndex]))
+        {
+            Debug.Log(
+                $"{k_LogPrefix} Skipping step | stepIndex={m_CurrentStepIndex} step={m_CurrentInstruction.flowSteps[m_CurrentStepIndex].stepName} frame={Time.frameCount}",
+                this);
+            m_CurrentStepIndex++;
+        }
+
         Debug.Log($"{k_LogPrefix} AdvanceToNextStep | fromIndex={previousStepIndex} fromStep={previousStepName} toIndex={m_CurrentStepIndex} frame={Time.frameCount}", this);
 
         if (m_CurrentStepIndex >= m_CurrentInstruction.flowSteps.Length)
@@ -384,7 +411,11 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.AluExecution:
-                SetFeedback("Set the ALU controls, place the inputs, and execute the operation.", false);
+                SetFeedback(
+                    m_CurrentInstruction != null && m_CurrentInstruction.UsesInteractiveMemoryPhase()
+                        ? "Set the ALU controls, place the inputs, execute the operation, then continue to Memory Access."
+                        : "Set the ALU controls, place the inputs, execute the operation, then continue directly to Write Back.",
+                    false);
                 break;
 
             case InstructionStepInteractionType.WriteBackExecution:
@@ -492,26 +523,21 @@ public class CpuLessonFlow : MonoBehaviour
         var activeRoles = LessonChecks.GetRequiredRoles(m_CurrentInstruction, CurrentStep);
         m_RegisterBank.ConfigureScannerRoles(activeRoles);
         m_RegisterBank.SetScannerOutputRole(InstructionRegisterRole.Rs, DataPacketRole.ReadData1);
-        m_RegisterBank.SetScannerOutputRole(
-            InstructionRegisterRole.Rt,
-            m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate
-                ? DataPacketRole.Immediate
-                : DataPacketRole.ReadData2);
+        m_RegisterBank.SetScannerOutputRole(InstructionRegisterRole.Rt, m_CurrentInstruction.GetDecodeRtPacketRole());
     }
 
     bool TrySpawnImmediatePacket()
     {
-        if (m_RegisterBank == null || m_CurrentInstruction == null || !m_CurrentInstruction.usesImmediate)
+        if (m_CurrentInstruction == null || !m_CurrentInstruction.usesImmediate)
+            return false;
+
+        CacheSceneReferences();
+
+        if (m_ImmediateExtender == null)
             return false;
 
         m_RuntimeSelection.immediateValue = m_CurrentInstruction.expectedImmediateValue;
-        m_RegisterBank.SpawnPacketFromScanner(
-            InstructionRegisterRole.Rt,
-            DataPacketRole.Immediate,
-            "imm",
-            "Immediate",
-            m_CurrentInstruction.expectedImmediateValue);
-        return true;
+        return m_ImmediateExtender.SpawnImmediatePacket(m_CurrentInstruction.expectedImmediateValue);
     }
 
     void SetFeedback(string message, bool isFailure)
@@ -543,5 +569,62 @@ public class CpuLessonFlow : MonoBehaviour
     {
         var loadedInstruction = Resources.Load<InstructionDefinition>(m_DefaultInstructionResourcePath);
         return loadedInstruction != null ? loadedInstruction : InstructionDefaults.CreateFallbackAdd();
+    }
+
+    void CacheSceneReferences()
+    {
+        if (m_RegisterBank == null)
+            m_RegisterBank = FindFirstSceneObject<RegisterBank>();
+
+        if (m_ImmediateExtender == null)
+            m_ImmediateExtender = FindFirstSceneObject<ImmediateExtender>();
+    }
+
+    bool ShouldSkipStep(InstructionFlowStep step)
+    {
+        if (step == null || m_CurrentInstruction == null)
+            return false;
+
+        if (step.highlightedNode == DatapathNodeId.DataMemory && !m_CurrentInstruction.UsesInteractiveMemoryPhase())
+            return true;
+
+        if ((step.highlightedNode == DatapathNodeId.WriteBack ||
+             step.requiredInteraction == InstructionStepInteractionType.WriteBackExecution) &&
+            !m_CurrentInstruction.UsesWriteBackPhase())
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    string GetPostAluContinuePrompt(int resultValue)
+    {
+        if (m_CurrentInstruction == null)
+            return $"ALU result produced: {resultValue}. Continue.";
+
+        if (m_CurrentInstruction.UsesInteractiveMemoryPhase())
+            return $"ALU result produced: {resultValue}. Continue to Memory Access.";
+
+        if (m_CurrentInstruction.UsesWriteBackPhase())
+            return $"ALU result produced: {resultValue}. Data Memory is skipped for this instruction. Continue to Write Back.";
+
+        return $"ALU result produced: {resultValue}. Continue to the recap.";
+    }
+
+    static T FindFirstSceneObject<T>() where T : Component
+    {
+        foreach (var component in Resources.FindObjectsOfTypeAll<T>())
+        {
+            if (component == null)
+                continue;
+
+            if (!component.gameObject.scene.IsValid() || !component.gameObject.scene.isLoaded)
+                continue;
+
+            return component;
+        }
+
+        return null;
     }
 }

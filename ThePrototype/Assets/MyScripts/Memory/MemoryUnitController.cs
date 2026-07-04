@@ -9,12 +9,10 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 /// Owns the authored Memory Unit prefab and the Mem UI.
 /// For the current vertical slice it primarily handles:
 /// - `lw` memory reads with ALU-result address input
+/// - `sw` memory writes with ALU-result address input plus store-data packet
 /// - MemRead / MemWrite control validation
 /// - highlighting the addressed word in the Data Memory bank
 /// - spawning the Memory Data packet used by write-back
-///
-/// `add` and `addi` still visit the memory phase, but only as an explicit
-/// "this path is skipped" checkpoint.
 /// </summary>
 [DisallowMultipleComponent]
 public class MemoryUnitController : MonoBehaviour
@@ -247,7 +245,7 @@ public class MemoryUnitController : MonoBehaviour
                 SpawnMemoryDataPacket(addressValue, loadedValue);
                 m_LastLoadedValue = loadedValue;
                 m_LastAddress = addressValue;
-                SetFeedback($"Memory data ready: loaded {loadedValue} from {FormatAddress(addressValue)}. Click Continue.", false);
+                SetFeedback($"Memory data ready: loaded {loadedValue} from {FormatAddress(addressValue)}. Click Continue to proceed to Write Back.", false);
             }
         }
         else if (IsStoreInstruction())
@@ -262,21 +260,15 @@ public class MemoryUnitController : MonoBehaviour
             {
                 m_LastLoadedValue = sourcePacket.Value;
                 m_LastAddress = addressValue;
-                SetFeedback($"Stored {sourcePacket.Value} into {FormatAddress(addressValue)}. Click Continue.", false);
+                SetFeedback($"Stored {sourcePacket.Value} into {FormatAddress(addressValue)}. Click Continue to proceed to the recap.", false);
             }
-        }
-
-        if (addressPacket != null)
-        {
-            if (Application.isPlaying)
-                Destroy(addressPacket.gameObject);
-            else
-                DestroyImmediate(addressPacket.gameObject);
         }
 
         m_HasCompletedMemoryAccess = true;
         m_IsAwaitingContinue = true;
         m_ExecutionRoutine = null;
+
+        m_AddressScanner?.ConsumeAcceptedPacket();
 
         if (m_DataScanner != null && IsStoreInstruction())
             m_DataScanner.ConsumeAcceptedPacket();
@@ -431,7 +423,8 @@ public class MemoryUnitController : MonoBehaviour
                 "1. Set MemRead = 1 and MemWrite = 0.\n" +
                 "2. Place the ALU Result packet on the address input.\n" +
                 "3. Confirm the highlighted memory word.\n" +
-                "4. Execute the memory read to produce a Memory Data packet.";
+                "4. Execute the memory read to produce a Memory Data packet.\n" +
+                "5. Next: Write Back.";
         }
 
         return
@@ -441,7 +434,8 @@ public class MemoryUnitController : MonoBehaviour
             "1. Set MemRead = 0 and MemWrite = 1.\n" +
             "2. Place the ALU Result packet on the address input.\n" +
             "3. Place the store-data packet on the data input.\n" +
-            "4. Execute the memory write.";
+            "4. Execute the memory write.\n" +
+            "5. Next: Recap.";
     }
 
     string BuildAddressStatusText()
@@ -509,7 +503,7 @@ public class MemoryUnitController : MonoBehaviour
 
     bool UsesInteractiveMemory()
     {
-        return m_CurrentInstruction != null && m_CurrentInstruction.touchesDataMemory;
+        return m_CurrentInstruction != null && m_CurrentInstruction.UsesInteractiveMemoryPhase();
     }
 
     bool IsLoadInstruction()

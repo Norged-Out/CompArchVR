@@ -454,6 +454,8 @@ public class LessonGuideController : MonoBehaviour
 
         if (step.stepName.IndexOf("Fetch", System.StringComparison.OrdinalIgnoreCase) >= 0)
             body += "\n\nPress Continue to move into instruction decode.";
+        else
+            body += $"\n\nNext: {GetNextStageLabel(step)}.";
 
         return body;
     }
@@ -466,9 +468,15 @@ public class LessonGuideController : MonoBehaviour
 
         if (step.highlightedNode == DatapathNodeId.InstructionMemory)
         {
-            var decodeFocus = instruction.usesImmediate
-                ? "Identify rs, rt, and the immediate field. Operand 2 will come from the immediate path instead of a second register read."
-                : "Identify rs, rt, and the destination register for this instruction.";
+            var decodeFocus = instruction.mnemonic switch
+            {
+                InstructionMnemonic.Sw =>
+                    "Identify rs as the base register, rt as the store-data register, and the immediate field as the address offset.",
+                _ when instruction.usesImmediate =>
+                    "Identify rs, rt, and the immediate field. Operand 2 will come from the immediate path instead of a second register read.",
+                _ =>
+                    "Identify rs, rt, and the destination register for this instruction.",
+            };
 
             return
                 $"Instruction Decode\n\n" +
@@ -476,33 +484,45 @@ public class LessonGuideController : MonoBehaviour
                 $"Assembly: {instruction.assemblyInstructionText}\n\n" +
                 $"Field Breakdown:\n{instruction.fieldBreakdownText}\n\n" +
                 $"{decodeFocus}\n\n" +
-                $"{step.explanation}";
+                $"{step.explanation}\n\n" +
+                $"Next: {GetNextStageLabel(step)}.";
         }
 
         if (step.requiredInteraction == InstructionStepInteractionType.RegisterSelection)
         {
-            var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
             var registerLines = string.Empty;
-            foreach (var registerRole in requiredRoles)
-            {
-                registerLines += registerRole switch
-                {
-                    InstructionRegisterRole.Rs => $"Read Register 1 <- rs ({instruction.expectedRs})\n",
-                    InstructionRegisterRole.Rt => $"Read Register 2 <- rt ({instruction.expectedRt})\n",
-                    InstructionRegisterRole.Rd => $"Write Register <- rd ({instruction.expectedRd})\n",
-                    _ => string.Empty,
-                };
-            }
 
-            if (instruction.usesImmediate)
+            if (instruction.mnemonic == InstructionMnemonic.Sw)
             {
-                registerLines += $"Operand 2 <- immediate ({instruction.expectedImmediateValue})\n";
-                registerLines += $"Write-back target remembered for later <- rt ({instruction.expectedRt})\n";
-                registerLines += "Immediate packet <- spawned automatically, then sent through the Immediate Extender\n";
+                registerLines += $"Read Register 1 <- rs ({instruction.expectedRs})\n";
+                registerLines += $"Read Register 2 <- rt ({instruction.expectedRt})\n";
+                registerLines += $"Address Offset <- immediate ({instruction.expectedImmediateValue})\n";
+                registerLines += "Resulting packets <- Read Data 1, Read Data 2, and Immediate\n";
             }
-            else if (instruction.usesDestinationRegister)
+            else
             {
-                registerLines += $"Write-back target remembered for later <- rd ({instruction.expectedRd})\n";
+                var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
+                foreach (var registerRole in requiredRoles)
+                {
+                    registerLines += registerRole switch
+                    {
+                        InstructionRegisterRole.Rs => $"Read Register 1 <- rs ({instruction.expectedRs})\n",
+                        InstructionRegisterRole.Rt => $"Read Register 2 <- rt ({instruction.expectedRt})\n",
+                        InstructionRegisterRole.Rd => $"Write Register <- rd ({instruction.expectedRd})\n",
+                        _ => string.Empty,
+                    };
+                }
+
+                if (instruction.usesImmediate)
+                {
+                    registerLines += $"Operand 2 <- immediate ({instruction.expectedImmediateValue})\n";
+                    registerLines += $"Write-back target remembered for later <- rt ({instruction.expectedRt})\n";
+                    registerLines += "Immediate packet <- spawned at the Immediate Extender after you press Continue\n";
+                }
+                else if (instruction.usesDestinationRegister)
+                {
+                    registerLines += $"Write-back target remembered for later <- rd ({instruction.expectedRd})\n";
+                }
             }
 
             return
@@ -511,14 +531,46 @@ public class LessonGuideController : MonoBehaviour
                 $"Assembly: {instruction.assemblyInstructionText}\n\n" +
                 $"Place the required source registers on the active scanners.\n\n" +
                 $"{registerLines}\n" +
-                $"{step.explanation}";
+                $"{step.explanation}\n\n" +
+                $"Next: {GetNextStageLabel(step)}.";
         }
 
         return
             $"Instruction: {instruction.displayName}\n\n" +
             $"Assembly: {instruction.assemblyInstructionText}\n\n" +
             $"Stage: {step.stepName}\n\n" +
-            $"{step.explanation}";
+            $"{step.explanation}\n\n" +
+            $"Next: {GetNextStageLabel(step)}.";
+    }
+
+    string GetNextStageLabel(InstructionFlowStep currentStep)
+    {
+        var instruction = m_LessonFlow != null ? m_LessonFlow.CurrentInstruction : null;
+        if (currentStep == null || instruction == null)
+            return "Continue";
+
+        if (currentStep.requiredInteraction == InstructionStepInteractionType.Completion)
+            return "Restart";
+
+        if (currentStep.requiredInteraction == InstructionStepInteractionType.RegisterSelection ||
+            currentStep.highlightedNode == DatapathNodeId.InstructionMemory)
+        {
+            return currentStep.highlightedNode == DatapathNodeId.InstructionMemory ? "Register Setup" : "Execution";
+        }
+
+        if (currentStep.requiredInteraction == InstructionStepInteractionType.AluExecution)
+        {
+            return instruction.UsesInteractiveMemoryPhase() ? "Memory Access" :
+                instruction.UsesWriteBackPhase() ? "Write Back" : "Recap";
+        }
+
+        if (currentStep.highlightedNode == DatapathNodeId.DataMemory)
+            return instruction.UsesWriteBackPhase() ? "Write Back" : "Recap";
+
+        if (currentStep.requiredInteraction == InstructionStepInteractionType.WriteBackExecution)
+            return "Recap";
+
+        return "Continue";
     }
 
     void CacheReferences()

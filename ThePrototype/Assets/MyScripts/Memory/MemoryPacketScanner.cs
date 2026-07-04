@@ -76,7 +76,16 @@ public class MemoryPacketScanner : MemoryPillarScannerBase
 
     public void ConsumeAcceptedPacket()
     {
-        AcceptedPacket = null;
+        var packetToConsume = AcceptedPacket;
+        if (packetToConsume != null)
+        {
+            if (Application.isPlaying)
+                Destroy(packetToConsume.gameObject);
+            else
+                DestroyImmediate(packetToConsume.gameObject);
+        }
+
+        ResetScanner();
     }
 
     protected override void CacheVisualReferences()

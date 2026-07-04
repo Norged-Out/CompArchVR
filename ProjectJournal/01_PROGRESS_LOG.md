@@ -12,6 +12,7 @@ Current prototype focus:
 - playable `add` lesson loop in `Testing Ground`
 - playable `addi` lesson loop now validated alongside `add`
 - playable `lw` lesson loop now validated with real memory-bank addressing
+- playable `sw` lesson loop now validated with real memory writes back into the shared bank
 - scene-authored `Intro UI` and `Register Setup UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
@@ -21,8 +22,9 @@ Current prototype focus:
 - ALU funct-selection path now working through the authored dropdown for the secondary instruction path
 - dedicated write-back phase now present through a `WB` prefab and authored `WB UI`
 - dedicated memory phase now present through a `Memory Unit`, `Data Memory` bank, and authored `Mem UI`
+- memory phase is now concluded as a real interaction step for both `lw` and `sw`
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing `sw` as the next major instruction target
+- preparing the wider instruction pass after finishing `sw`
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
@@ -47,6 +49,7 @@ The project now has:
 - control decode scene content still exists, but the active lesson path is now being simplified around fetch -> decode -> execute -> write-back
 - a smaller lesson architecture centered on focused lesson and register scripts
 - cleaned instruction assets for `add`, `addi`, and `lw`
+- cleaned instruction assets for `sw`
 - a working first-pass `ALU` execution loop for `add`:
   - register scanners emit `Read Data 1` / `Read Data 2` packets
   - authored ALU input zones accept the correct packet types through child trigger scanners
@@ -153,6 +156,39 @@ Next:
 Risks / Notes:
 - the current 24-word memory bank is enough for the present lesson targets, but later scaling may need better authoring utilities
 - `lw` now assumes a real data-segment-style base address and should keep doing so unless the whole pedagogy changes on purpose
+
+### 2026-07-05 - sw Added And Memory Phase Closed Out
+
+Completed:
+- implemented `sw` on top of the existing memory-unit and data-memory-bank structure
+- validated the full `sw` lesson path through:
+  - fetch
+  - decode with `rs`, `rt`, and immediate offset responsibilities
+  - ALU address calculation
+  - Memory Access write
+  - recap without write-back
+- confirmed that memory writes persist inside the shared `DataMemoryBank` instead of resetting on lesson restart
+- finished the memory phase as a real two-path interaction:
+  - `lw` reads from memory and spawns a `Memory Data` packet
+  - `sw` writes store data into the addressed memory word
+- confirmed addressed-word highlighting and central readout remain usable during the memory step
+
+Changed:
+- the memory phase is no longer just a special case for `lw`; it now cleanly supports both load and store behavior
+- `sw` now acts as the first instruction that fully exercises:
+  - base register + immediate address formation
+  - carried store-data packets
+  - memory mutation without register write-back
+
+Next:
+- add the remaining arithmetic/logic instructions that can reuse the existing fetch/decode/execute/write-back framework
+- clean up datapacket lifetime so packets disappear once a phase has actually consumed them
+- keep memory persistence unless a future lesson mode explicitly asks for pristine bank resets
+
+Risks / Notes:
+- memory persistence across lesson restarts is currently considered a feature, not a bug
+- later lesson modes may still want an optional "reset memory bank" path if testing repeatability becomes more important than continuity
+
 
 Next:
 - build the real memory interaction for `lw`

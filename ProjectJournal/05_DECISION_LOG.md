@@ -553,6 +553,19 @@ Implication:
 - immediates remain offsets
 - the ALU result should be a full mapped address before memory lookup occurs
 
+## 2026-07-05 - Only lw And sw Should Visit The Interactive Memory Phase
+
+Decision:
+- keep the authored Memory phase only for instructions that actually touch data memory
+
+Why:
+- `add`, `addi`, `sub`, `and`, `or`, and `slt` become cleaner when they move straight from `EX` to `WB`
+- the learner still needs the lesson text to explain the next stage, but does not need a fake Memory interaction when the datapath skips it
+
+Implication:
+- only `lw` and `sw` should open the real `Mem UI` / `Memory Unit`
+- `sw` should end with recap after Mem rather than visiting write-back
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

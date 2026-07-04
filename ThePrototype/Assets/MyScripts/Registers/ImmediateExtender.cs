@@ -11,6 +11,14 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class ImmediateExtender : PedestalScannerBase
 {
+    [Header("Immediate Packet Output")]
+
+    [SerializeField]
+    DataPacketToken m_DataPacketPrefab;
+
+    [SerializeField]
+    Transform m_DataPacketSpawnAnchor;
+
     [SerializeField]
     bool m_AlwaysActive = true;
 
@@ -35,6 +43,7 @@ public class ImmediateExtender : PedestalScannerBase
     readonly HashSet<DataPacketToken> m_PacketsInZone = new();
 
     int m_LastResolvedValue;
+    DataPacketToken m_SpawnedImmediatePacket;
 
     public DataPacketToken AcceptedPacket { get; private set; }
 
@@ -88,7 +97,7 @@ public class ImmediateExtender : PedestalScannerBase
             UpdateValueText();
 
             if (m_AlwaysActive)
-                ResetScanner();
+                SetStepActive(true);
         }
     }
 
@@ -180,6 +189,7 @@ public class ImmediateExtender : PedestalScannerBase
     {
         m_PacketsInZone.Clear();
         AcceptedPacket = null;
+        ClearSpawnedImmediatePacket();
         m_LastResolvedValue = 0;
         UpdateValueText();
     }
@@ -195,6 +205,33 @@ public class ImmediateExtender : PedestalScannerBase
         AcceptedPacket = dataPacketToken;
         m_LastResolvedValue = signExtendedValue;
         MarkSuccess();
+    }
+
+    /// <summary>
+    /// Spawns a fresh immediate packet at the authored extender output.
+    /// Decode now uses the extender as the source of immediate packets instead
+    /// of piggybacking on the second register scanner.
+    /// </summary>
+    public bool SpawnImmediatePacket(int immediateValue)
+    {
+        ClearSpawnedImmediatePacket();
+
+        if (m_DataPacketPrefab == null || m_DataPacketSpawnAnchor == null)
+            return false;
+
+        var spawnedPacket = Instantiate(
+            m_DataPacketPrefab,
+            m_DataPacketSpawnAnchor.position,
+            m_DataPacketSpawnAnchor.rotation);
+        spawnedPacket.Configure(
+            DataPacketRole.Immediate,
+            "imm",
+            "Immediate",
+            immediateValue,
+            false);
+
+        m_SpawnedImmediatePacket = spawnedPacket;
+        return true;
     }
 
     void UpdateValueText()
@@ -260,6 +297,19 @@ public class ImmediateExtender : PedestalScannerBase
             helper = m_ScanZone.gameObject.AddComponent<ImmediateExtenderZone>();
 
         helper.Bind(this);
+    }
+
+    void ClearSpawnedImmediatePacket()
+    {
+        if (m_SpawnedImmediatePacket == null)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(m_SpawnedImmediatePacket.gameObject);
+        else
+            DestroyImmediate(m_SpawnedImmediatePacket.gameObject);
+
+        m_SpawnedImmediatePacket = null;
     }
 
     void EnsureStaticPedestalPhysics()

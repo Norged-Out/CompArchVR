@@ -177,4 +177,35 @@ public class InstructionDefinition : ScriptableObject
     {
         return touchesDataMemory ? "1" : "0";
     }
+
+    /// <summary>
+    /// Returns true when the authored Memory phase should stay in the lesson.
+    /// For the current prototype, only `lw` and `sw` should visit it.
+    /// </summary>
+    public bool UsesInteractiveMemoryPhase()
+    {
+        return mnemonic == InstructionMnemonic.Lw || mnemonic == InstructionMnemonic.Sw;
+    }
+
+    /// <summary>
+    /// Returns true when the instruction actually writes back into the register
+    /// file. `sw` should skip the write-back phase entirely.
+    /// </summary>
+    public bool UsesWriteBackPhase()
+    {
+        return writesRegisterFile;
+    }
+
+    /// <summary>
+    /// Returns the packet type the rt-side scanner should emit during decode.
+    /// `sw` still reads rt from the register file, while `addi` / `lw` use rt
+    /// as the architectural destination and instead rely on an immediate path.
+    /// </summary>
+    public DataPacketRole GetDecodeRtPacketRole()
+    {
+        if (mnemonic == InstructionMnemonic.Sw)
+            return DataPacketRole.ReadData2;
+
+        return usesImmediate ? DataPacketRole.Immediate : DataPacketRole.ReadData2;
+    }
 }
