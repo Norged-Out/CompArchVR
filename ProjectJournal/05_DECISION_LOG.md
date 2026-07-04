@@ -593,6 +593,38 @@ Implication:
 - Memory should consume accepted address/store-data packets after finishing its transfer
 - write-back remains responsible for the final register-value change at the end of the flow
 
+## 2026-07-05 - The Next Supervisor-Facing Cutoff Should Prioritize Presentation Over New Core Systems
+
+Decision:
+- before the next supervisor meeting, focus on:
+  - splitting lesson UI into clearer guide / interaction surfaces
+  - adding a dedicated datapacket reset path
+  - improving the environment / map presentation
+
+Why:
+- the existing lesson agenda is now largely accounted for functionally
+- the bigger risk for the next meeting is readability, cleanliness, and perceived completeness
+
+Implication:
+- new instruction families and larger pedagogical redesigns should be treated as post-cutoff work unless a blocking issue appears
+
+## 2026-07-05 - If More Instructions Are Added Next, Favor Immediate And Branch Paths Before Jump Paths
+
+Decision:
+- if instruction expansion resumes soon, prefer:
+  - `slti`, `andi`, `ori`
+  - then `beq`, `bne`
+  - then `j`, `jal`, `jr`
+  - with `lui` as optional/low priority
+
+Why:
+- immediate-family instructions reuse more of the current datapath and lesson scaffolding
+- branch instructions are pedagogically important and closer to the existing single-cycle story than jump-specific control-flow work
+- jump instructions are worthwhile but likely require a more deliberate rethink of PC/control-flow presentation
+
+Implication:
+- future expansion should continue reusing the current framework where possible instead of jumping too early into a bigger control-flow redesign
+
 ## 2026-06-29 - Local Register Reset Must Be Pose-Only
 
 Decision:

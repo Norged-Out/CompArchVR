@@ -271,6 +271,49 @@ A strong demo should show that a learner can:
 - move through the correct datapath route
 - explain why memory, immediate, or write-back paths were or were not used
 
+## Current Pre-Meeting Cutoff
+
+Before the next supervisor meeting, prioritize only:
+
+1. split lesson panels into cleaner guide / interaction panels
+2. add a dedicated datapacket reset path
+3. improve the environment / map presentation
+
+Reason:
+- the functional lesson loop is now broad enough for the current checkpoint
+- the main remaining risk is how understandable and presentable the experience feels
+
+Do not let lower-priority expansion crowd out these three items unless a blocking bug appears.
+
+## Recommended Backlog After The Meeting
+
+Recommended order once the cutoff items are done:
+
+1. settings menu / cheatsheet panel
+2. controls tutorial / onboarding
+3. exit flow
+4. test mode without handholding
+5. proper instruction decoding
+6. deliberate review of whether to reintroduce control decode
+7. immediate-family expansion:
+   - `slti`
+   - `andi`
+   - `ori`
+8. branch instructions:
+   - `beq`
+   - `bne`
+9. jump instructions:
+   - `j`
+   - `jal`
+   - `jr`
+10. `lui`
+11. audio / VFX polish
+
+Rationale:
+- the first five items improve usability and educational delivery
+- the instruction additions expand scope only after the learner experience is easier to follow
+- polish should not outrun instructional clarity
+
 ## Paper Preparation Implication
 
 The implementation should collect enough clarity for the later paper to discuss:

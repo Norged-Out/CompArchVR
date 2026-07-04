@@ -167,19 +167,29 @@ Before stopping:
   - right register
   - right register but wrong phase
 
+## Current Pre-Meeting Priorities
+
+Ordered cutoff list before the next supervisor meeting:
+
+1. split lesson UI into cleaner guide / interaction sub-panels
+2. add a datapacket reset button that only resets present non-consumed packets
+3. improve the map/environment using the newer asset packs
+
+Everything else should be treated as post-cutoff unless a blocking regression appears.
+
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- decide the next post-demo expansion on top of the now-working instruction set:
+- finish the pre-meeting polish pass on top of the now-working instruction set:
 - keep `Intro UI` and `Register Setup UI` authored in-scene
 - keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- reuse the scanner / register / lesson state pattern for any new instruction families
-- keep the immediate extender and ALU funct dropdown as the baseline for immediate-based and secondary-path lessons
-- add a persistent cheatsheet/settings menu for previously closed guidance
+- split guide/explanation content away from active interaction content where practical
+- add datapacket reset support without coupling it to register reset or lesson reset
+- improve the physical environment only after the instructional scene remains readable
 
 ## Personal Reminder
 

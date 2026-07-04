@@ -36,6 +36,79 @@ Current milestone:
   - `lw` working
   - now exceeded with `sw` plus the remaining core ALU instructions working too
 
+## Current TODO Cutoff Before The Next Supervisor Meeting
+
+The user-defined cutoff for the next meeting is:
+
+1. split each lesson panel into cleaner guide / interaction sub-panels
+2. add a data-packet reset button that only resets present non-consumed packets to their authored spawn locations
+3. improve the map / environment using the new asset packs
+
+Interpretation:
+- the core instructional loop is already present
+- the next meeting should emphasize usability, readability, and presentation quality rather than another major systems rewrite
+- unless a blocking bug appears, work beyond these three items should be treated as stretch work
+
+## Post-Meeting Backlog (Ordered Recommendation)
+
+Recommended order after the current meeting cutoff:
+
+1. settings menu + cheatsheet panel
+   Why:
+   - directly supports the supervisor feedback about separating explanation from interaction
+   - gives the learner a persistent reference surface without forcing guide panels to stay overloaded
+
+2. proper intro + controls tutorial
+   Why:
+   - improves onboarding immediately
+   - reduces friction before adding more instruction complexity
+
+3. proper exit option
+   Why:
+   - small scope
+   - makes the build feel more complete and presentation-ready
+
+4. test mode without handholding
+   Why:
+   - strong educational value once the guided mode is stable
+   - can reuse most of the current interactions while reducing prompts and gating
+
+5. proper instruction decoding
+   Why:
+   - pedagogically important
+   - should come after the persistent cheatsheet/reference path exists, so the learner has support while decoding manually
+
+6. re-evaluate reincluding the control decode phase
+   Why:
+   - potentially valuable for learning
+   - but it risks clutter and pacing issues if reintroduced too early
+
+7. additional immediate-family instructions:
+   - `slti`
+   - `andi`
+   - `ori`
+   Why:
+   - relatively natural extensions once the immediate path is stable
+   - may expose the need to distinguish sign extension from zero extension more clearly
+
+8. `beq` / `bne`
+   Why:
+   - pedagogically useful and closer to the current datapath than jumps
+   - branch behavior introduces comparison plus control-flow redirection, which is meaningful but still manageable
+
+9. `j` / `jal` / `jr`
+   Why:
+   - useful for completeness
+   - but these are less aligned with the current physical interaction setup and may require a more deliberate PC/control-flow redesign
+
+10. `lui`
+    Why:
+    - possible, but it is a specialized immediate-path case and lower value than the more common arithmetic/branch instructions
+
+11. audio and VFX polish
+    Why:
+    - worthwhile, but only after the UX structure is settled
+
 ## Latest Summary
 
 The project now has:
@@ -195,6 +268,7 @@ Next:
 Risks / Notes:
 - memory persistence across lesson restarts is currently considered a feature, not a bug
 - later lesson modes may still want an optional "reset memory bank" path if testing repeatability becomes more important than continuity
+- the next supervisor-facing risk is no longer missing datapath functionality; it is readability, pacing, and presentation polish
 
 ### 2026-07-05 - Remaining ALU Instructions Added And Packet Lifetime Cleaned Up
 
