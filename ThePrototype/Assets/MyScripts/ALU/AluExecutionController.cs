@@ -47,7 +47,7 @@ public class AluExecutionController : MonoBehaviour
     GameObject m_AluUiRoot;
 
     [SerializeField]
-    TMP_Text m_BodyText;
+    TMP_Text m_LessonRuntimeText;
 
     [SerializeField]
     TMP_Text m_AluOpStatusText;
@@ -72,6 +72,18 @@ public class AluExecutionController : MonoBehaviour
 
     [SerializeField]
     TMP_Dropdown m_FunctDropdown;
+
+    [SerializeField]
+    TMP_Dropdown m_HintDropdown;
+
+    [SerializeField]
+    TMP_Text m_HintAluOpText;
+
+    [SerializeField]
+    TMP_Text m_HintAluSrcText;
+
+    [SerializeField]
+    TMP_Text m_HintAluControlText;
 
     [Header("Timing")]
     [SerializeField]
@@ -99,6 +111,7 @@ public class AluExecutionController : MonoBehaviour
     string m_CurrentAluOpValue = "00";
     string m_CurrentAluSrcValue = "0";
     AluOperation m_SelectedFunctOperation = AluOperation.Add;
+    bool m_HasExplicitFunctSelection;
 
     public event System.Action<int> ExecutionCompleted;
 
@@ -107,8 +120,10 @@ public class AluExecutionController : MonoBehaviour
     void Awake()
     {
         CacheReferences();
+        PopulateHintDropdown();
         HookButtons();
         HookDropdown();
+        HookHintDropdown();
         RefreshAllPresentation();
         SetFeedback(string.Empty, false);
     }
@@ -116,8 +131,10 @@ public class AluExecutionController : MonoBehaviour
     void OnEnable()
     {
         CacheReferences();
+        PopulateHintDropdown();
         HookButtons();
         HookDropdown();
+        HookHintDropdown();
         HookInputEvents(true);
         RefreshAllPresentation();
     }
@@ -127,6 +144,7 @@ public class AluExecutionController : MonoBehaviour
         HookInputEvents(false);
         UnhookButtons();
         UnhookDropdown();
+        UnhookHintDropdown();
     }
 
     void Update()
@@ -223,6 +241,7 @@ public class AluExecutionController : MonoBehaviour
         m_IsAwaitingContinue = false;
         m_LastResultValue = 0;
         m_SelectedFunctOperation = ResolveExpectedFunctOperation(m_CurrentInstruction);
+        m_HasExplicitFunctSelection = false;
         SetFeedback(string.Empty, false);
 
         if (m_ComputeRoutine != null)
@@ -292,55 +311,60 @@ public class AluExecutionController : MonoBehaviour
         var expectedAluOp = GetExpectedAluOpValue(m_CurrentInstruction);
         if (m_CurrentAluOpValue != expectedAluOp)
         {
-            validationMessage = $"ALUOp is {m_CurrentAluOpValue}, but {m_CurrentInstruction.displayName} needs {expectedAluOp}.";
+            validationMessage = "ALUOp is pointing to the wrong operation family.";
             return false;
         }
 
         var expectedAluSrc = m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate ? "1" : "0";
         if (m_CurrentAluSrcValue != expectedAluSrc)
         {
-            validationMessage = $"ALUSrc is {m_CurrentAluSrcValue}, but this instruction needs {expectedAluSrc}.";
+            validationMessage = "ALUSrc is routing the second operand down the wrong path.";
             return false;
         }
 
         if (m_InputA == null || m_InputA.AcceptedPacket == null)
         {
-            validationMessage = "Input 1 still needs a Read Data 1 packet.";
+            validationMessage = "Input 1 is still missing its source operand.";
             return false;
         }
 
         if (m_InputB == null || m_InputB.AcceptedPacket == null)
         {
-            validationMessage = $"Input 2 still needs a {GetRoleDisplayName(GetExpectedInput2Role())} packet.";
+            validationMessage = "Input 2 is still missing its source operand.";
             return false;
         }
 
         if (m_InputA.AcceptedPacket.PacketRole != DataPacketRole.ReadData1)
         {
-            validationMessage = "Input 1 has the wrong packet type.";
+            validationMessage = "Input 1 is not carrying the first register-read value.";
             return false;
         }
 
         var expectedInput2Role = GetExpectedInput2Role();
         if (m_InputB.AcceptedPacket.PacketRole != expectedInput2Role)
         {
-            validationMessage = $"Input 2 needs {GetRoleDisplayName(expectedInput2Role)}, not {GetRoleDisplayName(m_InputB.AcceptedPacket.PacketRole)}.";
+            validationMessage = "Input 2 does not match the operand source selected by ALUSrc.";
             return false;
         }
 
         if (expectedInput2Role == DataPacketRole.Immediate && !m_InputB.AcceptedPacket.IsSignExtended)
         {
-            validationMessage = "Input 2 has the immediate packet, but it has not been sign-extended yet.";
+            validationMessage = "The immediate packet is present, but it has not been sign-extended yet.";
             return false;
         }
 
         if (expectedAluOp == "10")
         {
+            if (!m_HasExplicitFunctSelection)
+            {
+                validationMessage = "Choose an ALU control operation before executing.";
+                return false;
+            }
+
             var expectedFunctOperation = ResolveExpectedFunctOperation(m_CurrentInstruction);
             if (m_SelectedFunctOperation != expectedFunctOperation)
             {
-                validationMessage =
-                    $"Funct selection is {GetOperationDisplayName(m_SelectedFunctOperation)}, but {m_CurrentInstruction.displayName} needs {GetOperationDisplayName(expectedFunctOperation)}.";
+                validationMessage = "The selected ALU control operation does not match this instruction.";
                 return false;
             }
         }
@@ -400,7 +424,13 @@ public class AluExecutionController : MonoBehaviour
     void HandleFunctDropdownChanged(int selectedIndex)
     {
         m_SelectedFunctOperation = GetDropdownOperation(selectedIndex);
+        m_HasExplicitFunctSelection = true;
         SetFeedback(string.Empty, false);
+        RefreshAllPresentation();
+    }
+
+    void HandleHintDropdownChanged(int _)
+    {
         RefreshAllPresentation();
     }
 
@@ -449,26 +479,8 @@ public class AluExecutionController : MonoBehaviour
 
     void RefreshUiTexts()
     {
-        if (m_BodyText != null)
-        {
-            var input2RoleName = GetRoleDisplayName(GetExpectedInput2Role());
-            var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
-            var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
-            var input2Note = GetExpectedInput2Role() == DataPacketRole.Immediate
-                ? "Input 2 must use the sign-extended immediate packet."
-                : "Input 2 must use the second register-read packet.";
-            m_BodyText.text =
-                "Execution Phase\n\n" +
-                $"Instruction: {instructionName}\n\n" +
-                $"Assembly: {assembly}\n\n" +
-                "1. Set ALUOp to the correct operation family.\n" +
-                "2. Set ALUSrc to choose whether Input 2 comes from Read Data 2 or the Immediate path.\n" +
-                "3. Place Read Data 1 on Input 1.\n" +
-                $"4. Place {input2RoleName} on Input 2.\n" +
-                $"5. {input2Note}\n" +
-                $"6. For this instruction, ALUOp should be {GetExpectedAluOpValue(m_CurrentInstruction)} and ALUSrc should be {(m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate ? "1" : "0")}.\n" +
-                $"7. Press Execute to produce the ALU result packet.\n8. Next: {GetNextPhaseLabel()}.";
-        }
+        if (m_LessonRuntimeText != null)
+            m_LessonRuntimeText.text = BuildLessonRuntimeText();
 
         if (m_AluOpStatusText != null)
             m_AluOpStatusText.text = $"ALUOp: {m_CurrentAluOpValue}";
@@ -482,8 +494,13 @@ public class AluExecutionController : MonoBehaviour
             m_FunctDropdown.gameObject.SetActive(showFunctDropdown);
             m_FunctDropdown.interactable = showFunctDropdown && !m_HasProducedResult;
             if (showFunctDropdown)
-                SyncDropdownToCurrentOperation();
+            {
+                if (m_HasExplicitFunctSelection)
+                    SyncDropdownToCurrentOperation();
+            }
         }
+
+        RefreshHintBlocks();
 
         if (m_Input1StatusText != null)
             m_Input1StatusText.text = BuildInputStatusText("Input 1", DataPacketRole.ReadData1, m_InputA);
@@ -519,6 +536,9 @@ public class AluExecutionController : MonoBehaviour
 
     string GetOperationDisplayName()
     {
+        if (m_CurrentAluOpValue == "10" && !m_HasExplicitFunctSelection)
+            return "None";
+
         return GetOperationDisplayName(ResolveCurrentOperation());
     }
 
@@ -616,6 +636,23 @@ public class AluExecutionController : MonoBehaviour
         m_FunctDropdown.onValueChanged.RemoveListener(HandleFunctDropdownChanged);
     }
 
+    void HookHintDropdown()
+    {
+        if (m_HintDropdown == null)
+            return;
+
+        m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
+        m_HintDropdown.onValueChanged.AddListener(HandleHintDropdownChanged);
+    }
+
+    void UnhookHintDropdown()
+    {
+        if (m_HintDropdown == null)
+            return;
+
+        m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
+    }
+
     void HookInputEvents(bool subscribe)
     {
         HookInputEvent(m_InputA, subscribe);
@@ -656,18 +693,55 @@ public class AluExecutionController : MonoBehaviour
 
         if (m_AluUiRoot != null)
         {
-            m_BodyText ??= FindNamedText(m_AluUiRoot.transform, "Text Body");
+            m_LessonRuntimeText ??= FindNamedText(m_AluUiRoot.transform, "Text Lesson Runtime");
             m_AluOpStatusText ??= FindNamedText(m_AluUiRoot.transform, "Text ALUOp");
             m_AluSrcStatusText ??= FindNamedText(m_AluUiRoot.transform, "Text ALUSrc");
             m_Input1StatusText ??= FindNamedText(m_AluUiRoot.transform, "Text Input 1");
             m_Input2StatusText ??= FindNamedText(m_AluUiRoot.transform, "Text Input 2");
             m_FeedbackText ??= FindNamedText(m_AluUiRoot.transform, "Text Feedback");
+            m_HintAluOpText ??= FindNamedText(m_AluUiRoot.transform, "Hint ALUOp");
+            m_HintAluSrcText ??= FindNamedText(m_AluUiRoot.transform, "Hint ALUSrc");
+            m_HintAluControlText ??= FindNamedText(m_AluUiRoot.transform, "Hint ALU Control");
             m_ExecuteButton ??= m_AluUiRoot.GetComponentInChildren<Button>(true);
             m_ExecuteButtonLabel ??= m_ExecuteButton != null
                 ? m_ExecuteButton.GetComponentInChildren<TMP_Text>(true)
                 : null;
             m_FunctDropdown ??= m_AluUiRoot.GetComponentInChildren<TMP_Dropdown>(true);
         }
+    }
+
+    string BuildLessonRuntimeText()
+    {
+        var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
+        var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
+
+        return $"Instruction: {instructionName}\nAssembly: {assembly}";
+    }
+
+    void RefreshHintBlocks()
+    {
+        var selectedHint = m_HintDropdown != null ? m_HintDropdown.value : 0;
+
+        SetHintBlockActive(m_HintAluOpText, selectedHint == 1);
+        SetHintBlockActive(m_HintAluSrcText, selectedHint == 2);
+        SetHintBlockActive(m_HintAluControlText, selectedHint == 3);
+    }
+
+    void PopulateHintDropdown()
+    {
+        if (m_HintDropdown == null)
+            return;
+
+        var selectedValue = Mathf.Clamp(m_HintDropdown.value, 0, 3);
+        m_HintDropdown.ClearOptions();
+        m_HintDropdown.AddOptions(new System.Collections.Generic.List<string>
+        {
+            "Choose Option",
+            "ALUOp",
+            "ALUSrc",
+            "ALU Control",
+        });
+        m_HintDropdown.SetValueWithoutNotify(selectedValue);
     }
 
     void SyncDropdownToCurrentOperation()
@@ -824,6 +898,14 @@ public class AluExecutionController : MonoBehaviour
         }
 
         return null;
+    }
+
+    static void SetHintBlockActive(TMP_Text textBlock, bool isActive)
+    {
+        if (textBlock == null)
+            return;
+
+        textBlock.gameObject.SetActive(isActive);
     }
 
     static Transform FindSceneTransformByName(string objectName)

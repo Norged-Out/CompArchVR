@@ -1281,6 +1281,7 @@ MonoBehaviour:
   m_MemReadButtonRoot: {fileID: 1364021660308291361}
   m_MemWriteButtonRoot: {fileID: 3582767479301052988}
   m_MemUiRoot: {fileID: 0}
+  m_LessonText: {fileID: 0}
   m_BodyText: {fileID: 0}
   m_MemReadStatusText: {fileID: 0}
   m_MemWriteStatusText: {fileID: 0}
@@ -1289,6 +1290,8 @@ MonoBehaviour:
   m_FeedbackText: {fileID: 0}
   m_ActionButton: {fileID: 0}
   m_ActionButtonLabel: {fileID: 0}
+  m_HintDropdown: {fileID: 0}
+  m_HintText: {fileID: 0}
   m_DataSpawnDelaySeconds: 0.75
   m_ExecuteButtonText: Execute Memory
   m_ContinueButtonText: Continue

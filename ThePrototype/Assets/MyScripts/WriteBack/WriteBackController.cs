@@ -46,7 +46,7 @@ public class WriteBackController : MonoBehaviour
     GameObject m_WbUiRoot;
 
     [SerializeField]
-    TMP_Text m_BodyText;
+    TMP_Text m_LessonRuntimeText;
 
     [SerializeField]
     TMP_Text m_RegDstStatusText;
@@ -71,6 +71,18 @@ public class WriteBackController : MonoBehaviour
 
     [SerializeField]
     TMP_Text m_ActionButtonLabel;
+
+    [SerializeField]
+    TMP_Dropdown m_HintDropdown;
+
+    [SerializeField]
+    TMP_Text m_HintRegDstText;
+
+    [SerializeField]
+    TMP_Text m_HintRegWriteText;
+
+    [SerializeField]
+    TMP_Text m_HintMemToRegText;
 
     [Header("Timing")]
     [SerializeField]
@@ -111,7 +123,9 @@ public class WriteBackController : MonoBehaviour
     void Awake()
     {
         CacheReferences();
+        PopulateHintDropdown();
         HookButtons();
+        HookHintDropdown(true);
         CachePipeMaterials();
         ResetPipeMaterials();
         RefreshPresentation();
@@ -121,7 +135,9 @@ public class WriteBackController : MonoBehaviour
     void OnEnable()
     {
         CacheReferences();
+        PopulateHintDropdown();
         HookButtons();
+        HookHintDropdown(true);
         HookScannerEvents(true);
         CachePipeMaterials();
         RefreshPresentation();
@@ -130,6 +146,7 @@ public class WriteBackController : MonoBehaviour
     void OnDisable()
     {
         HookScannerEvents(false);
+        HookHintDropdown(false);
         UnhookButtons();
     }
 
@@ -303,33 +320,33 @@ public class WriteBackController : MonoBehaviour
         var expectedRegWrite = m_CurrentInstruction.GetExpectedRegWriteControlValue();
         if (m_RegWriteValue != expectedRegWrite)
         {
-            validationMessage = $"RegWrite is {m_RegWriteValue}, but {m_CurrentInstruction.displayName} needs {expectedRegWrite}.";
+            validationMessage = "RegWrite does not match the behavior needed by this instruction.";
             return false;
         }
 
         var expectedRegDst = m_CurrentInstruction.GetExpectedRegDstControlValue();
         if (m_RegDstValue != expectedRegDst)
         {
-            validationMessage = $"RegDst is {m_RegDstValue}, but this instruction needs {expectedRegDst}.";
+            validationMessage = "RegDst is selecting the wrong destination path.";
             return false;
         }
 
         var expectedMemToReg = m_CurrentInstruction.GetExpectedMemToRegControlValue();
         if (m_MemToRegValue != expectedMemToReg)
         {
-            validationMessage = $"MemToReg is {m_MemToRegValue}, but this instruction needs {expectedMemToReg}.";
+            validationMessage = "MemToReg is selecting the wrong write-back source.";
             return false;
         }
 
         if (m_RegisterScanner == null || m_RegisterScanner.AcceptedRegister == null)
         {
-            validationMessage = $"Register input is still waiting for {GetExpectedRegisterIdFromControlState()}.";
+            validationMessage = "The destination register has not been placed yet.";
             return false;
         }
 
         if (m_PacketScanner == null || m_PacketScanner.AcceptedPacket == null)
         {
-            validationMessage = $"Data input is still waiting for {GetPacketRoleDisplayName(GetExpectedPacketRoleFromControlState())}.";
+            validationMessage = "The write-back data packet has not been placed yet.";
             return false;
         }
 
@@ -417,23 +434,8 @@ public class WriteBackController : MonoBehaviour
         CacheReferences();
         RefreshExpectedTargets();
 
-        if (m_BodyText != null)
-        {
-            var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
-            var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
-            var targetRegister = GetExpectedRegisterIdFromControlState();
-            var expectedPacket = GetPacketRoleDisplayName(GetExpectedPacketRoleFromControlState());
-            m_BodyText.text =
-                "Write Back\n\n" +
-                $"Instruction: {instructionName}\n\n" +
-                $"Assembly: {assembly}\n\n" +
-                "1. Set RegWrite, RegDst, and MemToReg for this instruction.\n" +
-                $"2. The currently selected destination register is {targetRegister}.\n" +
-                $"3. The currently selected write-back source is {expectedPacket}.\n" +
-                "4. Place the destination register on the register input.\n" +
-                "5. Place the final datapath value on the data input.\n" +
-                "6. Execute the transfer to update the register file.";
-        }
+        if (m_LessonRuntimeText != null)
+            m_LessonRuntimeText.text = BuildLessonRuntimeText();
 
         if (m_RegWriteStatusText != null)
             m_RegWriteStatusText.text = $"RegWrite: {m_RegWriteValue}";
@@ -482,6 +484,8 @@ public class WriteBackController : MonoBehaviour
 
         if (m_ActionButton != null)
             m_ActionButton.interactable = m_IsPhaseActive && m_TransferRoutine == null;
+
+        RefreshHintBlocks();
     }
 
     void SetFeedback(string message, bool isFailure)
@@ -504,6 +508,22 @@ public class WriteBackController : MonoBehaviour
         {
             m_ActionButton.onClick.RemoveListener(HandleActionPressed);
             m_ActionButton.onClick.AddListener(HandleActionPressed);
+        }
+    }
+
+    void HookHintDropdown(bool subscribe)
+    {
+        if (m_HintDropdown == null)
+            return;
+
+        if (subscribe)
+        {
+            m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
+            m_HintDropdown.onValueChanged.AddListener(HandleHintDropdownChanged);
+        }
+        else
+        {
+            m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
         }
     }
 
@@ -555,6 +575,11 @@ public class WriteBackController : MonoBehaviour
         }
     }
 
+    void HandleHintDropdownChanged(int _)
+    {
+        RefreshPresentation();
+    }
+
     void CacheReferences()
     {
         m_RegisterScanner ??= FindChildComponent<WriteBackRegisterScanner>("Reg Input");
@@ -583,18 +608,55 @@ public class WriteBackController : MonoBehaviour
 
         if (m_WbUiRoot != null)
         {
-            m_BodyText ??= FindNamedText(m_WbUiRoot.transform, "Text Body");
+            m_LessonRuntimeText ??= FindNamedText(m_WbUiRoot.transform, "Text Lesson Runtime");
             m_RegDstStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text RegDst");
             m_RegWriteStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text RegWrite");
             m_MemToRegStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text MemToReg");
             m_RegisterStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text Input 1");
             m_DataStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text Input 2");
             m_FeedbackText ??= FindNamedText(m_WbUiRoot.transform, "Text Feedback");
+            m_HintRegDstText ??= FindNamedText(m_WbUiRoot.transform, "Hint RegDst");
+            m_HintRegWriteText ??= FindNamedText(m_WbUiRoot.transform, "Hint RegWrite");
+            m_HintMemToRegText ??= FindNamedText(m_WbUiRoot.transform, "Hint MemToReg");
             m_ActionButton ??= m_WbUiRoot.GetComponentInChildren<Button>(true);
             m_ActionButtonLabel ??= m_ActionButton != null
                 ? m_ActionButton.GetComponentInChildren<TMP_Text>(true)
                 : null;
         }
+    }
+
+    string BuildLessonRuntimeText()
+    {
+        var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
+        var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
+
+        return $"Instruction: {instructionName}\nAssembly: {assembly}";
+    }
+
+    void RefreshHintBlocks()
+    {
+        var selectedHint = m_HintDropdown != null ? m_HintDropdown.value : 0;
+
+        SetHintBlockActive(m_HintRegDstText, selectedHint == 1);
+        SetHintBlockActive(m_HintRegWriteText, selectedHint == 2);
+        SetHintBlockActive(m_HintMemToRegText, selectedHint == 3);
+    }
+
+    void PopulateHintDropdown()
+    {
+        if (m_HintDropdown == null)
+            return;
+
+        var selectedValue = Mathf.Clamp(m_HintDropdown.value, 0, 3);
+        m_HintDropdown.ClearOptions();
+        m_HintDropdown.AddOptions(new System.Collections.Generic.List<string>
+        {
+            "Choose Option",
+            "RegDst",
+            "RegWrite",
+            "MemToReg",
+        });
+        m_HintDropdown.SetValueWithoutNotify(selectedValue);
     }
 
     void CachePipeMaterials()
@@ -693,6 +755,14 @@ public class WriteBackController : MonoBehaviour
         }
 
         return null;
+    }
+
+    static void SetHintBlockActive(TMP_Text textBlock, bool isActive)
+    {
+        if (textBlock == null)
+            return;
+
+        textBlock.gameObject.SetActive(isActive);
     }
 
     static Transform FindSceneTransformByName(string objectName)

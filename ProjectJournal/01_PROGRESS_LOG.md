@@ -30,23 +30,30 @@ Current prototype focus:
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
-- next checkpoint target: `2026-07-06`
-- desired target for that checkpoint:
-  - `addi` working
-  - `lw` working
-  - now exceeded with `sw` plus the remaining core ALU instructions working too
+- next supervisor checkpoint target: `2026-07-09`
+- official demo deadline: `2026-07-29`
+- preferred internal finish target:
+  - complete the build a few days before the official deadline
+  - use the remaining time for cleanup, map polish, and presentation safety
+- current checkpoint status:
+  - `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, and `slt` are working
+  - current focus has shifted from instruction coverage to UI clarity, IF embodiment, and map polish
 
 ## Current TODO Cutoff Before The Next Supervisor Meeting
 
 The user-defined cutoff for the next meeting is:
 
-1. split each lesson panel into cleaner guide / interaction sub-panels
+1. finish splitting each lesson zone UI into a cleaner three-panel structure:
+   - lesson panel
+   - interaction panel
+   - hint / info panel
 2. add a data-packet reset button that only resets present non-consumed packets to their authored spawn locations
 3. improve the map / environment using the new asset packs
+4. if time allows, give Instruction Fetch a physical presence through the planned instruction-module flow
 
 Interpretation:
 - the core instructional loop is already present
-- the next meeting should emphasize usability, readability, and presentation quality rather than another major systems rewrite
+- the next meeting should emphasize usability, readability, IF framing, and presentation quality rather than another major systems rewrite
 - unless a blocking bug appears, work beyond these three items should be treated as stretch work
 
 ## Post-Meeting Backlog (Ordered Recommendation)
@@ -305,6 +312,46 @@ Next:
 Risks / Notes:
 - the lesson framework is now broad enough that wording clarity matters more than raw phase existence
 - future work should continue favoring reusable instruction definitions over one-off phase hacks
+
+### 2026-07-07 - Multi-Panel UI Refactor Started, With IF Embodiment Planned Next
+
+Completed:
+- began refactoring the authored lesson UIs away from single overloaded panels and toward a cleaner three-panel pattern:
+  - lesson panel for concept + task framing
+  - interaction panel for the active action + progression control
+  - hint panel for optional lookup/reference support
+- rewired `Instruction Decode` around that structure first
+- then rewired the same runtime pattern for:
+  - `EX`
+  - `Mem`
+  - `WB`
+- moved more static lesson wording out of code and into scene-authored UI blocks
+- kept runtime text focused on:
+  - instruction-specific values
+  - live status
+  - feedback
+  - phase progression
+- confirmed the code side still works with the new authored split
+
+Changed:
+- the UI architecture is now moving toward "editor-authored first, runtime fills in only the changing pieces"
+- hint/reference content is now intended to be panelized and optional instead of crammed into one scrolling panel
+- the next major teaching/presentation improvement is no longer another datapath phase, but making `IF` physically meaningful
+
+Next:
+- finish the three-panel split across the remaining lesson UIs
+- add a datapacket reset path
+- improve the map / environment presentation
+- build the planned `Instruction Module` + `Instruction Platform` flow so:
+  - lesson start uploads the selected instruction into a physical module
+  - the learner carries that module to the decode zone
+  - instruction fetch becomes a visible physical handoff instead of only UI framing
+
+Risks / Notes:
+- the new UI split should improve readability, but it still needs a final pass on wording and scene layout
+- the instruction-module flow should remain scoped:
+  - enough to make `IF` meaningful
+  - not so much that it delays the presentation polish pass
 
 
 Next:

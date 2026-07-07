@@ -45,7 +45,13 @@ public class MemoryUnitController : MonoBehaviour
     GameObject m_MemUiRoot;
 
     [SerializeField]
-    TMP_Text m_BodyText;
+    TMP_Text m_LessonRuntimeText;
+
+    [SerializeField]
+    TMP_Text m_LoadLessonText;
+
+    [SerializeField]
+    TMP_Text m_StoreLessonText;
 
     [SerializeField]
     TMP_Text m_MemReadStatusText;
@@ -67,6 +73,15 @@ public class MemoryUnitController : MonoBehaviour
 
     [SerializeField]
     TMP_Text m_ActionButtonLabel;
+
+    [SerializeField]
+    TMP_Dropdown m_HintDropdown;
+
+    [SerializeField]
+    TMP_Text m_HintMemReadText;
+
+    [SerializeField]
+    TMP_Text m_HintMemWriteText;
 
     [Header("Timing")]
     [SerializeField]
@@ -100,8 +115,10 @@ public class MemoryUnitController : MonoBehaviour
     void Awake()
     {
         CacheReferences();
+        PopulateHintDropdown();
         HookActionButton(true);
         HookButtons();
+        HookHintDropdown(true);
         HookScannerEvents(true);
         RefreshPresentation();
         SetFeedback(string.Empty, false);
@@ -110,8 +127,10 @@ public class MemoryUnitController : MonoBehaviour
     void OnEnable()
     {
         CacheReferences();
+        PopulateHintDropdown();
         HookActionButton(true);
         HookButtons();
+        HookHintDropdown(true);
         HookScannerEvents(true);
         RefreshPresentation();
     }
@@ -119,6 +138,7 @@ public class MemoryUnitController : MonoBehaviour
     void OnDisable()
     {
         HookActionButton(false);
+        HookHintDropdown(false);
         HookScannerEvents(false);
         UnhookButtons();
     }
@@ -286,27 +306,27 @@ public class MemoryUnitController : MonoBehaviour
         var expectedMemRead = IsLoadInstruction() ? "1" : "0";
         if (m_MemReadValue != expectedMemRead)
         {
-            validationMessage = $"MemRead is {m_MemReadValue}, but {m_CurrentInstruction.displayName} needs {expectedMemRead}.";
+            validationMessage = "MemRead is not set for the required memory behavior.";
             return false;
         }
 
         var expectedMemWrite = IsStoreInstruction() ? "1" : "0";
         if (m_MemWriteValue != expectedMemWrite)
         {
-            validationMessage = $"MemWrite is {m_MemWriteValue}, but {m_CurrentInstruction.displayName} needs {expectedMemWrite}.";
+            validationMessage = "MemWrite is not set for the required memory behavior.";
             return false;
         }
 
         if (m_AddressScanner == null || m_AddressScanner.AcceptedPacket == null)
         {
-            validationMessage = "Address input is still waiting for the ALU Result packet.";
+            validationMessage = "The address input is still missing its packet.";
             return false;
         }
 
         var addressValue = m_AddressScanner.AcceptedPacket.Value;
         if (m_MemoryBank == null || !m_MemoryBank.TryReadWord(addressValue, out _, out _))
         {
-            validationMessage = $"No memory word is mapped to {FormatAddress(addressValue)}.";
+            validationMessage = "That address does not map to a valid memory word in this lesson.";
             return false;
         }
 
@@ -314,7 +334,7 @@ public class MemoryUnitController : MonoBehaviour
         {
             if (m_DataScanner == null || m_DataScanner.AcceptedPacket == null)
             {
-                validationMessage = "Data input is still waiting for the store packet.";
+                validationMessage = "The data input is still missing its packet.";
                 return false;
             }
         }
@@ -370,8 +390,14 @@ public class MemoryUnitController : MonoBehaviour
         CacheReferences();
         RefreshExpectedTargets();
 
-        if (m_BodyText != null)
-            m_BodyText.text = BuildBodyText();
+        if (m_LessonRuntimeText != null)
+            m_LessonRuntimeText.text = BuildLessonRuntimeText();
+
+        if (m_LoadLessonText != null)
+            m_LoadLessonText.gameObject.SetActive(IsLoadInstruction());
+
+        if (m_StoreLessonText != null)
+            m_StoreLessonText.gameObject.SetActive(IsStoreInstruction());
 
         if (m_MemReadStatusText != null)
             m_MemReadStatusText.text = $"MemRead: {m_MemReadValue}";
@@ -396,46 +422,17 @@ public class MemoryUnitController : MonoBehaviour
             m_ActionButton.interactable = m_IsPhaseActive && m_ExecutionRoutine == null;
         }
 
+        RefreshHintBlocks();
+
         RefreshLayout();
     }
 
-    string BuildBodyText()
+    string BuildLessonRuntimeText()
     {
         var instructionName = m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "instruction";
         var assembly = m_CurrentInstruction != null ? m_CurrentInstruction.assemblyInstructionText : "lw t1, 8(t0)";
 
-        if (!UsesInteractiveMemory())
-        {
-            return
-                "Memory Access\n\n" +
-                $"Instruction: {instructionName}\n\n" +
-                $"Assembly: {assembly}\n\n" +
-                "This instruction does not read from or write to Data Memory.\n" +
-                "Use Continue to acknowledge that the memory path is skipped.";
-        }
-
-        if (IsLoadInstruction())
-        {
-            return
-                "Memory Access\n\n" +
-                $"Instruction: {instructionName}\n\n" +
-                $"Assembly: {assembly}\n\n" +
-                "1. Set MemRead = 1 and MemWrite = 0.\n" +
-                "2. Place the ALU Result packet on the address input.\n" +
-                "3. Confirm the highlighted memory word.\n" +
-                "4. Execute the memory read to produce a Memory Data packet.\n" +
-                "5. Next: Write Back.";
-        }
-
-        return
-            "Memory Access\n\n" +
-            $"Instruction: {instructionName}\n\n" +
-            $"Assembly: {assembly}\n\n" +
-            "1. Set MemRead = 0 and MemWrite = 1.\n" +
-            "2. Place the ALU Result packet on the address input.\n" +
-            "3. Place the store-data packet on the data input.\n" +
-            "4. Execute the memory write.\n" +
-            "5. Next: Recap.";
+        return $"Instruction: {instructionName}\nAssembly: {assembly}";
     }
 
     string BuildAddressStatusText()
@@ -559,6 +556,22 @@ public class MemoryUnitController : MonoBehaviour
         }
     }
 
+    void HookHintDropdown(bool subscribe)
+    {
+        if (m_HintDropdown == null)
+            return;
+
+        if (subscribe)
+        {
+            m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
+            m_HintDropdown.onValueChanged.AddListener(HandleHintDropdownChanged);
+        }
+        else
+        {
+            m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
+        }
+    }
+
     void HookScannerEvents(bool subscribe)
     {
         HookAddressEvent(subscribe);
@@ -597,6 +610,11 @@ public class MemoryUnitController : MonoBehaviour
         }
     }
 
+    void HandleHintDropdownChanged(int _)
+    {
+        RefreshPresentation();
+    }
+
     void CacheReferences()
     {
         m_AddressScanner ??= FindChildComponent<MemoryAddressScanner>("Address Input");
@@ -622,12 +640,16 @@ public class MemoryUnitController : MonoBehaviour
 
         if (m_MemUiRoot != null)
         {
-            m_BodyText ??= FindNamedText(m_MemUiRoot.transform, "Text Body");
+            m_LessonRuntimeText ??= FindNamedText(m_MemUiRoot.transform, "Text Lesson Runtime");
+            m_LoadLessonText ??= FindNamedText(m_MemUiRoot.transform, "Load lesson");
+            m_StoreLessonText ??= FindNamedText(m_MemUiRoot.transform, "Store lesson");
             m_MemReadStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text MemRead");
             m_MemWriteStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text MemWrite");
             m_AddressStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text Address");
             m_DataStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text Data");
             m_FeedbackText ??= FindNamedText(m_MemUiRoot.transform, "Text Feedback");
+            m_HintMemReadText ??= FindNamedText(m_MemUiRoot.transform, "Hint MemRead");
+            m_HintMemWriteText ??= FindNamedText(m_MemUiRoot.transform, "Hint MemWrite");
             m_ActionButton ??= m_MemUiRoot.GetComponentInChildren<Button>(true);
             m_ActionButtonLabel ??= m_ActionButton != null
                 ? m_ActionButton.GetComponentInChildren<TMP_Text>(true)
@@ -635,13 +657,37 @@ public class MemoryUnitController : MonoBehaviour
         }
     }
 
+    void RefreshHintBlocks()
+    {
+        var selectedHint = m_HintDropdown != null ? m_HintDropdown.value : 0;
+
+        SetHintBlockActive(m_HintMemReadText, selectedHint == 1);
+        SetHintBlockActive(m_HintMemWriteText, selectedHint == 2);
+    }
+
+    void PopulateHintDropdown()
+    {
+        if (m_HintDropdown == null)
+            return;
+
+        var selectedValue = Mathf.Clamp(m_HintDropdown.value, 0, 2);
+        m_HintDropdown.ClearOptions();
+        m_HintDropdown.AddOptions(new System.Collections.Generic.List<string>
+        {
+            "Choose Option",
+            "MemRead",
+            "MemWrite",
+        });
+        m_HintDropdown.SetValueWithoutNotify(selectedValue);
+    }
+
     void RefreshLayout()
     {
         if (m_MemUiRoot == null || !m_MemUiRoot.activeInHierarchy)
             return;
 
-        m_BodyText?.ForceMeshUpdate();
-        m_FeedbackText?.ForceMeshUpdate();
+        foreach (var textMesh in m_MemUiRoot.GetComponentsInChildren<TMP_Text>(true))
+            textMesh?.ForceMeshUpdate();
         Canvas.ForceUpdateCanvases();
 
         var scrollRect = m_MemUiRoot.GetComponentInChildren<ScrollRect>(true);
@@ -730,6 +776,14 @@ public class MemoryUnitController : MonoBehaviour
         }
 
         return null;
+    }
+
+    static void SetHintBlockActive(TMP_Text textBlock, bool isActive)
+    {
+        if (textBlock == null)
+            return;
+
+        textBlock.gameObject.SetActive(isActive);
     }
 
     static Transform FindSceneTransformByName(string objectName)

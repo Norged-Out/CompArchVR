@@ -41,8 +41,12 @@ This principle should override ambitious expansion pressure.
 ## Current Concrete Milestone
 
 Near-term deadline:
-- finish `add`, `addi`, and `lw` by `2026-06-28`
-- present that build to the supervisor on `2026-06-29` as a V1 checkpoint
+- the June 29, 2026 V1 checkpoint has already been completed
+- next supervisor meeting target: `2026-07-09`
+- official project/demo deadline: `2026-07-29`
+- preferred internal target:
+  - finish the build a few days early
+  - use the final buffer for polish, map setup, and presentation safety
 
 Important clarification:
 - this does not permanently limit the whole project to only those three instructions
@@ -177,6 +181,18 @@ Current preferred authored-panel shape:
    - `Data Memory`
    - `WriteBack`
 
+Current refinement direction:
+- each lesson zone UI should move toward three authored panels side by side:
+  - lesson panel
+  - interaction panel
+  - hint / info panel
+- static instructional text should live in edit mode where possible
+- runtime should primarily update:
+  - current instruction-specific text
+  - live statuses
+  - feedback
+  - validation state
+
 ## Interaction Heuristic
 
 Make the learner do the meaningful reasoning.
@@ -275,13 +291,23 @@ A strong demo should show that a learner can:
 
 Before the next supervisor meeting, prioritize only:
 
-1. split lesson panels into cleaner guide / interaction panels
+1. split lesson panels into cleaner lesson / interaction / hint panels
 2. add a dedicated datapacket reset path
 3. improve the environment / map presentation
+4. if there is room, give `IF` a physical instruction-module handoff
 
 Reason:
 - the functional lesson loop is now broad enough for the current checkpoint
 - the main remaining risk is how understandable and presentable the experience feels
+
+Current note on `IF`:
+- the next likely extension is a physical `Instruction Module` plus `Instruction Platform`
+- the intended shape is:
+  - a platform spawns an empty module at lesson start
+  - the selected instruction is uploaded into that module
+  - the learner carries it to the decode platform
+  - decode only properly begins once the instruction arrives
+- this should make instruction fetch feel physically meaningful without forcing every later phase to depend on module carrying yet
 
 Do not let lower-priority expansion crowd out these three items unless a blocking bug appears.
 

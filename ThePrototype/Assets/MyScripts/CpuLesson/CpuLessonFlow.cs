@@ -40,6 +40,7 @@ public class CpuLessonFlow : MonoBehaviour
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
     public InstructionRuntimeSelection RuntimeSelection => m_RuntimeSelection;
     public int CurrentStepIndex => m_CurrentStepIndex;
+    public int CurrentRegisterSelectionIndex => m_CurrentRegisterSelectionIndex;
     public bool HasStarted => m_CurrentStepIndex >= 0;
     public RegisterBank RegisterBank => m_RegisterBank;
     public bool RegisterSelectionReadyToContinue => m_RegisterSelectionReadyToContinue;
@@ -153,7 +154,7 @@ public class CpuLessonFlow : MonoBehaviour
             case InstructionStepInteractionType.RegisterSelection:
                 if (!m_RegisterSelectionReadyToContinue)
                 {
-                    SetFeedback(GetRegisterSelectionPrompt(), true);
+                    SetFeedback("Decode work is not complete yet.", true);
                     break;
                 }
 
@@ -297,7 +298,7 @@ public class CpuLessonFlow : MonoBehaviour
         {
             m_RegisterBank?.FlashScannerFailure(scannedRole);
             SetFeedback(
-                $"Use {GetScannerLabel(expectedRole)} for {m_CurrentInstruction.GetExpectedRegisterName(expectedRole)}.",
+                "That operand does not belong on this scanner.",
                 true);
             return;
         }
@@ -310,7 +311,7 @@ public class CpuLessonFlow : MonoBehaviour
                 m_RegisterBank?.FlashFailure(registerName);
 
             SetFeedback(
-                $"Incorrect. Expected {result.expectedRegister}, not {registerName}.",
+                "That register does not match the current decode target.",
                 true);
             return;
         }
@@ -333,19 +334,19 @@ public class CpuLessonFlow : MonoBehaviour
         if (result.completesStep)
         {
             m_RegisterSelectionReadyToContinue = true;
-            var completionMessage = successMessage;
+            var completionMessage = "Operand collection is complete.";
 
             if (m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate)
-                completionMessage += $" Press Continue to spawn the Immediate packet at the Immediate Extender.";
+                completionMessage += " Press Continue to generate the immediate value for the next stage.";
 
-            SetFeedback($"{completionMessage} Decode is complete. Press Continue.", false);
+            SetFeedback($"{completionMessage}", false);
             Debug.Log($"{k_LogPrefix} Register selection complete | step={CurrentStep.stepName} nextStepPending=true frame={Time.frameCount}", this);
             StepChanged?.Invoke(this);
             return;
         }
 
         m_RegisterSelectionReadyToContinue = false;
-        SetFeedback($"{successMessage} Next: place {result.nextRegister} on {GetScannerLabel(result.nextRole)}.", false);
+        SetFeedback("Operand confirmed.", false);
         StepChanged?.Invoke(this);
     }
 
@@ -407,7 +408,7 @@ public class CpuLessonFlow : MonoBehaviour
                 break;
 
             case InstructionStepInteractionType.RegisterSelection:
-                SetFeedback(GetRegisterSelectionPrompt(), false);
+                SetFeedback("Collect the required operands to continue.", false);
                 break;
 
             case InstructionStepInteractionType.AluExecution:

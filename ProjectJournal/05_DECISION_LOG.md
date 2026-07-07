@@ -608,6 +608,39 @@ Why:
 Implication:
 - new instruction families and larger pedagogical redesigns should be treated as post-cutoff work unless a blocking issue appears
 
+## 2026-07-07 - Lesson UIs Should Move To A Three-Panel Pattern
+
+Decision:
+- each active lesson zone should move toward three authored panels:
+  - lesson
+  - interaction
+  - hint / info
+
+Why:
+- the single-panel approach worked, but it stayed too crowded
+- the supervisor specifically wanted explanation separated from interaction more clearly
+- this structure keeps the guide content visible without making the active interaction area too busy
+
+Implication:
+- static explanatory text should be authored in-scene where practical
+- runtime should mostly update the changing pieces instead of rebuilding whole text walls
+
+## 2026-07-07 - Instruction Fetch Should Become A Physical Module Handoff
+
+Decision:
+- the next meaningful `IF` upgrade should use a physical `Instruction Module` and `Instruction Platform`
+
+Why:
+- the current fetch step is conceptually fine, but physically thin
+- carrying a module from fetch into decode gives `IF` an actual embodied purpose
+- it also creates a natural gate before `ID` begins
+
+Implication:
+- the platform should spawn or host a module
+- lesson start should upload the selected instruction into that module
+- decode should unlock only after the learner brings the module into place
+- later extension into additional phase-gating is optional, not mandatory
+
 ## 2026-07-05 - If More Instructions Are Added Next, Favor Immediate And Branch Paths Before Jump Paths
 
 Decision:

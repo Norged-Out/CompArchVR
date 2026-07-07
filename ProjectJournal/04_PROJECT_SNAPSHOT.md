@@ -23,6 +23,10 @@ Current prototype features:
 - lesson framework re-wired around `Lesson Guide`
 - scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
 - scene-authored `Register Setup UI` near the register area
+- lesson UIs are now being refactored toward a three-panel structure:
+  - lesson panel
+  - interaction panel
+  - hint / info panel
 - guide panels have now been proven useful, but post-demo feedback suggests separating guide/explanation surfaces from active interaction surfaces more clearly
 - scene-authored `Register Zone` with 32 permanent grabbable MIPS registers
 - register scanners for `Read Register 1`, `Read Register 2`, and `Write Register`
@@ -55,6 +59,7 @@ Current prototype features:
   - a bonus loose register scanner for value inspection / confirmation
   - lesson-flow wiring for a real write-back phase instead of only a temporary intro-panel explanation
 - authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
+- `Instruction Decode`, `EX`, `Mem`, and `WB` are now in the middle of that authored split, with code updated to support more scene-authored static/toggle text
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
   - decode can now emit immediate packets from the second scanner spawn point for immediate-based instructions
@@ -125,11 +130,13 @@ Why:
 ## Current Non-Negotiable Milestone
 
 - the June 29, 2026 supervisor demo has been completed
-- the next checkpoint is on `2026-07-06`
-- the desired target for that checkpoint is:
-  - `addi` working
-  - `lw` working
-  - this target has effectively been passed already, with `sw` and the remaining core ALU instructions now working too
+- the next supervisor checkpoint is on `2026-07-09`
+- the official demo deadline is `2026-07-29`
+- the current focus is no longer instruction coverage, but:
+  - UI readability
+  - physical instruction-fetch embodiment
+  - datapacket reset QoL
+  - map/environment quality
 
 ## If Starting A New Chat
 
@@ -171,9 +178,10 @@ Before stopping:
 
 Ordered cutoff list before the next supervisor meeting:
 
-1. split lesson UI into cleaner guide / interaction sub-panels
+1. split lesson UI into cleaner lesson / interaction / hint panels
 2. add a datapacket reset button that only resets present non-consumed packets
 3. improve the map/environment using the newer asset packs
+4. if feasible, add the planned physical instruction-fetch handoff
 
 Everything else should be treated as post-cutoff unless a blocking regression appears.
 
@@ -187,9 +195,10 @@ The cleanest next work item is:
   - authored in scene
   - updated by code
   - not generated at runtime
-- split guide/explanation content away from active interaction content where practical
+- split guide/explanation content away from active interaction content where practical through the three-panel layout
 - add datapacket reset support without coupling it to register reset or lesson reset
 - improve the physical environment only after the instructional scene remains readable
+- then give `IF` a physical handoff through the planned instruction module/platform path
 
 ## Personal Reminder
 

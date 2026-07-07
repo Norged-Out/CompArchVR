@@ -44,21 +44,45 @@ public class LessonGuideController : MonoBehaviour
     [SerializeField]
     TMP_Dropdown m_InstructionDropdown;
 
-    [Header("Register Setup UI")]
+    [Header("Instruction Decode UI")]
     [SerializeField]
-    GameObject m_RegisterRoot;
+    GameObject m_IDRoot;
 
     [SerializeField]
-    TMP_Text m_RegisterBody;
+    TMP_Text m_IDOpcodeLessonText;
 
     [SerializeField]
-    TMP_Text m_RegisterFeedback;
+    TMP_Text m_IDRegisterLessonText;
 
     [SerializeField]
-    Button m_RegisterActionButton;
+    TMP_Text m_IDOpcodeBodyText;
 
     [SerializeField]
-    TMP_Text m_RegisterActionLabel;
+    TMP_Text m_IDRegisterBodyText;
+
+    [SerializeField]
+    TMP_Text m_IDOpcodeSelectionText;
+
+    [SerializeField]
+    TMP_Text m_IDRegisterSelectionText;
+
+    [SerializeField]
+    TMP_Text m_IDFeedback;
+
+    [SerializeField]
+    Button m_IDActionButton;
+
+    [SerializeField]
+    TMP_Text m_IDActionLabel;
+
+    [SerializeField]
+    TMP_Dropdown m_IDOpcodeDropdown;
+
+    [SerializeField]
+    TMP_Dropdown m_IDHintDropdown;
+
+    [SerializeField]
+    TMP_Text m_IDHintText;
 
     [Header("ALU UI")]
     [SerializeField]
@@ -82,16 +106,19 @@ public class LessonGuideController : MonoBehaviour
     WriteBackController m_WriteBackController;
 
     readonly List<InstructionDefinition> m_AvailableInstructions = new();
+    readonly List<string> m_DecodeOpcodeOptions = new();
     bool m_IsRefreshingInstructionDropdown;
+    bool m_IsRefreshingDecodeDropdowns;
 
     void Awake()
     {
         CacheReferences();
         PopulateInstructionDropdown();
+        PopulateDecodeDropdowns();
         HookButtons();
         HookDropdowns();
         EnsureButtonLayout(m_IntroActionButton);
-        EnsureButtonLayout(m_RegisterActionButton);
+        EnsureButtonLayout(m_IDActionButton);
         RefreshView();
     }
 
@@ -99,6 +126,7 @@ public class LessonGuideController : MonoBehaviour
     {
         CacheReferences();
         PopulateInstructionDropdown();
+        PopulateDecodeDropdowns();
         HookDropdowns();
 
         if (m_AluController != null)
@@ -150,21 +178,33 @@ public class LessonGuideController : MonoBehaviour
             m_IntroActionButton.onClick.AddListener(HandleIntroActionPressed);
         }
 
-        if (m_RegisterActionButton != null)
+        if (m_IDActionButton != null)
         {
-            m_RegisterActionButton.onClick.RemoveAllListeners();
-            m_RegisterActionButton.onClick.AddListener(HandleRegisterActionPressed);
+            m_IDActionButton.onClick.RemoveAllListeners();
+            m_IDActionButton.onClick.AddListener(HandleIDActionPressed);
         }
 
     }
 
     void HookDropdowns()
     {
-        if (m_InstructionDropdown == null)
-            return;
+        if (m_InstructionDropdown != null)
+        {
+            m_InstructionDropdown.onValueChanged.RemoveListener(HandleInstructionChanged);
+            m_InstructionDropdown.onValueChanged.AddListener(HandleInstructionChanged);
+        }
 
-        m_InstructionDropdown.onValueChanged.RemoveListener(HandleInstructionChanged);
-        m_InstructionDropdown.onValueChanged.AddListener(HandleInstructionChanged);
+        if (m_IDOpcodeDropdown != null)
+        {
+            m_IDOpcodeDropdown.onValueChanged.RemoveListener(HandleDecodeOpcodeChanged);
+            m_IDOpcodeDropdown.onValueChanged.AddListener(HandleDecodeOpcodeChanged);
+        }
+
+        if (m_IDHintDropdown != null)
+        {
+            m_IDHintDropdown.onValueChanged.RemoveListener(HandleDecodeHintChanged);
+            m_IDHintDropdown.onValueChanged.AddListener(HandleDecodeHintChanged);
+        }
     }
 
     void HandleIntroActionPressed()
@@ -180,15 +220,17 @@ public class LessonGuideController : MonoBehaviour
             m_LessonFlow.Advance();
     }
 
-    void HandleRegisterActionPressed()
+    void HandleIDActionPressed()
     {
         if (m_LessonFlow == null)
             return;
 
-        Debug.Log($"{k_LogPrefix} Register button pressed | hasStarted={m_LessonFlow.HasStarted} step={m_LessonFlow.CurrentStep?.stepName} frame={Time.frameCount}", this);
+        Debug.Log($"{k_LogPrefix} ID button pressed | hasStarted={m_LessonFlow.HasStarted} step={m_LessonFlow.CurrentStep?.stepName} frame={Time.frameCount}", this);
 
         if (!m_LessonFlow.HasStarted)
             m_LessonFlow.StartLesson();
+        else if (IsDecodeOpcodeSelectionStep())
+            HandleDecodeOpcodeContinue();
         else
             m_LessonFlow.Advance();
     }
@@ -202,7 +244,25 @@ public class LessonGuideController : MonoBehaviour
             return;
 
         m_LessonFlow?.SetCurrentInstruction(m_AvailableInstructions[selectedIndex]);
+        PopulateDecodeDropdowns();
         RefreshView();
+    }
+
+    void HandleDecodeOpcodeChanged(int _)
+    {
+        if (m_IsRefreshingDecodeDropdowns)
+            return;
+
+        RefreshView();
+    }
+
+    void HandleDecodeHintChanged(int _)
+    {
+        if (m_IsRefreshingDecodeDropdowns)
+            return;
+
+        RefreshDecodeHintText();
+        RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
     }
 
     void HandleStepChanged(CpuLessonFlow _)
@@ -238,16 +298,17 @@ public class LessonGuideController : MonoBehaviour
             : new Color(0.78f, 0.96f, 0.82f, 1f);
 
         // Only the currently visible panel owns the live feedback surface.
-        if (ShouldShowRegisterPanel())
+        if (ShouldShowIDPanel())
         {
-            if (m_RegisterFeedback != null)
+            if (m_IDFeedback != null)
             {
-                m_RegisterFeedback.text = message;
-                m_RegisterFeedback.color = feedbackColor;
-                m_RegisterFeedback.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
+                m_IDFeedback.text = message;
+                m_IDFeedback.color = feedbackColor;
+                m_IDFeedback.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
             }
 
-            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshDecodeHintText();
+            RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
             return;
         }
 
@@ -276,19 +337,19 @@ public class LessonGuideController : MonoBehaviour
         if (m_LessonFlow == null || m_IntroRoot == null)
             return;
 
-        var showRegisterPanel = ShouldShowRegisterPanel();
+        var showIDPanel = ShouldShowIDPanel();
         var showAluPanel = ShouldShowAluPanel();
         var showMemoryPanel = ShouldShowMemoryPanel();
         var showWriteBackPanel = ShouldShowWriteBackPanel();
 
         Debug.Log(
-            $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} register={showRegisterPanel} alu={showAluPanel} mem={showMemoryPanel} wb={showWriteBackPanel} frame={Time.frameCount}",
+            $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} decode={showIDPanel} alu={showAluPanel} mem={showMemoryPanel} wb={showWriteBackPanel} frame={Time.frameCount}",
             this);
 
         // Panels are authored in the scene and simply toggled on/off as the
         // lesson advances. That keeps layout work in edit mode instead of runtime.
-        if (m_RegisterRoot != null)
-            m_RegisterRoot.SetActive(showRegisterPanel);
+        if (m_IDRoot != null)
+            m_IDRoot.SetActive(showIDPanel);
 
         if (m_AluRoot != null)
             m_AluRoot.SetActive(showAluPanel);
@@ -307,15 +368,15 @@ public class LessonGuideController : MonoBehaviour
         if (m_WriteBackController != null && !showWriteBackPanel)
             m_WriteBackController.ResetWriteBackState();
 
-        m_IntroRoot.SetActive(!showRegisterPanel && !showAluPanel && !showMemoryPanel && !showWriteBackPanel);
+        m_IntroRoot.SetActive(!showIDPanel && !showAluPanel && !showMemoryPanel && !showWriteBackPanel);
 
         if (!m_LessonFlow.HasStarted)
         {
             m_AluController?.ResetExecutionState();
             m_MemoryController?.ResetMemoryState();
             m_WriteBackController?.ResetWriteBackState();
-            if (m_RegisterRoot != null)
-                m_RegisterRoot.SetActive(false);
+            if (m_IDRoot != null)
+                m_IDRoot.SetActive(false);
             if (m_AluRoot != null)
                 m_AluRoot.SetActive(false);
             if (m_MemRoot != null)
@@ -329,9 +390,10 @@ public class LessonGuideController : MonoBehaviour
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_StartButtonLabel, true);
             if (m_InstructionDropdown != null)
                 m_InstructionDropdown.interactable = true;
-            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            ResetDecodeDropdowns();
+            SetButtonState(m_IDActionButton, m_IDActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
-            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
             return;
         }
 
@@ -345,31 +407,31 @@ public class LessonGuideController : MonoBehaviour
         if (showAluPanel)
         {
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
-            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_IDActionButton, m_IDActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
-            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
             return;
         }
 
         if (showWriteBackPanel)
         {
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
-            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_IDActionButton, m_IDActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
-            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
             return;
         }
 
         if (showMemoryPanel)
         {
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
-            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_IDActionButton, m_IDActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
-            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
             return;
         }
 
-        if (!showRegisterPanel)
+        if (!showIDPanel)
         {
             SetText(m_IntroBody, BuildIntroBody(step));
             SetText(m_IntroFeedback, string.Empty);
@@ -379,28 +441,32 @@ public class LessonGuideController : MonoBehaviour
                 step.requiredInteraction == InstructionStepInteractionType.Completion ? m_RestartButtonLabel : m_ContinueButtonLabel,
                 step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
                 step.requiredInteraction == InstructionStepInteractionType.Completion);
-            SetButtonState(m_RegisterActionButton, m_RegisterActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_IDActionButton, m_IDActionLabel, m_ContinueButtonLabel, false);
             RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
-            RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+            RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
             return;
         }
 
-        SetText(m_RegisterBody, BuildRegisterBody(step));
-        var showContinue = step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
+        RefreshDecodeTextBlocks(step);
+        RefreshDecodeDropdownState(step);
+        RefreshDecodeHintText();
+
+        var showContinue = IsDecodeOpcodeSelectionStep() ||
+                           step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
                            step.requiredInteraction == InstructionStepInteractionType.Completion ||
                            (step.requiredInteraction == InstructionStepInteractionType.RegisterSelection &&
                             m_LessonFlow.RegisterSelectionReadyToContinue);
         SetButtonState(
-            m_RegisterActionButton,
-            m_RegisterActionLabel,
+            m_IDActionButton,
+            m_IDActionLabel,
             step.requiredInteraction == InstructionStepInteractionType.Completion ? m_RestartButtonLabel : m_ContinueButtonLabel,
             showContinue);
         SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
         RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
-        RefreshLayout(m_RegisterRoot, m_RegisterBody, m_RegisterFeedback, m_RegisterActionButton);
+        RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
     }
 
-    bool ShouldShowRegisterPanel()
+    bool ShouldShowIDPanel()
     {
         if (ShouldShowAluPanel())
             return false;
@@ -446,101 +512,89 @@ public class LessonGuideController : MonoBehaviour
     string BuildIntroBody(InstructionFlowStep step)
     {
         var instruction = m_LessonFlow.CurrentInstruction;
-        var body =
-            $"Instruction: {instruction.displayName}\n\n" +
-            $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-            $"Stage: {step.stepName}\n\n" +
-            $"{step.explanation}";
-
         if (step.stepName.IndexOf("Fetch", System.StringComparison.OrdinalIgnoreCase) >= 0)
-            body += "\n\nPress Continue to move into instruction decode.";
-        else
-            body += $"\n\nNext: {GetNextStageLabel(step)}.";
+        {
+            return
+                $"Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
+                $"Instruction: {instruction.displayName}\n" +
+                $"Assembly: {instruction.assemblyInstructionText}\n\n" +
+                $"{step.explanation}\n\n" +
+                "When you are ready, continue into instruction decode.";
+        }
 
-        return body;
+        return
+            $"Instruction: {instruction.displayName}\n" +
+            $"Assembly: {instruction.assemblyInstructionText}\n\n" +
+            $"{step.explanation}\n\n" +
+            $"Next: {GetNextStageLabel(step)}.";
     }
 
-    string BuildRegisterBody(InstructionFlowStep step)
+    string BuildDecodeOpcodeSelectionText(InstructionFlowStep step)
     {
         var instruction = m_LessonFlow.CurrentInstruction;
         if (instruction == null)
             return string.Empty;
 
-        if (step.highlightedNode == DatapathNodeId.InstructionMemory)
+        if (IsDecodeOpcodeSelectionStep())
         {
-            var decodeFocus = instruction.mnemonic switch
-            {
-                InstructionMnemonic.Sw =>
-                    "Identify rs as the base register, rt as the store-data register, and the immediate field as the address offset.",
-                _ when instruction.usesImmediate =>
-                    "Identify rs, rt, and the immediate field. Operand 2 will come from the immediate path instead of a second register read.",
-                _ =>
-                    "Identify rs, rt, and the destination register for this instruction.",
-            };
-
-            return
-                $"Instruction Decode\n\n" +
-                $"Instruction: {instruction.displayName}\n\n" +
-                $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                $"Field Breakdown:\n{instruction.fieldBreakdownText}\n\n" +
-                $"{decodeFocus}\n\n" +
-                $"{step.explanation}\n\n" +
-                $"Next: {GetNextStageLabel(step)}.";
+            return $"Assembly: {instruction.assemblyInstructionText}";
         }
+
+        return string.Empty;
+    }
+
+    string BuildDecodeRegisterSelectionText(InstructionFlowStep step)
+    {
+        var instruction = m_LessonFlow.CurrentInstruction;
+        if (instruction == null)
+            return string.Empty;
 
         if (step.requiredInteraction == InstructionStepInteractionType.RegisterSelection)
         {
-            var registerLines = string.Empty;
+            var lines = new List<string>();
+            var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
 
-            if (instruction.mnemonic == InstructionMnemonic.Sw)
+            for (var index = 0; index < requiredRoles.Length; index++)
             {
-                registerLines += $"Read Register 1 <- rs ({instruction.expectedRs})\n";
-                registerLines += $"Read Register 2 <- rt ({instruction.expectedRt})\n";
-                registerLines += $"Address Offset <- immediate ({instruction.expectedImmediateValue})\n";
-                registerLines += "Resulting packets <- Read Data 1, Read Data 2, and Immediate\n";
-            }
-            else
-            {
-                var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
-                foreach (var registerRole in requiredRoles)
-                {
-                    registerLines += registerRole switch
-                    {
-                        InstructionRegisterRole.Rs => $"Read Register 1 <- rs ({instruction.expectedRs})\n",
-                        InstructionRegisterRole.Rt => $"Read Register 2 <- rt ({instruction.expectedRt})\n",
-                        InstructionRegisterRole.Rd => $"Write Register <- rd ({instruction.expectedRd})\n",
-                        _ => string.Empty,
-                    };
-                }
-
-                if (instruction.usesImmediate)
-                {
-                    registerLines += $"Operand 2 <- immediate ({instruction.expectedImmediateValue})\n";
-                    registerLines += $"Write-back target remembered for later <- rt ({instruction.expectedRt})\n";
-                    registerLines += "Immediate packet <- spawned at the Immediate Extender after you press Continue\n";
-                }
-                else if (instruction.usesDestinationRegister)
-                {
-                    registerLines += $"Write-back target remembered for later <- rd ({instruction.expectedRd})\n";
-                }
+                var role = requiredRoles[index];
+                var registerName = instruction.GetExpectedRegisterName(role);
+                var scannerName = GetScannerLabel(role);
+                var status = index < m_LessonFlow.CurrentRegisterSelectionIndex ? "done" : "pending";
+                lines.Add($"{scannerName}: {registerName} [{status}]");
             }
 
-            return
-                $"Instruction Decode\n\n" +
-                $"Instruction: {instruction.displayName}\n\n" +
-                $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                $"Place the required source registers on the active scanners.\n\n" +
-                $"{registerLines}\n" +
-                $"{step.explanation}\n\n" +
-                $"Next: {GetNextStageLabel(step)}.";
+            if (instruction.usesImmediate)
+            {
+                var immediateStatus = m_LessonFlow.RegisterSelectionReadyToContinue ? "ready to generate" : "locked";
+                lines.Add($"Immediate packet: {instruction.expectedImmediateValue} [{immediateStatus}]");
+            }
+
+            var nextAction = m_LessonFlow.RegisterSelectionReadyToContinue
+                ? instruction.usesImmediate
+                    ? "Press Continue to generate the immediate packet and proceed to Execution."
+                    : "Press Continue to proceed to Execution."
+                : $"Current target: {GetCurrentDecodeTargetLabel(instruction, step)}.";
+
+            return $"{string.Join("\n", lines)}\n\n{nextAction}";
         }
 
-        return
-            $"Instruction: {instruction.displayName}\n\n" +
-            $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-            $"Stage: {step.stepName}\n\n" +
-            $"{step.explanation}\n\n" +
-            $"Next: {GetNextStageLabel(step)}.";
+        return step.explanation;
+    }
+
+    void RefreshDecodeTextBlocks(InstructionFlowStep step)
+    {
+        var isOpcodeStep = IsDecodeOpcodeSelectionStep();
+        var isRegisterStep = step != null && step.requiredInteraction == InstructionStepInteractionType.RegisterSelection;
+
+        SetActive(m_IDOpcodeLessonText, isOpcodeStep);
+        SetActive(m_IDRegisterLessonText, isRegisterStep);
+        SetActive(m_IDOpcodeBodyText, isOpcodeStep);
+        SetActive(m_IDRegisterBodyText, isRegisterStep);
+        SetActive(m_IDOpcodeSelectionText, isOpcodeStep);
+        SetActive(m_IDRegisterSelectionText, isRegisterStep);
+
+        SetText(m_IDOpcodeSelectionText, isOpcodeStep ? BuildDecodeOpcodeSelectionText(step) : string.Empty);
+        SetText(m_IDRegisterSelectionText, isRegisterStep ? BuildDecodeRegisterSelectionText(step) : string.Empty);
     }
 
     string GetNextStageLabel(InstructionFlowStep currentStep)
@@ -599,11 +653,21 @@ public class LessonGuideController : MonoBehaviour
 
         if (m_InstructionDropdown == null && m_IntroRoot != null)
             m_InstructionDropdown = m_IntroRoot.GetComponentInChildren<TMP_Dropdown>(true);
+
+        if (m_IDRoot != null)
+        {
+            m_IDOpcodeLessonText ??= FindNamedText(m_IDRoot.transform, "Opcode lesson");
+            m_IDRegisterLessonText ??= FindNamedText(m_IDRoot.transform, "Register lesson");
+            m_IDOpcodeBodyText ??= FindNamedText(m_IDRoot.transform, "Opcode body");
+            m_IDRegisterBodyText ??= FindNamedText(m_IDRoot.transform, "Register body");
+            m_IDOpcodeSelectionText ??= FindNamedText(m_IDRoot.transform, "Opcode selection");
+            m_IDRegisterSelectionText ??= FindNamedText(m_IDRoot.transform, "Register selection");
+        }
     }
 
     void PopulateInstructionDropdown()
     {
-        if (m_InstructionDropdown == null || m_LessonFlow == null)
+        if (m_LessonFlow == null)
             return;
 
         m_AvailableInstructions.Clear();
@@ -619,6 +683,9 @@ public class LessonGuideController : MonoBehaviour
 
         if (m_AvailableInstructions.Count == 0 && m_LessonFlow.CurrentInstruction != null)
             m_AvailableInstructions.Add(m_LessonFlow.CurrentInstruction);
+
+        if (m_InstructionDropdown == null)
+            return;
 
         m_IsRefreshingInstructionDropdown = true;
         m_InstructionDropdown.ClearOptions();
@@ -646,6 +713,153 @@ public class LessonGuideController : MonoBehaviour
         m_IsRefreshingInstructionDropdown = false;
     }
 
+    void PopulateDecodeDropdowns()
+    {
+        PopulateDecodeOpcodeDropdown();
+        PopulateDecodeHintDropdown();
+    }
+
+    void PopulateDecodeOpcodeDropdown()
+    {
+        if (m_IDOpcodeDropdown == null)
+            return;
+
+        m_DecodeOpcodeOptions.Clear();
+
+        var optionLabels = new List<string> { "Choose Opcode" };
+        foreach (var instruction in m_AvailableInstructions)
+        {
+            if (instruction == null || string.IsNullOrWhiteSpace(instruction.opcodeBits))
+                continue;
+
+            var opcode = instruction.opcodeBits.Trim();
+            if (m_DecodeOpcodeOptions.Contains(opcode))
+                continue;
+
+            m_DecodeOpcodeOptions.Add(opcode);
+            optionLabels.Add(opcode);
+        }
+
+        if (m_LessonFlow != null &&
+            m_LessonFlow.CurrentInstruction != null &&
+            !string.IsNullOrWhiteSpace(m_LessonFlow.CurrentInstruction.opcodeBits))
+        {
+            var currentOpcode = m_LessonFlow.CurrentInstruction.opcodeBits.Trim();
+            if (!m_DecodeOpcodeOptions.Contains(currentOpcode))
+            {
+                m_DecodeOpcodeOptions.Add(currentOpcode);
+                optionLabels.Add(currentOpcode);
+            }
+        }
+
+        m_IsRefreshingDecodeDropdowns = true;
+        m_IDOpcodeDropdown.ClearOptions();
+        m_IDOpcodeDropdown.AddOptions(optionLabels);
+        m_IDOpcodeDropdown.SetValueWithoutNotify(0);
+        m_IsRefreshingDecodeDropdowns = false;
+    }
+
+    void PopulateDecodeHintDropdown()
+    {
+        if (m_IDHintDropdown == null)
+            return;
+
+        m_IsRefreshingDecodeDropdowns = true;
+        m_IDHintDropdown.ClearOptions();
+        m_IDHintDropdown.AddOptions(new List<string> { "Choose Option", "Opcode", "Funct" });
+        m_IDHintDropdown.SetValueWithoutNotify(0);
+        m_IsRefreshingDecodeDropdowns = false;
+    }
+
+    void ResetDecodeDropdowns()
+    {
+        m_IsRefreshingDecodeDropdowns = true;
+
+        if (m_IDOpcodeDropdown != null)
+            m_IDOpcodeDropdown.SetValueWithoutNotify(0);
+
+        if (m_IDHintDropdown != null)
+            m_IDHintDropdown.SetValueWithoutNotify(0);
+
+        m_IsRefreshingDecodeDropdowns = false;
+        SetText(m_IDHintText, string.Empty);
+    }
+
+    void RefreshDecodeDropdownState(InstructionFlowStep step)
+    {
+        var showOpcodeDropdown = IsDecodeOpcodeSelectionStep();
+
+        if (m_IDOpcodeDropdown != null)
+        {
+            m_IDOpcodeDropdown.gameObject.SetActive(showOpcodeDropdown);
+            m_IDOpcodeDropdown.interactable = showOpcodeDropdown;
+        }
+
+        if (m_IDHintDropdown != null)
+            m_IDHintDropdown.gameObject.SetActive(true);
+
+        if (m_IDHintText != null)
+            m_IDHintText.gameObject.SetActive(m_IDHintDropdown != null && m_IDHintDropdown.value > 0);
+    }
+
+    void RefreshDecodeHintText()
+    {
+        if (m_IDHintDropdown == null)
+            return;
+
+        string hintText;
+        switch (m_IDHintDropdown.value)
+        {
+            case 1:
+                hintText = BuildOpcodeHintText();
+                break;
+            case 2:
+                hintText = BuildFunctHintText();
+                break;
+            default:
+                hintText = string.Empty;
+                break;
+        }
+
+        SetText(m_IDHintText, hintText);
+    }
+
+    string BuildOpcodeHintText()
+    {
+        var lines = new List<string>();
+        foreach (var instruction in m_AvailableInstructions)
+        {
+            if (instruction == null || string.IsNullOrWhiteSpace(instruction.opcodeBits))
+                continue;
+
+            var line = $"{instruction.displayName} -> {instruction.opcodeBits.Trim()}";
+            if (!lines.Contains(line))
+                lines.Add(line);
+        }
+
+        return lines.Count == 0
+            ? "No opcode reference available."
+            : "Opcode reference\n\n" + string.Join("\n", lines);
+    }
+
+    string BuildFunctHintText()
+    {
+        var lines = new List<string>();
+        foreach (var instruction in m_AvailableInstructions)
+        {
+            if (instruction == null || string.IsNullOrWhiteSpace(instruction.functBits))
+                continue;
+
+            var line = $"{instruction.displayName} -> {instruction.functBits.Trim()}";
+            if (!lines.Contains(line))
+                lines.Add(line);
+        }
+
+        return lines.Count == 0
+            ? "No funct reference available."
+            : "Funct reference\n\n" + string.Join("\n", lines);
+    }
+
     static void SetText(TMP_Text target, string text)
     {
         if (target == null)
@@ -653,6 +867,14 @@ public class LessonGuideController : MonoBehaviour
 
         target.text = text;
         target.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
+    }
+
+    static void SetActive(TMP_Text target, bool isActive)
+    {
+        if (target == null)
+            return;
+
+        target.gameObject.SetActive(isActive);
     }
 
     static void SetButtonState(Button button, TMP_Text label, string labelText, bool visibleAndEnabled)
@@ -688,8 +910,9 @@ public class LessonGuideController : MonoBehaviour
         if (root == null || !root.activeInHierarchy)
             return;
 
-        body?.ForceMeshUpdate();
-        feedback?.ForceMeshUpdate();
+        foreach (var textMesh in root.GetComponentsInChildren<TMP_Text>(true))
+            textMesh?.ForceMeshUpdate();
+
         EnsureButtonLayout(actionButton);
 
         Canvas.ForceUpdateCanvases();
@@ -711,6 +934,73 @@ public class LessonGuideController : MonoBehaviour
             LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
 
         Canvas.ForceUpdateCanvases();
+    }
+
+    void HandleDecodeOpcodeContinue()
+    {
+        if (m_LessonFlow == null || m_LessonFlow.CurrentInstruction == null)
+            return;
+
+        var selectedOpcode = GetSelectedDecodeOpcode();
+        if (string.IsNullOrWhiteSpace(selectedOpcode))
+        {
+            HandleFeedbackChanged("Select an opcode first.", true);
+            return;
+        }
+
+        var expectedOpcode = m_LessonFlow.CurrentInstruction.opcodeBits != null
+            ? m_LessonFlow.CurrentInstruction.opcodeBits.Trim()
+            : string.Empty;
+
+        if (!string.Equals(selectedOpcode, expectedOpcode, System.StringComparison.Ordinal))
+        {
+            HandleFeedbackChanged("That opcode does not match the selected instruction.", true);
+            return;
+        }
+
+        HandleFeedbackChanged("Opcode confirmed. Continue into operand setup.", false);
+        m_LessonFlow.Advance();
+    }
+
+    string GetSelectedDecodeOpcode()
+    {
+        if (m_IDOpcodeDropdown == null ||
+            m_IDOpcodeDropdown.options == null ||
+            m_IDOpcodeDropdown.value <= 0 ||
+            m_IDOpcodeDropdown.value >= m_IDOpcodeDropdown.options.Count)
+        {
+            return string.Empty;
+        }
+
+        return m_IDOpcodeDropdown.options[m_IDOpcodeDropdown.value].text.Trim();
+    }
+
+    bool IsDecodeOpcodeSelectionStep()
+    {
+        var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
+        return step != null && step.highlightedNode == DatapathNodeId.InstructionMemory;
+    }
+
+    string GetCurrentDecodeTargetLabel(InstructionDefinition instruction, InstructionFlowStep step)
+    {
+        var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
+        var currentIndex = m_LessonFlow != null ? m_LessonFlow.CurrentRegisterSelectionIndex : 0;
+        if (currentIndex < 0 || currentIndex >= requiredRoles.Length)
+            return "Place the required register";
+
+        var role = requiredRoles[currentIndex];
+        return $"{instruction.GetExpectedRegisterName(role)} on {GetScannerLabel(role)}";
+    }
+
+    static string GetScannerLabel(InstructionRegisterRole registerRole)
+    {
+        return registerRole switch
+        {
+            InstructionRegisterRole.Rs => "Read Register 1",
+            InstructionRegisterRole.Rt => "Read Register 2",
+            InstructionRegisterRole.Rd => "Write Register",
+            _ => "the correct scanner",
+        };
     }
 
     static Transform FindSceneTransform(string objectName)

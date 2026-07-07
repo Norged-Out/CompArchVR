@@ -207,7 +207,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 180}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.1}
+  m_AnchoredPosition: {x: 0, y: -0.0298}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &9096576322284294391
@@ -893,7 +893,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 180, z: 180}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -0.1}
+  m_AnchoredPosition: {x: 0, y: -0.0299}
   m_SizeDelta: {x: 20, y: 5}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!23 &2730965102246269893
@@ -1148,7 +1148,7 @@ MonoBehaviour:
   m_AluOpButtonRoot: {fileID: 1364021660308291361}
   m_AluSrcButtonRoot: {fileID: 8609213945429780975}
   m_AluUiRoot: {fileID: 0}
-  m_BodyText: {fileID: 0}
+  m_LessonRuntimeText: {fileID: 0}
   m_AluOpStatusText: {fileID: 0}
   m_AluSrcStatusText: {fileID: 0}
   m_Input1StatusText: {fileID: 0}
@@ -1157,6 +1157,10 @@ MonoBehaviour:
   m_ExecuteButton: {fileID: 0}
   m_ExecuteButtonLabel: {fileID: 0}
   m_FunctDropdown: {fileID: 0}
+  m_HintDropdown: {fileID: 0}
+  m_HintAluOpText: {fileID: 0}
+  m_HintAluSrcText: {fileID: 0}
+  m_HintAluControlText: {fileID: 0}
   m_ResultSpawnDelaySeconds: 1.25
   m_ExecuteButtonText: Execute
   m_ResultReadyButtonText: Result Ready
