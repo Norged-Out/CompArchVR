@@ -27,6 +27,12 @@ public class CpuLessonFlow : MonoBehaviour
     ImmediateExtender m_ImmediateExtender;
 
     [SerializeField]
+    InstructionTerminal m_FetchUploadTerminal;
+
+    [SerializeField]
+    InstructionTerminal m_DecodeDownloadTerminal;
+
+    [SerializeField]
     InstructionRuntimeSelection m_RuntimeSelection = new();
 
     int m_CurrentStepIndex = -1;
@@ -44,6 +50,8 @@ public class CpuLessonFlow : MonoBehaviour
     public bool HasStarted => m_CurrentStepIndex >= 0;
     public RegisterBank RegisterBank => m_RegisterBank;
     public bool RegisterSelectionReadyToContinue => m_RegisterSelectionReadyToContinue;
+    public bool UsesInstructionTerminals => m_FetchUploadTerminal != null && m_DecodeDownloadTerminal != null;
+    public bool IsInstructionReadyForDecode => !UsesInstructionTerminals || HasDownloadedInstructionModule();
 
     public InstructionFlowStep CurrentStep
     {
@@ -122,6 +130,11 @@ public class CpuLessonFlow : MonoBehaviour
         m_LastAdvanceFrame = -1;
         m_CurrentStepIndex = 0;
 
+        // Fetch now has a physical counterpart. Starting a lesson resets both
+        // terminals, spawns a fresh module at the uploader, and uploads the
+        // currently selected instruction into that module for the learner to carry.
+        PrepareInstructionFetchTerminals();
+
         if (m_RegisterBank != null)
         {
             // A fresh run resets authored register poses, then reapplies the
@@ -148,6 +161,13 @@ public class CpuLessonFlow : MonoBehaviour
         {
             case InstructionStepInteractionType.None:
             case InstructionStepInteractionType.ContinueButton:
+                if (IsFetchStep(CurrentStep) && UsesInstructionTerminals && !HasDownloadedInstructionModule())
+                {
+                    SetFeedback(GetFetchTransportPrompt(), true);
+                    StepChanged?.Invoke(this);
+                    break;
+                }
+
                 AdvanceToNextStep();
                 break;
 
@@ -202,8 +222,41 @@ public class CpuLessonFlow : MonoBehaviour
         m_RegisterSelectionReadyToContinue = false;
         m_LastAdvanceFrame = -1;
         m_CurrentStepIndex = -1;
+
+        // A full lesson reset also restores fetch so the next run always starts
+        // from the same physical handoff.
+        PrepareInstructionFetchTerminals();
         StepChanged?.Invoke(this);
         SetFeedback(string.Empty, false);
+    }
+
+    /// <summary>
+    /// Lets the fetch terminal announce that a fresh lesson instruction is now
+    /// loaded into the physical module.
+    /// </summary>
+    public void NotifyInstructionUploaded(InstructionDefinition instruction)
+    {
+        if (!HasStarted || !UsesInstructionTerminals || !IsFetchStep(CurrentStep) || instruction == null)
+            return;
+
+        SetFeedback(GetFetchTransportPrompt(), false);
+        StepChanged?.Invoke(this);
+    }
+
+    /// <summary>
+    /// Called by the decode terminal once the learner docks the carried module.
+    /// This unlocks progression out of fetch into the decode phase.
+    /// </summary>
+    public void NotifyInstructionModuleDownloaded(InstructionModule module)
+    {
+        if (!HasStarted || !UsesInstructionTerminals || !IsFetchStep(CurrentStep) || module == null)
+            return;
+
+        if (!HasDownloadedInstructionModule())
+            return;
+
+        SetFeedback("Instruction received at the decode terminal. Beginning Instruction Decode.", false);
+        AdvanceToNextStep();
     }
 
     public void CompleteAluExecution(int resultValue)
@@ -321,11 +374,6 @@ public class CpuLessonFlow : MonoBehaviour
 
         // Only rs / rt produce packets in the current datapath slice. The write
         // register is still validated here, but it should never spawn output.
-        var scannedValue = m_RegisterBank != null ? m_RegisterBank.GetRegisterValue(registerName) : 0;
-        var successMessage = ShouldSpawnPacket(result.expectedRole)
-            ? $"{GetPacketLabel(result.expectedRole)} packet ready: {scannedValue}."
-            : $"{registerName} confirmed on {GetScannerLabel(result.expectedRole)}.";
-
         if (cameFromScanner)
             m_RegisterBank?.SetScannerSuccess(scannedRole);
         else
@@ -404,7 +452,7 @@ public class CpuLessonFlow : MonoBehaviour
         switch (CurrentStep.requiredInteraction)
         {
             case InstructionStepInteractionType.ContinueButton:
-                SetFeedback("Press Continue when you are ready.", false);
+                SetFeedback(IsFetchStep(CurrentStep) ? GetFetchTransportPrompt() : "Press Continue when you are ready.", false);
                 break;
 
             case InstructionStepInteractionType.RegisterSelection:
@@ -457,20 +505,6 @@ public class CpuLessonFlow : MonoBehaviour
                 m_RegisterBank.ConfigureScannerRoles(Array.Empty<InstructionRegisterRole>());
                 break;
         }
-    }
-
-    string GetRegisterSelectionPrompt()
-    {
-        if (CurrentStep == null)
-            return string.Empty;
-
-        var requiredRoles = LessonChecks.GetRequiredRoles(m_CurrentInstruction, CurrentStep);
-        if (m_CurrentRegisterSelectionIndex < 0 || m_CurrentRegisterSelectionIndex >= requiredRoles.Length)
-            return "Place the required registers on the active scanners.";
-
-        var currentRole = requiredRoles[m_CurrentRegisterSelectionIndex];
-        var expectedRegister = m_CurrentInstruction.GetExpectedRegisterName(currentRole);
-        return $"Place {expectedRegister} on {GetScannerLabel(currentRole)}.";
     }
 
     static string GetScannerLabel(InstructionRegisterRole registerRole)
@@ -579,6 +613,12 @@ public class CpuLessonFlow : MonoBehaviour
 
         if (m_ImmediateExtender == null)
             m_ImmediateExtender = FindFirstSceneObject<ImmediateExtender>();
+
+        if (m_FetchUploadTerminal == null)
+            m_FetchUploadTerminal = FindInstructionTerminal(InstructionTerminal.TerminalMode.Uploader);
+
+        if (m_DecodeDownloadTerminal == null)
+            m_DecodeDownloadTerminal = FindInstructionTerminal(InstructionTerminal.TerminalMode.Downloader);
     }
 
     bool ShouldSkipStep(InstructionFlowStep step)
@@ -611,6 +651,62 @@ public class CpuLessonFlow : MonoBehaviour
             return $"ALU result produced: {resultValue}. Data Memory is skipped for this instruction. Continue to Write Back.";
 
         return $"ALU result produced: {resultValue}. Continue to the recap.";
+    }
+
+    string GetFetchTransportPrompt()
+    {
+        if (!UsesInstructionTerminals)
+            return "Press Continue when you are ready.";
+
+        if (HasDownloadedInstructionModule())
+            return "Instruction received at the decode terminal. Press Continue to begin Instruction Decode.";
+
+        return "The selected instruction has been uploaded to the fetch terminal. Carry the module to the decode terminal before continuing.";
+    }
+
+    bool HasDownloadedInstructionModule()
+    {
+        return m_DecodeDownloadTerminal != null &&
+               m_CurrentInstruction != null &&
+               m_DecodeDownloadTerminal.HasMatchingDownloadedInstruction(m_CurrentInstruction);
+    }
+
+    void PrepareInstructionFetchTerminals()
+    {
+        if (!UsesInstructionTerminals || m_CurrentInstruction == null)
+            return;
+
+        // The decode terminal should keep its docking behavior but start empty.
+        // The upload terminal should always respawn a fresh blank module so the
+        // learner sees instruction fetch happen from a consistent baseline.
+        m_DecodeDownloadTerminal.ResetTerminal(false);
+        m_FetchUploadTerminal.ResetTerminal(true);
+        m_FetchUploadTerminal.UploadInstruction(m_CurrentInstruction);
+    }
+
+    static bool IsFetchStep(InstructionFlowStep step)
+    {
+        return step != null &&
+               step.stepName.IndexOf("Fetch", StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    // These scene lookups are fallback glue only. The intended workflow is still
+    // explicit Inspector wiring from the authored scene.
+    static InstructionTerminal FindInstructionTerminal(InstructionTerminal.TerminalMode mode)
+    {
+        foreach (var terminal in Resources.FindObjectsOfTypeAll<InstructionTerminal>())
+        {
+            if (terminal == null)
+                continue;
+
+            if (!terminal.gameObject.scene.IsValid() || !terminal.gameObject.scene.isLoaded)
+                continue;
+
+            if (terminal.Mode == mode)
+                return terminal;
+        }
+
+        return null;
     }
 
     static T FindFirstSceneObject<T>() where T : Component

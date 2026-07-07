@@ -131,12 +131,22 @@ This rule exists because the user explicitly wants persistent project memory ins
 
 ## Current Deadline Rule
 
-For the current V1 checkpoint:
-- `add`, `addi`, and `lw` are the non-negotiable instruction targets
-- they should be finished by `2026-06-28`
-- the user intends to show that build to the supervisor on `2026-06-29`
+The old V1 milestone is complete.
 
-Do not casually redirect effort away from that milestone unless the user explicitly changes the plan.
+The active deadline framing is now:
+- next supervisor meeting target: `2026-07-09`
+- official project/demo deadline: `2026-07-29`
+- preferred internal finish target:
+  - complete the build a few days early
+  - use the remaining time for map work, polish, and presentation safety
+
+Current short-term priorities:
+- cleaner multi-panel lesson UI
+- physical instruction-fetch embodiment
+- datapacket reset QoL
+- map/environment quality
+
+Do not casually re-scope away from presentation readiness unless the user explicitly changes direction.
 
 ## Commit Style Rule
 

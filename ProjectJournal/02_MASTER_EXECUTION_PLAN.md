@@ -49,8 +49,8 @@ Near-term deadline:
   - use the final buffer for polish, map setup, and presentation safety
 
 Important clarification:
-- this does not permanently limit the whole project to only those three instructions
-- it defines the minimum instruction set that must be working for the first serious prototype review
+- the original V1 instruction target has already been realized
+- the active risk is now readability, presentation quality, and final-project fit rather than basic datapath coverage
 
 ## Design Philosophy
 
@@ -79,22 +79,24 @@ Acceptable feedback mechanisms include:
 - gated progression
 - visual state changes
 
-## Recommended Instruction Rollout
+## Implemented Instruction Baseline
 
-Preferred implementation order:
+Working lesson paths now include:
+- `add`
+- `addi`
+- `lw`
+- `sw`
+- `sub`
+- `and`
+- `or`
+- `slt`
 
+Historical rollout:
 1. `add`
-   Teaches pure register-to-register datapath flow.
-
 2. `addi`
-   Adds immediate handling and ALUSrc reasoning.
-
 3. `lw`
-   Adds memory access, address calculation, and write-back from memory.
 
-This sequence is strong because each instruction introduces one major new concept at a time.
-
-For the current V1 milestone, this sequence is also the committed delivery target, not just a suggestion.
+That sequence remains useful to explain how complexity was introduced, but it is no longer the current live rollout plan.
 
 ## Recommended MVP
 
@@ -111,22 +113,20 @@ It needs to be the one most likely to produce a clean, working lesson loop.
 
 Note:
 - the original MVP logic still applies architecturally
-- however, the current supervisor-facing V1 target is more ambitious: a stable `add` / `addi` / `lw` prototype by `2026-06-28`
+- the old V1 target of a stable `add` / `addi` / `lw` prototype by `2026-06-28` has already been achieved and should now be treated as historical context
 
 ## Preferred Feature Breakdown
 
 ### Must Have
 
-- three working instruction walkthroughs for the current V1 target:
-  - `add`
-  - `addi`
-  - `lw`
+- a stable guided lesson loop across the current supported instruction set
 - instruction selection or controlled instruction presentation
 - operand identification
 - stage-by-stage progression
 - correctness gating
 - feedback for wrong choices
 - stable scene layout for key datapath zones
+- presentation-ready readability across authored UI and environment
 
 ### Strongly Desired
 
@@ -141,7 +141,7 @@ Note:
 - richer audiovisual polish
 - extra instruction families like branches or jumps
 
-Anything beyond `add`, `addi`, and `lw` should be treated as post-V1 expansion unless the core loop is already stable.
+The project has already moved beyond the old three-instruction V1 boundary, so future prioritization should now favor clarity and presentation over raw instruction count.
 
 ## Non-Goals
 
@@ -192,6 +192,10 @@ Current refinement direction:
   - live statuses
   - feedback
   - validation state
+- instruction fetch now also has a physical embodiment path through:
+  - `Instruction Module`
+  - uploader terminal
+  - downloader terminal
 
 ## Interaction Heuristic
 
@@ -267,7 +271,8 @@ This structure aligns better with the emerging design than a simple "advance hig
 - make the demo stable and understandable to a first-time viewer
 
 Current deadline anchor:
-- this phase should culminate in the `2026-06-29` supervisor demo
+- the next anchor is the `2026-07-09` supervisor meeting
+- the official project/demo target remains `2026-07-29`
 
 ## Fallback Plan
 
@@ -294,20 +299,17 @@ Before the next supervisor meeting, prioritize only:
 1. split lesson panels into cleaner lesson / interaction / hint panels
 2. add a dedicated datapacket reset path
 3. improve the environment / map presentation
-4. if there is room, give `IF` a physical instruction-module handoff
+4. stabilize and lightly polish the new physical `IF` instruction-module handoff
 
 Reason:
 - the functional lesson loop is now broad enough for the current checkpoint
 - the main remaining risk is how understandable and presentable the experience feels
 
 Current note on `IF`:
-- the next likely extension is a physical `Instruction Module` plus `Instruction Platform`
-- the intended shape is:
-  - a platform spawns an empty module at lesson start
-  - the selected instruction is uploaded into that module
-  - the learner carries it to the decode platform
-  - decode only properly begins once the instruction arrives
-- this should make instruction fetch feel physically meaningful without forcing every later phase to depend on module carrying yet
+- the instruction-module handoff now exists
+- the active work is to keep it stable, readable, and presentation-friendly
+- for now, only fetch and decode depend on the module
+- later full-phase carrying is optional, not required
 
 Do not let lower-priority expansion crowd out these three items unless a blocking bug appears.
 

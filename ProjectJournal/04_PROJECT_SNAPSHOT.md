@@ -22,7 +22,7 @@ Scene:
 Current prototype features:
 - lesson framework re-wired around `Lesson Guide`
 - scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
-- scene-authored `Register Setup UI` near the register area
+- scene-authored `Instruction Decode UI` near the register area
 - lesson UIs are now being refactored toward a three-panel structure:
   - lesson panel
   - interaction panel
@@ -39,7 +39,7 @@ Current prototype features:
 - working MVP path:
   - start from `Intro UI`
   - present instruction / fetch framing
-  - hand off to `Register Setup UI`
+  - hand off to `Instruction Decode UI`
   - show instruction breakdown during decode
   - validate source-register placement through the authored scanners
   - spawn data packets from decode for later execution
@@ -58,8 +58,13 @@ Current prototype features:
   - a dedicated `WB UI`
   - a bonus loose register scanner for value inspection / confirmation
   - lesson-flow wiring for a real write-back phase instead of only a temporary intro-panel explanation
-- authored lesson panel layout for `Intro UI` and `Register Setup UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
+- authored lesson panel layout for `Intro UI` and `Instruction Decode UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
 - `Instruction Decode`, `EX`, `Mem`, and `WB` are now in the middle of that authored split, with code updated to support more scene-authored static/toggle text
+- physical instruction fetch now exists through:
+  - `Instruction Module`
+  - `Instruction Terminal` in uploader mode
+  - `Instruction Terminal` in downloader mode
+  - decode staying locked until the uploaded module is delivered
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
   - decode can now emit immediate packets from the second scanner spawn point for immediate-based instructions
@@ -110,6 +115,8 @@ Current prototype features:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionEnums.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionDefaults.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionRuntimeSelection.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionFetch\InstructionModule.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionFetch\InstructionTerminal.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluExecutionController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScanner.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScannerZone.cs`
@@ -134,9 +141,11 @@ Why:
 - the official demo deadline is `2026-07-29`
 - the current focus is no longer instruction coverage, but:
   - UI readability
-  - physical instruction-fetch embodiment
-  - datapacket reset QoL
+  - finishing the multi-panel UI conversion cleanly
   - map/environment quality
+  - reset / quality-of-life polish
+  - datapacket reset QoL
+  - presentation readiness
 
 ## If Starting A New Chat
 
@@ -164,7 +173,8 @@ Before stopping:
 - what the cleanest ALU-control teaching interaction should be beyond the current `ALUOp` / `ALUSrc` layer
 - what the cleanest memory interaction should be for `lw` / `sw`, especially when handling address packets, memory-data packets, and store-data packets
 - what the cleanest next post-demo feature target should be now that the current instruction set is broader than the original checkpoint goal
-- whether instruction choice is user-selected, randomized, or both
+- how much of the current UI wording should move entirely into authored scene text versus stay runtime-driven
+- whether instruction choice should remain user-selected, become randomized, or support both
 - the exact acceptance rule for pedestal validation:
   - immediate on release
   - after 1-2 seconds stable in-zone
@@ -178,10 +188,10 @@ Before stopping:
 
 Ordered cutoff list before the next supervisor meeting:
 
-1. split lesson UI into cleaner lesson / interaction / hint panels
+1. finish splitting lesson UI into cleaner lesson / interaction / hint panels
 2. add a datapacket reset button that only resets present non-consumed packets
 3. improve the map/environment using the newer asset packs
-4. if feasible, add the planned physical instruction-fetch handoff
+4. polish the new physical instruction-fetch handoff instead of redesigning it again
 
 Everything else should be treated as post-cutoff unless a blocking regression appears.
 
@@ -189,7 +199,7 @@ Everything else should be treated as post-cutoff unless a blocking regression ap
 
 The cleanest next work item is:
 - finish the pre-meeting polish pass on top of the now-working instruction set:
-- keep `Intro UI` and `Register Setup UI` authored in-scene
+- keep `Intro UI` and `Instruction Decode UI` authored in-scene
 - keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
 - keep the current lesson UI layout approach:
   - authored in scene
@@ -198,7 +208,7 @@ The cleanest next work item is:
 - split guide/explanation content away from active interaction content where practical through the three-panel layout
 - add datapacket reset support without coupling it to register reset or lesson reset
 - improve the physical environment only after the instructional scene remains readable
-- then give `IF` a physical handoff through the planned instruction module/platform path
+- keep the new `IF` module/terminal handoff stable while the rest of the UI and map work catches up
 
 ## Personal Reminder
 

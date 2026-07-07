@@ -105,6 +105,8 @@ public class LessonGuideController : MonoBehaviour
     [SerializeField]
     WriteBackController m_WriteBackController;
 
+    // Runtime caches mirror authored dropdown content so scene-authored UIs can
+    // stay simple while still reacting to the currently selected instruction set.
     readonly List<InstructionDefinition> m_AvailableInstructions = new();
     readonly List<string> m_DecodeOpcodeOptions = new();
     bool m_IsRefreshingInstructionDropdown;
@@ -514,6 +516,19 @@ public class LessonGuideController : MonoBehaviour
         var instruction = m_LessonFlow.CurrentInstruction;
         if (step.stepName.IndexOf("Fetch", System.StringComparison.OrdinalIgnoreCase) >= 0)
         {
+            if (m_LessonFlow.UsesInstructionTerminals)
+            {
+                var transportStatus = m_LessonFlow.IsInstructionReadyForDecode
+                    ? "The module is docked at the decode terminal. Instruction Decode is unlocking now."
+                    : "The selected instruction has been uploaded to the fetch terminal. Pick up the module, carry it to the decode terminal, and dock it there to unlock Instruction Decode.";
+
+                return
+                    $"Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
+                    $"Instruction: {instruction.displayName}\n" +
+                    $"Assembly: {instruction.assemblyInstructionText}\n\n" +
+                    $"{transportStatus}";
+            }
+
             return
                 $"Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
                 $"Instruction: {instruction.displayName}\n" +
@@ -586,6 +601,9 @@ public class LessonGuideController : MonoBehaviour
         var isOpcodeStep = IsDecodeOpcodeSelectionStep();
         var isRegisterStep = step != null && step.requiredInteraction == InstructionStepInteractionType.RegisterSelection;
 
+        // Decode is now split into authored text blocks so the user can move
+        // more wording into edit mode while runtime only swaps the pieces that
+        // genuinely depend on the active instruction or learner progress.
         SetActive(m_IDOpcodeLessonText, isOpcodeStep);
         SetActive(m_IDRegisterLessonText, isRegisterStep);
         SetActive(m_IDOpcodeBodyText, isOpcodeStep);
@@ -651,6 +669,8 @@ public class LessonGuideController : MonoBehaviour
             m_WriteBackRoot = writeBackRootTransform != null ? writeBackRootTransform.gameObject : null;
         }
 
+        // These scene searches are only fallback glue for resilience. The
+        // preferred workflow is still explicit inspector assignment.
         if (m_InstructionDropdown == null && m_IntroRoot != null)
             m_InstructionDropdown = m_IntroRoot.GetComponentInChildren<TMP_Dropdown>(true);
 
@@ -807,6 +827,8 @@ public class LessonGuideController : MonoBehaviour
         if (m_IDHintDropdown == null)
             return;
 
+        // Hint panels intentionally stay reference-oriented. They should reveal
+        // lookup/help text only when the learner explicitly asks for it.
         string hintText;
         switch (m_IDHintDropdown.value)
         {

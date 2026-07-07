@@ -93,6 +93,9 @@ Implication:
 - near-term planning should optimize for getting those three lessons stable
 - anything beyond them is secondary until the V1 milestone is safe
 
+Status:
+- this milestone has now been achieved and should be treated as historical context, not the current live target
+
 ## 2026-06-16 - The Existing Instruction Scripts Should Be Refined, Not Scrapped
 
 Decision:
@@ -628,7 +631,7 @@ Implication:
 ## 2026-07-07 - Instruction Fetch Should Become A Physical Module Handoff
 
 Decision:
-- the next meaningful `IF` upgrade should use a physical `Instruction Module` and `Instruction Platform`
+- the next meaningful `IF` upgrade should use a physical `Instruction Module` and `Instruction Terminal`
 
 Why:
 - the current fetch step is conceptually fine, but physically thin
@@ -640,6 +643,46 @@ Implication:
 - lesson start should upload the selected instruction into that module
 - decode should unlock only after the learner brings the module into place
 - later extension into additional phase-gating is optional, not mandatory
+
+## 2026-07-07 - Decode Should Unlock Automatically After Successful Module Delivery
+
+Decision:
+- once the learner docks the fetched instruction module at decode, the lesson should hand off directly into Instruction Decode
+
+Why:
+- forcing the learner to return to fetch just to close UI is unnecessary friction
+- the physical carry itself is already the meaningful fetch interaction
+
+Implication:
+- fetch acts as a transport gate, not a second manual confirmation checkpoint
+- decode UI should become the next active authored surface as soon as the module is accepted
+
+## 2026-07-07 - Fetch Terminal VFX Should Stay Restrained
+
+Decision:
+- keep fetch-terminal particles short and event-based only
+
+Why:
+- constant or repeated VFX quickly became annoying during testing
+- the user preferred a calmer presentation over spectacle
+
+Implication:
+- play a short burst on upload
+- play a short burst on download
+- avoid ambient or looping terminal effects unless explicitly re-requested later
+
+## 2026-07-07 - Stability Beats Fancy Terminal Animation
+
+Decision:
+- the attempted raise/lower terminal animation should remain removed unless it is later rebuilt in a clearly stable way
+
+Why:
+- the movement introduced bugs around module parenting, spawning, and terminal state
+- presentation value was not worth the interaction instability
+
+Implication:
+- the current baseline is static terminals plus clear material/VFX state changes
+- future polish should not reintroduce terminal movement casually
 
 ## 2026-07-05 - If More Instructions Are Added Next, Favor Immediate And Branch Paths Before Jump Paths
 

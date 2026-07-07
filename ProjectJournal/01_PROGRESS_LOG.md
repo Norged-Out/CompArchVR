@@ -9,12 +9,8 @@ Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype focus:
-- playable `add` lesson loop in `Testing Ground`
-- playable `addi` lesson loop now validated alongside `add`
-- playable `lw` lesson loop now validated with real memory-bank addressing
-- playable `sw` lesson loop now validated with real memory writes back into the shared bank
-- playable `sub`, `and`, `or`, and `slt` lesson loops now validated through the shared ALU path
-- scene-authored `Intro UI` and `Register Setup UI` under `Lesson Guide`
+- playable `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, and `slt` lesson loops in `Testing Ground`
+- scene-authored `Intro UI`, `Instruction Decode UI`, `ALU UI`, `Mem UI`, and `WB UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
 - register scanner validation path for decode-stage source operands
@@ -25,8 +21,13 @@ Current prototype focus:
 - dedicated memory phase now present through a `Memory Unit`, `Data Memory` bank, and authored `Mem UI`
 - memory phase is now concluded as a real interaction step for both `lw` and `sw`
 - datapackets are now cleaned up when the phase that consumed them actually finishes
+- physical instruction fetch now exists through:
+  - `Instruction Module`
+  - uploader `Instruction Terminal`
+  - downloader `Instruction Terminal`
+  - decode gating on successful delivery
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing post-demo polish and the next feature pass after the now-working instruction set
+- preparing post-demo polish, UI clarity work, and environment work on top of the now-working instruction set
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
@@ -37,7 +38,7 @@ Current milestone:
   - use the remaining time for cleanup, map polish, and presentation safety
 - current checkpoint status:
   - `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, and `slt` are working
-  - current focus has shifted from instruction coverage to UI clarity, IF embodiment, and map polish
+  - current focus has shifted from instruction coverage to UI clarity, IF polish, and map polish
 
 ## Current TODO Cutoff Before The Next Supervisor Meeting
 
@@ -49,7 +50,7 @@ The user-defined cutoff for the next meeting is:
    - hint / info panel
 2. add a data-packet reset button that only resets present non-consumed packets to their authored spawn locations
 3. improve the map / environment using the new asset packs
-4. if time allows, give Instruction Fetch a physical presence through the planned instruction-module flow
+4. polish the new Instruction Fetch module/terminal flow only if it materially helps presentation quality
 
 Interpretation:
 - the core instructional loop is already present
@@ -128,8 +129,7 @@ The project now has:
 - a reusable register prefab/material path under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - register scanner pedestals for `Read Register 1`, `Read Register 2`, and `Write Register`
 - logical register values stored on register tokens, with lesson-time value seeding from instruction assets
-- a working MVP lesson flow that starts from `Intro UI`, hands off to `Register Setup UI` for instruction decode, then proceeds into ALU execution
-- control decode scene content still exists, but the active lesson path is now being simplified around fetch -> decode -> execute -> write-back
+- a working lesson flow that now runs through fetch -> decode -> execute -> memory when needed -> write-back when needed
 - a smaller lesson architecture centered on focused lesson and register scripts
 - cleaned instruction assets for `add`, `addi`, and `lw`
 - cleaned instruction assets for `sw`, `sub`, `and`, `or`, and `slt`
@@ -342,7 +342,7 @@ Next:
 - finish the three-panel split across the remaining lesson UIs
 - add a datapacket reset path
 - improve the map / environment presentation
-- build the planned `Instruction Module` + `Instruction Platform` flow so:
+- build the planned `Instruction Module` + `Instruction Terminal` flow so:
   - lesson start uploads the selected instruction into a physical module
   - the learner carries that module to the decode zone
   - instruction fetch becomes a visible physical handoff instead of only UI framing
@@ -352,6 +352,37 @@ Risks / Notes:
 - the instruction-module flow should remain scoped:
   - enough to make `IF` meaningful
   - not so much that it delays the presentation polish pass
+
+### 2026-07-07 - Instruction Fetch Terminal Flow Implemented
+
+Completed:
+- added a physical instruction-fetch handoff through:
+  - `Instruction Module`
+  - uploader `Instruction Terminal`
+  - downloader `Instruction Terminal`
+- wired lesson startup/reset so a fresh blank module is spawned at the uploader terminal
+- wired the selected instruction to upload into that module before the learner carries it away
+- gated decode so it only begins once the module is delivered to the decode terminal
+- removed the earlier experimental terminal rise/lower animation after it proved unstable
+- kept terminal VFX restrained to short upload/download bursts only
+
+Changed:
+- `IF` is no longer just explanatory UI framing; it now has a real embodied transport step
+- fetch no longer expects the learner to return and manually close the phase after delivery
+- the current fetch/decode handoff is now:
+  - start lesson
+  - module spawns and receives the instruction
+  - learner carries it to decode
+  - decode unlocks automatically
+
+Next:
+- finish the three-panel lesson UI conversion across the remaining zones
+- add the datapacket reset path
+- move into environment/map work for presentation quality
+
+Risks / Notes:
+- terminal motion polish was intentionally removed in favor of stability
+- future fetch polish should stay conservative unless it clearly improves readability
 
 
 Next:
@@ -778,10 +809,14 @@ Risks / Notes:
 - `Testing Ground` is the sandbox scene
 - the lesson framework is currently driven from `Lesson Guide`
 - `Intro UI` is the current lesson start point
-- `Register Setup UI` is the current instruction-decode and operand-selection panel
+- `Instruction Decode UI` is the current instruction-decode and operand-selection panel
 - the preferred register path is the authored `Register Bank` with 32 permanent register tokens
 - the preferred register validation path is the authored scanner pedestals
 - minimal visual feedback is acceptable; heavy animation is not required
+- physical instruction fetch now depends on:
+  - uploader `Instruction Terminal`
+  - `Instruction Module`
+  - downloader `Instruction Terminal`
 
 ### Architecture / Script Baseline
 
@@ -813,37 +848,26 @@ Interpretation:
 
 Recommended next development priorities:
 
-1. Polish the current `add` MVP without changing its authored-scene direction.
+1. Finish the three-panel lesson UI pass without changing the authored-scene direction.
    Focus on:
    - cleaner `Intro UI` layout
-   - cleaner `Register Setup UI` layout
+   - cleaner `Instruction Decode UI` layout
+   - matching multi-panel structure in `EX`, `Mem`, and `WB`
    - clearer feedback text
    - simpler inspector wiring where possible
-   - finish the dedicated write-back phase
+   - keeping more static wording in edit mode where practical
 
-2. Treat `add`, `addi`, and `lw` as the non-negotiable V1 set for the `2026-06-29` demo target.
-   Recommended implementation order:
-   - `addi`
-   - `lw`
-
-3. Build the next interaction layer around placement pedestals and authored lesson panels.
+2. Add a dedicated datapacket reset path.
    Focus on:
-   - `WriteBack` pedestals that confirm the correct destination register
-   - `WriteBack` packet validation for the final value source
-   - success / failure colors tied to active lesson-step validation
-   - storing scanned register identity so reused registers can be handled cleanly
+   - resetting only present, non-consumed packets
+   - not disturbing lesson progress
+   - not overlapping with register reset or lesson reset
 
-4. Extend the same framework into `addi`.
-   Reuse:
-   - instruction assets
-   - scene-authored lesson panels
-   - curated register bank workflow
-   - pedestal validation workflow
-
-5. Keep the post-V1 door open.
-   After the June 29 supervisor demo:
-   - expand to more instructions only if the V1 loop is stable
-   - preserve the architecture so later instructions can reuse it
+3. Improve the environment / map.
+   Focus on:
+   - keeping lesson readability intact
+   - making the prototype feel presentation-ready
+   - avoiding map work that obscures interaction zones
 
 ## Risks To Watch
 

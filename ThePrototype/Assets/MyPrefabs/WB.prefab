@@ -1502,8 +1502,7 @@ MonoBehaviour:
   - {fileID: 7882236970089201752}
   - {fileID: 8508833865900562224}
   m_WbUiRoot: {fileID: 0}
-  m_LessonText: {fileID: 0}
-  m_BodyText: {fileID: 0}
+  m_LessonRuntimeText: {fileID: 0}
   m_RegDstStatusText: {fileID: 0}
   m_RegWriteStatusText: {fileID: 0}
   m_MemToRegStatusText: {fileID: 0}
@@ -1513,7 +1512,9 @@ MonoBehaviour:
   m_ActionButton: {fileID: 0}
   m_ActionButtonLabel: {fileID: 0}
   m_HintDropdown: {fileID: 0}
-  m_HintText: {fileID: 0}
+  m_HintRegDstText: {fileID: 0}
+  m_HintRegWriteText: {fileID: 0}
+  m_HintMemToRegText: {fileID: 0}
   m_PipeStepDelaySeconds: 0.3
   m_ParticleLeadTimeSeconds: 0.75
   m_ExecuteButtonText: Execute Write Back
