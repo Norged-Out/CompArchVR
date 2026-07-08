@@ -280,7 +280,7 @@ public class MemoryUnitController : MonoBehaviour
             {
                 m_LastLoadedValue = sourcePacket.Value;
                 m_LastAddress = addressValue;
-                SetFeedback($"Stored {sourcePacket.Value} into {FormatAddress(addressValue)}. Click Continue to proceed to the recap.", false);
+                SetFeedback($"Stored {sourcePacket.Value} into {FormatAddress(addressValue)}. Click Continue to proceed to Program Counter Update.", false);
             }
         }
 

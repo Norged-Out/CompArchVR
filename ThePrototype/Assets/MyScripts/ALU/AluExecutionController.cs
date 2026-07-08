@@ -379,17 +379,28 @@ public class AluExecutionController : MonoBehaviour
         if (m_ResultPacketPrefab == null || m_ResultSpawnTransform == null)
             return;
 
+        var resultPacketRole = GetResultPacketRole();
         var spawnedPacket = Instantiate(
             m_ResultPacketPrefab,
             m_ResultSpawnTransform.position,
             m_ResultSpawnTransform.rotation);
         spawnedPacket.Configure(
-            DataPacketRole.AluResult,
-            "alu_result",
-            "ALU Result",
+            resultPacketRole,
+            resultPacketRole == DataPacketRole.Zero ? "zero" : "alu_result",
+            resultPacketRole == DataPacketRole.Zero ? "Zero" : "ALU Result",
             resultValue);
 
         m_SpawnedResultPacket = spawnedPacket;
+    }
+
+    DataPacketRole GetResultPacketRole()
+    {
+        if (m_CurrentInstruction == null)
+            return DataPacketRole.AluResult;
+
+        return m_CurrentInstruction.UsesBranchDecision()
+            ? DataPacketRole.Zero
+            : DataPacketRole.AluResult;
     }
 
     void ClearSpawnedResultPacket()
@@ -573,7 +584,7 @@ public class AluExecutionController : MonoBehaviour
         if (m_CurrentInstruction.UsesWriteBackPhase())
             return $"ALU result ready: {resultValue}. Memory Access is skipped for this instruction. Click Continue to proceed to Write Back.";
 
-        return $"ALU result ready: {resultValue}. Click Continue to proceed to the recap.";
+        return $"ALU result ready: {resultValue}. Click Continue to proceed to Program Counter Update.";
     }
 
     string GetNextPhaseLabel()
@@ -867,6 +878,7 @@ public class AluExecutionController : MonoBehaviour
             DataPacketRole.Immediate => "Immediate",
             DataPacketRole.AluResult => "ALU Result",
             DataPacketRole.MemoryData => "Memory Data",
+            DataPacketRole.Zero => "Zero",
             _ => "Packet",
         };
     }

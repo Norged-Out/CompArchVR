@@ -33,6 +33,9 @@ public class CpuLessonFlow : MonoBehaviour
     InstructionTerminal m_DecodeDownloadTerminal;
 
     [SerializeField]
+    PcUpdateController m_PcUpdateController;
+
+    [SerializeField]
     InstructionRuntimeSelection m_RuntimeSelection = new();
 
     int m_CurrentStepIndex = -1;
@@ -198,6 +201,10 @@ public class CpuLessonFlow : MonoBehaviour
                     AdvanceToNextStep();
                 else
                     SetFeedback("Set the write-back controls, place the register and result packet, then execute the transfer.", false);
+                break;
+
+            case InstructionStepInteractionType.PcUpdateExecution:
+                SetFeedback("Set PC + 4 and confirm the next PC path.", false);
                 break;
 
             case InstructionStepInteractionType.Completion:
@@ -473,6 +480,10 @@ public class CpuLessonFlow : MonoBehaviour
                     false);
                 break;
 
+            case InstructionStepInteractionType.PcUpdateExecution:
+                SetFeedback("Confirm how the Program Counter moves to the next instruction.", false);
+                break;
+
             case InstructionStepInteractionType.Completion:
                 SetFeedback("Lesson complete. Press Restart to play it again.", false);
                 break;
@@ -537,6 +548,7 @@ public class CpuLessonFlow : MonoBehaviour
             DataPacketRole.Immediate => "Immediate",
             DataPacketRole.AluResult => "ALU Result",
             DataPacketRole.MemoryData => "Memory Data",
+            DataPacketRole.Zero => "Zero",
             _ => "Packet",
         };
     }
@@ -636,6 +648,12 @@ public class CpuLessonFlow : MonoBehaviour
             return true;
         }
 
+        if (step.requiredInteraction == InstructionStepInteractionType.PcUpdateExecution &&
+            !m_CurrentInstruction.UsesPcUpdatePhase())
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -650,7 +668,7 @@ public class CpuLessonFlow : MonoBehaviour
         if (m_CurrentInstruction.UsesWriteBackPhase())
             return $"ALU result produced: {resultValue}. Data Memory is skipped for this instruction. Continue to Write Back.";
 
-        return $"ALU result produced: {resultValue}. Continue to the recap.";
+        return $"ALU result produced: {resultValue}. Continue to Program Counter Update.";
     }
 
     string GetFetchTransportPrompt()

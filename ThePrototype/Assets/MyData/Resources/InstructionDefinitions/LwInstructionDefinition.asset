@@ -90,9 +90,18 @@ MonoBehaviour:
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
+  - stepName: Program Counter Update
+    highlightedNode: 1
+    explanation: Finish the cycle by updating the Program Counter to PC + 4 so the CPU is ready to fetch the next instruction.
+    advanceVisualHighlight: 1
+    requiredInteraction: 6
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
   - stepName: Recap
-    highlightedNode: 6
-    explanation: Recap: lw fetched the instruction, read the base register, added the sign-extended offset in the ALU, read Data Memory, and wrote the loaded value to rt.
+    highlightedNode: 1
+    explanation: Recap: lw fetched the instruction, read the base register, added the sign-extended offset in the ALU, read Data Memory, wrote the loaded value to rt, and advanced the PC to the next instruction.
     advanceVisualHighlight: 1
     requiredInteraction: 5
     blockProgressUntilValidated: 0

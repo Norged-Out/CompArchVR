@@ -92,9 +92,17 @@ public static class InstructionDefaults
             },
             new InstructionFlowStep
             {
+                stepName = "Program Counter Update",
+                highlightedNode = DatapathNodeId.ProgramCounter,
+                explanation = "Finish the cycle by updating the Program Counter to PC + 4 so the CPU is ready to fetch the next instruction.",
+                requiredInteraction = InstructionStepInteractionType.PcUpdateExecution,
+                blockProgressUntilValidated = true,
+            },
+            new InstructionFlowStep
+            {
                 stepName = "Recap",
-                highlightedNode = DatapathNodeId.WriteBack,
-                explanation = "Recap: add fetched the instruction, read rs and rt from the register file, used the ALU to add them, skipped Data Memory entirely, and wrote the result back to rd.",
+                highlightedNode = DatapathNodeId.ProgramCounter,
+                explanation = "Recap: add fetched the instruction, read rs and rt from the register file, used the ALU to add them, skipped Data Memory entirely, wrote the result back to rd, and advanced the PC to the next instruction.",
                 requiredInteraction = InstructionStepInteractionType.Completion,
                 blockProgressUntilValidated = false,
             },

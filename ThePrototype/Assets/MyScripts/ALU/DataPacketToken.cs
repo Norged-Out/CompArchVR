@@ -25,6 +25,9 @@ public class DataPacketToken : MonoBehaviour
     [SerializeField]
     bool m_IsSignExtended;
 
+    [SerializeField]
+    bool m_IsShiftedLeftTwo;
+
     [Header("Scene References")]
 
     [SerializeField]
@@ -41,6 +44,7 @@ public class DataPacketToken : MonoBehaviour
     public string SourceDisplayLabel => m_SourceDisplayLabel;
     public int Value => m_Value;
     public bool IsSignExtended => m_IsSignExtended;
+    public bool IsShiftedLeftTwo => m_IsShiftedLeftTwo;
     public bool IsGrabbed => m_GrabInteractable != null && m_GrabInteractable.isSelected;
 
     void Awake()
@@ -80,6 +84,7 @@ public class DataPacketToken : MonoBehaviour
         m_SourceDisplayLabel = sourceDisplayLabel;
         m_Value = value;
         m_IsSignExtended = isSignExtended;
+        m_IsShiftedLeftTwo = false;
         RefreshText();
     }
 
@@ -92,6 +97,19 @@ public class DataPacketToken : MonoBehaviour
     {
         m_Value = signExtendedValue;
         m_IsSignExtended = true;
+        m_IsShiftedLeftTwo = false;
+        RefreshText();
+    }
+
+    /// <summary>
+    /// Rewrites the packet payload after a branch-offset left shift by 2.
+    /// The packet remains the same physical object so later stages can keep
+    /// following the learner's immediate datapath by hand.
+    /// </summary>
+    public void MarkShiftedLeftTwo(int shiftedValue)
+    {
+        m_Value = shiftedValue;
+        m_IsShiftedLeftTwo = true;
         RefreshText();
     }
 
@@ -117,6 +135,7 @@ public class DataPacketToken : MonoBehaviour
             DataPacketRole.Immediate => "Immediate",
             DataPacketRole.AluResult => "ALU Result",
             DataPacketRole.MemoryData => "Memory Data",
+            DataPacketRole.Zero => "Zero",
             _ => m_SourceDisplayLabel,
         };
 

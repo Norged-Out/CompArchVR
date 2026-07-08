@@ -301,7 +301,7 @@ public class WriteBackController : MonoBehaviour
 
         m_PacketScanner?.ConsumeAcceptedPacket();
         SetFeedback(
-            $"Write-back complete. {destinationRegister} now stores {packetValue}. Click Continue to close the phase.",
+            $"Write-back complete. {destinationRegister} now stores {packetValue}. Click Continue to proceed to Program Counter Update.",
             false);
         RefreshPresentation();
         WriteBackApplied?.Invoke(destinationRegister, packetValue);

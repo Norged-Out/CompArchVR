@@ -10,4 +10,5 @@ public enum DataPacketRole
     Immediate,
     AluResult,
     MemoryData,
+    Zero,
 }

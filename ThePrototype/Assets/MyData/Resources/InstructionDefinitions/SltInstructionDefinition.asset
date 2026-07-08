@@ -93,9 +93,18 @@ MonoBehaviour:
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
+  - stepName: Program Counter Update
+    highlightedNode: 1
+    explanation: Finish the cycle by updating the Program Counter to PC + 4 so the CPU is ready to fetch the next instruction.
+    advanceVisualHighlight: 1
+    requiredInteraction: 6
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
   - stepName: Recap
-    highlightedNode: 6
-    explanation: Recap: slt fetched the instruction, read rs and rt, compared them in the ALU, skipped Data Memory, and wrote either 1 or 0 to rd.
+    highlightedNode: 1
+    explanation: Recap: slt fetched the instruction, read rs and rt, compared them in the ALU, skipped Data Memory, wrote either 1 or 0 to rd, and advanced the PC to the next instruction.
     advanceVisualHighlight: 1
     requiredInteraction: 5
     blockProgressUntilValidated: 0

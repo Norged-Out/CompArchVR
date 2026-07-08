@@ -105,6 +105,13 @@ public class LessonGuideController : MonoBehaviour
     [SerializeField]
     WriteBackController m_WriteBackController;
 
+    [Header("PC Update UI")]
+    [SerializeField]
+    GameObject m_PcUpdateRoot;
+
+    [SerializeField]
+    PcUpdateController m_PcUpdateController;
+
     // Runtime caches mirror authored dropdown content so scene-authored UIs can
     // stay simple while still reacting to the currently selected instruction set.
     readonly List<InstructionDefinition> m_AvailableInstructions = new();
@@ -143,6 +150,9 @@ public class LessonGuideController : MonoBehaviour
         if (m_MemoryController != null)
             m_MemoryController.ContinueRequested += HandleMemoryContinueRequested;
 
+        if (m_PcUpdateController != null)
+            m_PcUpdateController.ContinueRequested += HandlePcUpdateContinueRequested;
+
         if (m_LessonFlow == null)
             return;
 
@@ -164,6 +174,9 @@ public class LessonGuideController : MonoBehaviour
 
         if (m_MemoryController != null)
             m_MemoryController.ContinueRequested -= HandleMemoryContinueRequested;
+
+        if (m_PcUpdateController != null)
+            m_PcUpdateController.ContinueRequested -= HandlePcUpdateContinueRequested;
 
         if (m_LessonFlow == null)
             return;
@@ -293,6 +306,11 @@ public class LessonGuideController : MonoBehaviour
         m_LessonFlow?.Advance();
     }
 
+    void HandlePcUpdateContinueRequested()
+    {
+        m_LessonFlow?.Advance();
+    }
+
     void HandleFeedbackChanged(string message, bool isFailure)
     {
         var feedbackColor = isFailure
@@ -322,6 +340,9 @@ public class LessonGuideController : MonoBehaviour
         if (ShouldShowAluPanel())
             return;
 
+        if (ShouldShowPcUpdatePanel())
+            return;
+
         if (m_IntroFeedback != null)
         {
             m_IntroFeedback.text = message;
@@ -343,9 +364,10 @@ public class LessonGuideController : MonoBehaviour
         var showAluPanel = ShouldShowAluPanel();
         var showMemoryPanel = ShouldShowMemoryPanel();
         var showWriteBackPanel = ShouldShowWriteBackPanel();
+        var showPcUpdatePanel = ShouldShowPcUpdatePanel();
 
         Debug.Log(
-            $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} decode={showIDPanel} alu={showAluPanel} mem={showMemoryPanel} wb={showWriteBackPanel} frame={Time.frameCount}",
+            $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} decode={showIDPanel} alu={showAluPanel} mem={showMemoryPanel} wb={showWriteBackPanel} pc={showPcUpdatePanel} frame={Time.frameCount}",
             this);
 
         // Panels are authored in the scene and simply toggled on/off as the
@@ -362,15 +384,21 @@ public class LessonGuideController : MonoBehaviour
         if (m_WriteBackRoot != null)
             m_WriteBackRoot.SetActive(showWriteBackPanel);
 
+        if (m_PcUpdateRoot != null)
+            m_PcUpdateRoot.SetActive(showPcUpdatePanel);
+
         m_AluController?.SetPhaseState(showAluPanel, m_LessonFlow.CurrentInstruction);
         m_MemoryController?.SetPhaseState(showMemoryPanel, m_LessonFlow.CurrentInstruction);
         m_WriteBackController?.SetPhaseState(showWriteBackPanel, m_LessonFlow.CurrentInstruction, m_LessonFlow.RegisterBank);
+        m_PcUpdateController?.SetPhaseState(showPcUpdatePanel, m_LessonFlow.CurrentInstruction);
         if (m_MemoryController != null && !showMemoryPanel)
             m_MemoryController.ResetMemoryState();
         if (m_WriteBackController != null && !showWriteBackPanel)
             m_WriteBackController.ResetWriteBackState();
+        if (m_PcUpdateController != null && !showPcUpdatePanel)
+            m_PcUpdateController.ResetPcUpdateState();
 
-        m_IntroRoot.SetActive(!showIDPanel && !showAluPanel && !showMemoryPanel && !showWriteBackPanel);
+        m_IntroRoot.SetActive(!showIDPanel && !showAluPanel && !showMemoryPanel && !showWriteBackPanel && !showPcUpdatePanel);
 
         if (!m_LessonFlow.HasStarted)
         {
@@ -385,6 +413,8 @@ public class LessonGuideController : MonoBehaviour
                 m_MemRoot.SetActive(false);
             if (m_WriteBackRoot != null)
                 m_WriteBackRoot.SetActive(false);
+            if (m_PcUpdateRoot != null)
+                m_PcUpdateRoot.SetActive(false);
             SetText(
                 m_IntroBody,
                 $"Lesson Introduction\n\nSelected instruction: {m_LessonFlow.CurrentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin.");
@@ -416,6 +446,15 @@ public class LessonGuideController : MonoBehaviour
         }
 
         if (showWriteBackPanel)
+        {
+            SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
+            SetButtonState(m_IDActionButton, m_IDActionLabel, m_ContinueButtonLabel, false);
+            RefreshLayout(m_IntroRoot, m_IntroBody, m_IntroFeedback, m_IntroActionButton);
+            RefreshLayout(m_IDRoot, m_IDOpcodeSelectionText, m_IDFeedback, m_IDActionButton);
+            return;
+        }
+
+        if (showPcUpdatePanel)
         {
             SetButtonState(m_IntroActionButton, m_IntroActionLabel, m_ContinueButtonLabel, false);
             SetButtonState(m_IDActionButton, m_IDActionLabel, m_ContinueButtonLabel, false);
@@ -509,6 +548,15 @@ public class LessonGuideController : MonoBehaviour
             return false;
 
         return step.requiredInteraction == InstructionStepInteractionType.WriteBackExecution;
+    }
+
+    bool ShouldShowPcUpdatePanel()
+    {
+        var step = m_LessonFlow?.CurrentStep;
+        if (step == null)
+            return false;
+
+        return step.requiredInteraction == InstructionStepInteractionType.PcUpdateExecution;
     }
 
     string BuildIntroBody(InstructionFlowStep step)
@@ -640,7 +688,10 @@ public class LessonGuideController : MonoBehaviour
             return instruction.UsesWriteBackPhase() ? "Write Back" : "Recap";
 
         if (currentStep.requiredInteraction == InstructionStepInteractionType.WriteBackExecution)
-            return "Recap";
+            return "Program Counter Update";
+
+        if (currentStep.requiredInteraction == InstructionStepInteractionType.PcUpdateExecution)
+            return "Restart";
 
         return "Continue";
     }
@@ -650,6 +701,7 @@ public class LessonGuideController : MonoBehaviour
         m_AluController ??= FindFirstSceneObject<AluExecutionController>();
         m_MemoryController ??= FindFirstSceneObject<MemoryUnitController>();
         m_WriteBackController ??= FindFirstSceneObject<WriteBackController>();
+        m_PcUpdateController ??= FindFirstSceneObject<PcUpdateController>();
 
         if (m_AluRoot == null)
         {
@@ -667,6 +719,12 @@ public class LessonGuideController : MonoBehaviour
         {
             var writeBackRootTransform = FindSceneTransform("WB UI");
             m_WriteBackRoot = writeBackRootTransform != null ? writeBackRootTransform.gameObject : null;
+        }
+
+        if (m_PcUpdateRoot == null)
+        {
+            var pcUpdateRootTransform = FindSceneTransform("PC Update UI");
+            m_PcUpdateRoot = pcUpdateRootTransform != null ? pcUpdateRootTransform.gameObject : null;
         }
 
         // These scene searches are only fallback glue for resilience. The

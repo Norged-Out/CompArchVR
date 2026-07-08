@@ -83,6 +83,7 @@ public enum InstructionStepInteractionType
     AluExecution = 3,
     WriteBackExecution = 4,
     Completion = 5,
+    PcUpdateExecution = 6,
 }
 
 /// <summary>
@@ -96,4 +97,14 @@ public enum InstructionRegisterRole
     Rs,
     Rt,
     Rd,
+}
+
+/// <summary>
+/// Branch comparison mode used by future PC update lessons.
+/// </summary>
+public enum BranchConditionKind
+{
+    None,
+    Equal,
+    NotEqual,
 }

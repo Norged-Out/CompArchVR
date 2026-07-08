@@ -188,12 +188,52 @@ public class InstructionDefinition : ScriptableObject
     }
 
     /// <summary>
+    /// Current lessons always finish by explicitly updating the PC.
+    /// Branch / jump instructions will later use the same phase with extra
+    /// controls rather than introducing yet another terminal step.
+    /// </summary>
+    public bool UsesPcUpdatePhase()
+    {
+        return true;
+    }
+
+    /// <summary>
     /// Returns true when the instruction actually writes back into the register
     /// file. `sw` should skip the write-back phase entirely.
     /// </summary>
     public bool UsesWriteBackPhase()
     {
         return writesRegisterFile;
+    }
+
+    public bool UsesBranchDecision()
+    {
+        return mnemonic == InstructionMnemonic.Beq || mnemonic == InstructionMnemonic.Bne;
+    }
+
+    public bool UsesJumpDecision()
+    {
+        return mnemonic == InstructionMnemonic.J || mnemonic == InstructionMnemonic.Jal;
+    }
+
+    public string GetExpectedBranchControlValue()
+    {
+        return UsesBranchDecision() ? "1" : "0";
+    }
+
+    public string GetExpectedJumpControlValue()
+    {
+        return UsesJumpDecision() ? "1" : "0";
+    }
+
+    public BranchConditionKind GetExpectedBranchCondition()
+    {
+        return mnemonic switch
+        {
+            InstructionMnemonic.Beq => BranchConditionKind.Equal,
+            InstructionMnemonic.Bne => BranchConditionKind.NotEqual,
+            _ => BranchConditionKind.None,
+        };
     }
 
     /// <summary>
