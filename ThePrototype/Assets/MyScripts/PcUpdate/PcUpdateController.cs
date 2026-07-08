@@ -46,6 +46,12 @@ public class PcUpdateController : MonoBehaviour
     TMP_Text m_LessonEndText;
 
     [SerializeField]
+    GameObject m_PcUpdateGroupRoot;
+
+    [SerializeField]
+    GameObject m_SignalsGroupRoot;
+
+    [SerializeField]
     Slider m_PcIncrementSlider;
 
     [SerializeField]
@@ -124,6 +130,7 @@ public class PcUpdateController : MonoBehaviour
     bool m_IsAwaitingContinue;
     string m_BranchValue = "0";
     string m_JumpValue = "0";
+    DataPacketToken m_ShiftPreparedImmediatePacket;
 
     public event System.Action ContinueRequested;
 
@@ -134,6 +141,7 @@ public class PcUpdateController : MonoBehaviour
         PopulateHintDropdown();
         HookButtons(true);
         HookDropdown(true);
+        HookSlider(true);
         HookScannerEvents(true);
         RefreshPresentation();
     }
@@ -145,6 +153,7 @@ public class PcUpdateController : MonoBehaviour
         PopulateHintDropdown();
         HookButtons(true);
         HookDropdown(true);
+        HookSlider(true);
         HookScannerEvents(true);
         RefreshPresentation();
     }
@@ -153,6 +162,7 @@ public class PcUpdateController : MonoBehaviour
     {
         HookButtons(false);
         HookDropdown(false);
+        HookSlider(false);
         HookScannerEvents(false);
     }
 
@@ -172,7 +182,7 @@ public class PcUpdateController : MonoBehaviour
         if (m_PcUpdateUiRoot != null)
             m_PcUpdateUiRoot.SetActive(isActive);
 
-        var showBranchSpecificGroups = isActive && m_BranchValue == "1";
+        var showBranchSpecificGroups = isActive && m_BranchValue == "1" && !m_IsAwaitingContinue;
         m_ImmediateScanner?.SetActive(showBranchSpecificGroups);
         m_ZeroScanner?.SetActive(showBranchSpecificGroups);
         RefreshPresentation();
@@ -185,6 +195,7 @@ public class PcUpdateController : MonoBehaviour
         m_IsAwaitingContinue = false;
         m_BranchValue = "0";
         m_JumpValue = "0";
+        m_ShiftPreparedImmediatePacket = null;
 
         if (m_PcIncrementSlider != null)
             m_PcIncrementSlider.SetValueWithoutNotify(0f);
@@ -224,7 +235,7 @@ public class PcUpdateController : MonoBehaviour
         }
 
         m_IsAwaitingContinue = true;
-        SetFeedback("PC update confirmed. Click Continue to finish the lesson.", false);
+        SetFeedback("Program Counter update confirmed. Press Continue to reset the lesson.", false);
         RefreshPresentation();
     }
 
@@ -233,6 +244,7 @@ public class PcUpdateController : MonoBehaviour
         m_IsAwaitingContinue = false;
         m_BranchValue = "0";
         m_JumpValue = "0";
+        m_ShiftPreparedImmediatePacket = null;
 
         if (m_PcIncrementSlider != null)
         {
@@ -247,9 +259,6 @@ public class PcUpdateController : MonoBehaviour
 
         m_ImmediateScanner?.ResetScanner();
         m_ZeroScanner?.ResetScanner();
-        m_ImmediateScanner?.SetExpectedPacketRole(DataPacketRole.Immediate);
-        m_ImmediateScanner?.SetImmediateRequirements(true, false);
-        m_ZeroScanner?.SetExpectedPacketRole(DataPacketRole.Zero);
         SetFeedback("Move the PC update control from 0 to 4, then confirm the next PC path.", false);
         RefreshPresentation();
     }
@@ -289,7 +298,7 @@ public class PcUpdateController : MonoBehaviour
                 return false;
             }
 
-            if (!m_ImmediateScanner.AcceptedPacket.IsShiftedLeftTwo)
+            if (m_ImmediateScanner.AcceptedPacket != m_ShiftPreparedImmediatePacket)
             {
                 validationMessage = "Shift the branch immediate left by 2 before confirming.";
                 return false;
@@ -331,12 +340,8 @@ public class PcUpdateController : MonoBehaviour
             return;
         }
 
-        if (!immediatePacket.IsShiftedLeftTwo)
-            immediatePacket.MarkShiftedLeftTwo(immediatePacket.Value << 2);
-
-        m_ImmediateScanner.SetImmediateRequirements(true, true);
-        m_ImmediateScanner.ResetScanner();
-        SetFeedback("Branch offset shifted left by 2. Place it back on the PC update station.", false);
+        m_ShiftPreparedImmediatePacket = immediatePacket;
+        SetFeedback("Branch offset shifted left by 2.", false);
         RefreshPresentation();
     }
 
@@ -348,6 +353,7 @@ public class PcUpdateController : MonoBehaviour
         m_BranchValue = m_BranchValue == "1" ? "0" : "1";
         if (m_BranchValue != "1")
         {
+            m_ShiftPreparedImmediatePacket = null;
             m_ImmediateScanner?.ResetScanner();
             m_ZeroScanner?.ResetScanner();
             if (m_BranchConditionDropdown != null)
@@ -374,8 +380,19 @@ public class PcUpdateController : MonoBehaviour
         RefreshPresentation();
     }
 
+    void HandleSliderChanged(float _)
+    {
+        if (!m_IsPhaseActive)
+            return;
+
+        RefreshPresentation();
+    }
+
     void HandleImmediateAccepted(PcUpdatePacketScanner _, DataPacketToken __)
     {
+        if (m_ImmediateScanner == null || m_ImmediateScanner.AcceptedPacket != m_ShiftPreparedImmediatePacket)
+            m_ShiftPreparedImmediatePacket = null;
+
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }
@@ -390,7 +407,15 @@ public class PcUpdateController : MonoBehaviour
     {
         CacheReferences();
 
-        var showBranchSpecificGroups = m_IsPhaseActive && m_BranchValue == "1";
+        var showEndState = m_IsAwaitingContinue;
+        var showBranchSpecificGroups = m_IsPhaseActive && m_BranchValue == "1" && !showEndState;
+
+        if (m_PcUpdateGroupRoot != null)
+            m_PcUpdateGroupRoot.SetActive(!showEndState);
+
+        if (m_SignalsGroupRoot != null)
+            m_SignalsGroupRoot.SetActive(!showEndState);
+
         if (m_ImmediateGroupRoot != null)
             m_ImmediateGroupRoot.SetActive(showBranchSpecificGroups);
 
@@ -399,7 +424,7 @@ public class PcUpdateController : MonoBehaviour
 
         m_ImmediateScanner?.SetActive(showBranchSpecificGroups);
         m_ZeroScanner?.SetActive(showBranchSpecificGroups);
-        m_ImmediateScanner?.SetImmediateRequirements(true, false);
+        m_ImmediateScanner?.SetImmediateRequirements(true);
         m_ZeroScanner?.SetExpectedPacketRole(DataPacketRole.Zero);
 
         if (m_BranchStatusText != null)
@@ -439,7 +464,6 @@ public class PcUpdateController : MonoBehaviour
                 ? m_ImmediateScanner.CurrentIssue switch
             {
                 PcUpdatePacketScanner.PacketIssue.ImmediateNotSignExtended => "Not extended",
-                PcUpdatePacketScanner.PacketIssue.ImmediateNotShifted => "Not shifted",
                 _ => "Waiting",
             }
                 : "Waiting";
@@ -449,7 +473,7 @@ public class PcUpdateController : MonoBehaviour
         if (!packet.IsSignExtended)
             return "Not extended";
 
-        if (!packet.IsShiftedLeftTwo)
+        if (packet != m_ShiftPreparedImmediatePacket)
             return "Not shifted";
 
         return "Ready";
@@ -486,7 +510,7 @@ public class PcUpdateController : MonoBehaviour
         };
 
         var pcSrc = m_BranchValue == "1" && conditionMet ? 1 : 0;
-        var nextPc = pcSrc == 1 ? "branch target" : $"PC + {pcIncrement}";
+        var nextPc = pcSrc == 1 ? $"PC + {pcIncrement} + Branch Offset" : $"PC + {pcIncrement}";
         return $"PCSrc = Branch({m_BranchValue}) AND ConditionMet({(conditionMet ? 1 : 0)}) = {pcSrc}\nNext PC: {nextPc}";
     }
 
@@ -591,6 +615,16 @@ public class PcUpdateController : MonoBehaviour
         }
     }
 
+    void HookSlider(bool subscribe)
+    {
+        if (m_PcIncrementSlider == null)
+            return;
+
+        m_PcIncrementSlider.onValueChanged.RemoveListener(HandleSliderChanged);
+        if (subscribe)
+            m_PcIncrementSlider.onValueChanged.AddListener(HandleSliderChanged);
+    }
+
     void HookScannerEvents(bool subscribe)
     {
         HookScannerEvent(m_ImmediateScanner, HandleImmediateAccepted, subscribe);
@@ -630,6 +664,8 @@ public class PcUpdateController : MonoBehaviour
             m_LessonShiftText ??= FindNamedText(m_PcUpdateUiRoot.transform, "Shift");
             m_LessonResultText ??= FindNamedText(m_PcUpdateUiRoot.transform, "Result");
             m_LessonEndText ??= FindNamedText(m_PcUpdateUiRoot.transform, "End text");
+            m_PcUpdateGroupRoot ??= FindChildTransform(m_PcUpdateUiRoot.transform, "PC Update")?.gameObject;
+            m_SignalsGroupRoot ??= FindChildTransform(m_PcUpdateUiRoot.transform, "Signals")?.gameObject;
         }
     }
 

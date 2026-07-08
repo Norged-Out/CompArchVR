@@ -90,6 +90,8 @@ Working lesson paths now include:
 - `and`
 - `or`
 - `slt`
+- `beq`
+- `bne`
 
 Historical rollout:
 1. `add`
@@ -196,6 +198,10 @@ Current refinement direction:
   - `Instruction Module`
   - uploader terminal
   - downloader terminal
+- control-flow conclusion now also has a dedicated end-stage path through:
+  - `PC Update UI`
+  - `PC Update Station`
+  - branch-resolution logic for `beq` / `bne`
 
 ## Interaction Heuristic
 

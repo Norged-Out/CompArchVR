@@ -132,6 +132,7 @@ public class CpuLessonFlow : MonoBehaviour
         m_RegisterSelectionReadyToContinue = false;
         m_LastAdvanceFrame = -1;
         m_CurrentStepIndex = 0;
+        m_ImmediateExtender?.ResetScanner();
 
         // Fetch now has a physical counterpart. Starting a lesson resets both
         // terminals, spawns a fresh module at the uploader, and uploads the
@@ -229,6 +230,7 @@ public class CpuLessonFlow : MonoBehaviour
         m_RegisterSelectionReadyToContinue = false;
         m_LastAdvanceFrame = -1;
         m_CurrentStepIndex = -1;
+        m_ImmediateExtender?.ResetScanner();
 
         // A full lesson reset also restores fetch so the next run always starts
         // from the same physical handoff.

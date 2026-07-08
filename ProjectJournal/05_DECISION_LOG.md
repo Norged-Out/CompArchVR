@@ -684,6 +684,35 @@ Implication:
 - the current baseline is static terminals plus clear material/VFX state changes
 - future polish should not reintroduce terminal movement casually
 
+## 2026-07-09 - Branch Resolution Belongs To A Dedicated PC Update Step
+
+Decision:
+- treat `PC Update` as its own authored final lesson phase, especially for branch instructions
+
+Why:
+- it gives the learner a concrete place to reason about `PC + 4`, branch offset use, and `PCSrc`
+- it avoids overloading earlier phases with too much control-flow explanation at once
+- it provides a cleaner lesson conclusion than bouncing the learner back to the old intro panel
+
+Implication:
+- `beq` and `bne` should finish through `PC Update`
+- branch resolution can stay partly UI-driven for now as long as the reasoning remains clear
+- future control-flow expansion should build on this end-stage instead of scattering PC logic across unrelated phases
+
+## 2026-07-09 - Signal Changes Should Release Invalid Latched Inputs
+
+Decision:
+- when a control signal changes in a way that invalidates an accepted datapath input, that input should be released rather than silently remain latched
+
+Why:
+- keeping the old locked value in place hides mistakes instead of teaching the learner to correct them
+- the user explicitly preferred correction-through-reinteraction over handholding
+- this behavior is more robust across ALU, memory, write-back, and branch-facing interactions
+
+Implication:
+- later phase controllers should keep respecting signal-driven validity
+- accepted datapackets should not remain locked if the controlling signal mode no longer matches them
+
 ## 2026-07-05 - If More Instructions Are Added Next, Favor Immediate And Branch Paths Before Jump Paths
 
 Decision:

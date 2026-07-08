@@ -25,9 +25,6 @@ public class DataPacketToken : MonoBehaviour
     [SerializeField]
     bool m_IsSignExtended;
 
-    [SerializeField]
-    bool m_IsShiftedLeftTwo;
-
     [Header("Scene References")]
 
     [SerializeField]
@@ -44,7 +41,6 @@ public class DataPacketToken : MonoBehaviour
     public string SourceDisplayLabel => m_SourceDisplayLabel;
     public int Value => m_Value;
     public bool IsSignExtended => m_IsSignExtended;
-    public bool IsShiftedLeftTwo => m_IsShiftedLeftTwo;
     public bool IsGrabbed => m_GrabInteractable != null && m_GrabInteractable.isSelected;
 
     void Awake()
@@ -84,7 +80,6 @@ public class DataPacketToken : MonoBehaviour
         m_SourceDisplayLabel = sourceDisplayLabel;
         m_Value = value;
         m_IsSignExtended = isSignExtended;
-        m_IsShiftedLeftTwo = false;
         RefreshText();
     }
 
@@ -97,19 +92,6 @@ public class DataPacketToken : MonoBehaviour
     {
         m_Value = signExtendedValue;
         m_IsSignExtended = true;
-        m_IsShiftedLeftTwo = false;
-        RefreshText();
-    }
-
-    /// <summary>
-    /// Rewrites the packet payload after a branch-offset left shift by 2.
-    /// The packet remains the same physical object so later stages can keep
-    /// following the learner's immediate datapath by hand.
-    /// </summary>
-    public void MarkShiftedLeftTwo(int shiftedValue)
-    {
-        m_Value = shiftedValue;
-        m_IsShiftedLeftTwo = true;
         RefreshText();
     }
 
@@ -163,5 +145,25 @@ public class DataPacketToken : MonoBehaviour
 
         if (parentTransform != null)
             transform.SetParent(parentTransform, true);
+    }
+
+    /// <summary>
+    /// Releases a previously latched packet back into the scene so the learner
+    /// can pick it up again after a control-path change invalidates the input.
+    /// </summary>
+    public void ReleaseFromLatch()
+    {
+        CacheReferences();
+
+        transform.SetParent(null, true);
+
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.isKinematic = false;
+            m_Rigidbody.useGravity = true;
+        }
+
+        if (m_GrabInteractable != null)
+            m_GrabInteractable.enabled = true;
     }
 }

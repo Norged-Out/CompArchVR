@@ -55,16 +55,25 @@ public class LessonGuideController : MonoBehaviour
     TMP_Text m_IDRegisterLessonText;
 
     [SerializeField]
+    TMP_Text m_IDFunctLessonText;
+
+    [SerializeField]
     TMP_Text m_IDOpcodeBodyText;
 
     [SerializeField]
     TMP_Text m_IDRegisterBodyText;
 
     [SerializeField]
+    TMP_Text m_IDFunctBodyText;
+
+    [SerializeField]
     TMP_Text m_IDOpcodeSelectionText;
 
     [SerializeField]
     TMP_Text m_IDRegisterSelectionText;
+
+    [SerializeField]
+    TMP_Text m_IDFunctSelectionText;
 
     [SerializeField]
     TMP_Text m_IDFeedback;
@@ -77,6 +86,9 @@ public class LessonGuideController : MonoBehaviour
 
     [SerializeField]
     TMP_Dropdown m_IDOpcodeDropdown;
+
+    [SerializeField]
+    TMP_Dropdown m_IDFunctDropdown;
 
     [SerializeField]
     TMP_Dropdown m_IDHintDropdown;
@@ -116,8 +128,10 @@ public class LessonGuideController : MonoBehaviour
     // stay simple while still reacting to the currently selected instruction set.
     readonly List<InstructionDefinition> m_AvailableInstructions = new();
     readonly List<string> m_DecodeOpcodeOptions = new();
+    readonly List<string> m_DecodeFunctOptions = new();
     bool m_IsRefreshingInstructionDropdown;
     bool m_IsRefreshingDecodeDropdowns;
+    bool m_IsDecodeFunctStepActive;
 
     void Awake()
     {
@@ -215,6 +229,12 @@ public class LessonGuideController : MonoBehaviour
             m_IDOpcodeDropdown.onValueChanged.AddListener(HandleDecodeOpcodeChanged);
         }
 
+        if (m_IDFunctDropdown != null)
+        {
+            m_IDFunctDropdown.onValueChanged.RemoveListener(HandleDecodeFunctChanged);
+            m_IDFunctDropdown.onValueChanged.AddListener(HandleDecodeFunctChanged);
+        }
+
         if (m_IDHintDropdown != null)
         {
             m_IDHintDropdown.onValueChanged.RemoveListener(HandleDecodeHintChanged);
@@ -246,6 +266,8 @@ public class LessonGuideController : MonoBehaviour
             m_LessonFlow.StartLesson();
         else if (IsDecodeOpcodeSelectionStep())
             HandleDecodeOpcodeContinue();
+        else if (IsDecodeFunctSelectionStep())
+            HandleDecodeFunctContinue();
         else
             m_LessonFlow.Advance();
     }
@@ -264,6 +286,14 @@ public class LessonGuideController : MonoBehaviour
     }
 
     void HandleDecodeOpcodeChanged(int _)
+    {
+        if (m_IsRefreshingDecodeDropdowns)
+            return;
+
+        RefreshView();
+    }
+
+    void HandleDecodeFunctChanged(int _)
     {
         if (m_IsRefreshingDecodeDropdowns)
             return;
@@ -308,7 +338,7 @@ public class LessonGuideController : MonoBehaviour
 
     void HandlePcUpdateContinueRequested()
     {
-        m_LessonFlow?.Advance();
+        m_LessonFlow?.ResetLesson();
     }
 
     void HandleFeedbackChanged(string message, bool isFailure)
@@ -493,6 +523,7 @@ public class LessonGuideController : MonoBehaviour
         RefreshDecodeHintText();
 
         var showContinue = IsDecodeOpcodeSelectionStep() ||
+                           IsDecodeFunctSelectionStep() ||
                            step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
                            step.requiredInteraction == InstructionStepInteractionType.Completion ||
                            (step.requiredInteraction == InstructionStepInteractionType.RegisterSelection &&
@@ -644,22 +675,39 @@ public class LessonGuideController : MonoBehaviour
         return step.explanation;
     }
 
+    string BuildDecodeFunctSelectionText(InstructionFlowStep step)
+    {
+        var instruction = m_LessonFlow.CurrentInstruction;
+        if (instruction == null)
+            return string.Empty;
+
+        if (IsDecodeFunctSelectionStep())
+            return $"Assembly: {instruction.assemblyInstructionText}";
+
+        return string.Empty;
+    }
+
     void RefreshDecodeTextBlocks(InstructionFlowStep step)
     {
         var isOpcodeStep = IsDecodeOpcodeSelectionStep();
+        var isFunctStep = IsDecodeFunctSelectionStep();
         var isRegisterStep = step != null && step.requiredInteraction == InstructionStepInteractionType.RegisterSelection;
 
         // Decode is now split into authored text blocks so the user can move
         // more wording into edit mode while runtime only swaps the pieces that
         // genuinely depend on the active instruction or learner progress.
         SetActive(m_IDOpcodeLessonText, isOpcodeStep);
+        SetActive(m_IDFunctLessonText, isFunctStep);
         SetActive(m_IDRegisterLessonText, isRegisterStep);
         SetActive(m_IDOpcodeBodyText, isOpcodeStep);
+        SetActive(m_IDFunctBodyText, isFunctStep);
         SetActive(m_IDRegisterBodyText, isRegisterStep);
         SetActive(m_IDOpcodeSelectionText, isOpcodeStep);
+        SetActive(m_IDFunctSelectionText, isFunctStep);
         SetActive(m_IDRegisterSelectionText, isRegisterStep);
 
         SetText(m_IDOpcodeSelectionText, isOpcodeStep ? BuildDecodeOpcodeSelectionText(step) : string.Empty);
+        SetText(m_IDFunctSelectionText, isFunctStep ? BuildDecodeFunctSelectionText(step) : string.Empty);
         SetText(m_IDRegisterSelectionText, isRegisterStep ? BuildDecodeRegisterSelectionText(step) : string.Empty);
     }
 
@@ -735,10 +783,13 @@ public class LessonGuideController : MonoBehaviour
         if (m_IDRoot != null)
         {
             m_IDOpcodeLessonText ??= FindNamedText(m_IDRoot.transform, "Opcode lesson");
+            m_IDFunctLessonText ??= FindNamedText(m_IDRoot.transform, "Funct lesson");
             m_IDRegisterLessonText ??= FindNamedText(m_IDRoot.transform, "Register lesson");
             m_IDOpcodeBodyText ??= FindNamedText(m_IDRoot.transform, "Opcode body");
+            m_IDFunctBodyText ??= FindNamedText(m_IDRoot.transform, "Funct body");
             m_IDRegisterBodyText ??= FindNamedText(m_IDRoot.transform, "Register body");
             m_IDOpcodeSelectionText ??= FindNamedText(m_IDRoot.transform, "Opcode selection");
+            m_IDFunctSelectionText ??= FindNamedText(m_IDRoot.transform, "Funct selection");
             m_IDRegisterSelectionText ??= FindNamedText(m_IDRoot.transform, "Register selection");
         }
     }
@@ -794,6 +845,7 @@ public class LessonGuideController : MonoBehaviour
     void PopulateDecodeDropdowns()
     {
         PopulateDecodeOpcodeDropdown();
+        PopulateDecodeFunctDropdown();
         PopulateDecodeHintDropdown();
     }
 
@@ -849,6 +901,46 @@ public class LessonGuideController : MonoBehaviour
         m_IsRefreshingDecodeDropdowns = false;
     }
 
+    void PopulateDecodeFunctDropdown()
+    {
+        if (m_IDFunctDropdown == null)
+            return;
+
+        m_DecodeFunctOptions.Clear();
+
+        var optionLabels = new List<string> { "Choose Funct" };
+        foreach (var instruction in m_AvailableInstructions)
+        {
+            if (instruction == null || string.IsNullOrWhiteSpace(instruction.functBits))
+                continue;
+
+            var funct = instruction.functBits.Trim();
+            if (m_DecodeFunctOptions.Contains(funct))
+                continue;
+
+            m_DecodeFunctOptions.Add(funct);
+            optionLabels.Add(funct);
+        }
+
+        if (m_LessonFlow != null &&
+            m_LessonFlow.CurrentInstruction != null &&
+            !string.IsNullOrWhiteSpace(m_LessonFlow.CurrentInstruction.functBits))
+        {
+            var currentFunct = m_LessonFlow.CurrentInstruction.functBits.Trim();
+            if (!m_DecodeFunctOptions.Contains(currentFunct))
+            {
+                m_DecodeFunctOptions.Add(currentFunct);
+                optionLabels.Add(currentFunct);
+            }
+        }
+
+        m_IsRefreshingDecodeDropdowns = true;
+        m_IDFunctDropdown.ClearOptions();
+        m_IDFunctDropdown.AddOptions(optionLabels);
+        m_IDFunctDropdown.SetValueWithoutNotify(0);
+        m_IsRefreshingDecodeDropdowns = false;
+    }
+
     void ResetDecodeDropdowns()
     {
         m_IsRefreshingDecodeDropdowns = true;
@@ -856,21 +948,32 @@ public class LessonGuideController : MonoBehaviour
         if (m_IDOpcodeDropdown != null)
             m_IDOpcodeDropdown.SetValueWithoutNotify(0);
 
+        if (m_IDFunctDropdown != null)
+            m_IDFunctDropdown.SetValueWithoutNotify(0);
+
         if (m_IDHintDropdown != null)
             m_IDHintDropdown.SetValueWithoutNotify(0);
 
         m_IsRefreshingDecodeDropdowns = false;
+        m_IsDecodeFunctStepActive = false;
         SetText(m_IDHintText, string.Empty);
     }
 
     void RefreshDecodeDropdownState(InstructionFlowStep step)
     {
         var showOpcodeDropdown = IsDecodeOpcodeSelectionStep();
+        var showFunctDropdown = IsDecodeFunctSelectionStep();
 
         if (m_IDOpcodeDropdown != null)
         {
             m_IDOpcodeDropdown.gameObject.SetActive(showOpcodeDropdown);
             m_IDOpcodeDropdown.interactable = showOpcodeDropdown;
+        }
+
+        if (m_IDFunctDropdown != null)
+        {
+            m_IDFunctDropdown.gameObject.SetActive(showFunctDropdown);
+            m_IDFunctDropdown.interactable = showFunctDropdown;
         }
 
         if (m_IDHintDropdown != null)
@@ -1038,6 +1141,17 @@ public class LessonGuideController : MonoBehaviour
             return;
         }
 
+        if (InstructionUsesDecodeFunct(m_LessonFlow.CurrentInstruction))
+        {
+            m_IsDecodeFunctStepActive = true;
+            if (m_IDFunctDropdown != null)
+                m_IDFunctDropdown.SetValueWithoutNotify(0);
+
+            HandleFeedbackChanged("Opcode confirmed. Now identify the funct field.", false);
+            RefreshView();
+            return;
+        }
+
         HandleFeedbackChanged("Opcode confirmed. Continue into operand setup.", false);
         m_LessonFlow.Advance();
     }
@@ -1055,10 +1169,67 @@ public class LessonGuideController : MonoBehaviour
         return m_IDOpcodeDropdown.options[m_IDOpcodeDropdown.value].text.Trim();
     }
 
+    void HandleDecodeFunctContinue()
+    {
+        if (m_LessonFlow == null || m_LessonFlow.CurrentInstruction == null)
+            return;
+
+        var selectedFunct = GetSelectedDecodeFunct();
+        if (string.IsNullOrWhiteSpace(selectedFunct))
+        {
+            HandleFeedbackChanged("Select a funct value first.", true);
+            return;
+        }
+
+        var expectedFunct = m_LessonFlow.CurrentInstruction.functBits != null
+            ? m_LessonFlow.CurrentInstruction.functBits.Trim()
+            : string.Empty;
+
+        if (!string.Equals(selectedFunct, expectedFunct, System.StringComparison.Ordinal))
+        {
+            HandleFeedbackChanged("That funct value does not match the selected instruction.", true);
+            return;
+        }
+
+        m_IsDecodeFunctStepActive = false;
+        HandleFeedbackChanged("Funct confirmed. Continue into operand setup.", false);
+        m_LessonFlow.Advance();
+    }
+
+    string GetSelectedDecodeFunct()
+    {
+        if (m_IDFunctDropdown == null ||
+            m_IDFunctDropdown.options == null ||
+            m_IDFunctDropdown.value <= 0 ||
+            m_IDFunctDropdown.value >= m_IDFunctDropdown.options.Count)
+        {
+            return string.Empty;
+        }
+
+        return m_IDFunctDropdown.options[m_IDFunctDropdown.value].text.Trim();
+    }
+
     bool IsDecodeOpcodeSelectionStep()
     {
         var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
-        return step != null && step.highlightedNode == DatapathNodeId.InstructionMemory;
+        return step != null &&
+               step.highlightedNode == DatapathNodeId.InstructionMemory &&
+               !m_IsDecodeFunctStepActive;
+    }
+
+    bool IsDecodeFunctSelectionStep()
+    {
+        var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
+        return step != null &&
+               step.highlightedNode == DatapathNodeId.InstructionMemory &&
+               m_IsDecodeFunctStepActive;
+    }
+
+    static bool InstructionUsesDecodeFunct(InstructionDefinition instruction)
+    {
+        return instruction != null &&
+               !string.IsNullOrWhiteSpace(instruction.functBits) &&
+               string.Equals(instruction.opcodeBits != null ? instruction.opcodeBits.Trim() : string.Empty, "000000", System.StringComparison.Ordinal);
     }
 
     string GetCurrentDecodeTargetLabel(InstructionDefinition instruction, InstructionFlowStep step)

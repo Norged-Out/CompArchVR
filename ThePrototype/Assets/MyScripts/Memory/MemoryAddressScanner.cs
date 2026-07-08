@@ -52,6 +52,9 @@ public class MemoryAddressScanner : MemoryPillarScannerBase
     public new void ResetScanner()
     {
         m_PacketsInZone.Clear();
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
         base.ResetScanner();
     }
@@ -86,11 +89,8 @@ public class MemoryAddressScanner : MemoryPillarScannerBase
 
         m_PacketsInZone.Remove(dataPacketToken);
 
-        if (AcceptedPacket == dataPacketToken)
-        {
-            AcceptedPacket = null;
-            base.ResetScanner();
-        }
+        if (!IsLatchedSuccessful && AcceptedPacket == dataPacketToken)
+            ResetScanner();
     }
 
     protected override void CacheVisualReferences()
@@ -107,6 +107,9 @@ public class MemoryAddressScanner : MemoryPillarScannerBase
 
     protected override void HandleScannerReset()
     {
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
     }
 

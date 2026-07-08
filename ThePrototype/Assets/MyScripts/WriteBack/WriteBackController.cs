@@ -360,6 +360,7 @@ public class WriteBackController : MonoBehaviour
 
         m_RegDstValue = m_RegDstValue == "1" ? "0" : "1";
         RefreshExpectedTargets();
+        ResetScannersIfSignalStateIsInvalid();
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }
@@ -370,6 +371,7 @@ public class WriteBackController : MonoBehaviour
             return;
 
         m_RegWriteValue = m_RegWriteValue == "1" ? "0" : "1";
+        ResetScannersIfSignalStateIsInvalid();
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }
@@ -381,6 +383,7 @@ public class WriteBackController : MonoBehaviour
 
         m_MemToRegValue = m_MemToRegValue == "1" ? "0" : "1";
         RefreshExpectedTargets();
+        ResetScannersIfSignalStateIsInvalid();
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }
@@ -407,6 +410,26 @@ public class WriteBackController : MonoBehaviour
     {
         m_RegisterScanner?.SetExpectedRegisterId(GetExpectedRegisterIdFromControlState());
         m_PacketScanner?.SetExpectedPacketRole(GetExpectedPacketRoleFromControlState());
+    }
+
+    void ResetScannersIfSignalStateIsInvalid()
+    {
+        if (m_CurrentInstruction == null)
+            return;
+
+        var expectedRegDst = m_CurrentInstruction.GetExpectedRegDstControlValue();
+        var expectedRegWrite = m_CurrentInstruction.GetExpectedRegWriteControlValue();
+        var expectedMemToReg = m_CurrentInstruction.GetExpectedMemToRegControlValue();
+
+        if (m_RegDstValue == expectedRegDst &&
+            m_RegWriteValue == expectedRegWrite &&
+            m_MemToRegValue == expectedMemToReg)
+        {
+            return;
+        }
+
+        m_RegisterScanner?.ResetScanner();
+        m_PacketScanner?.ResetScanner();
     }
 
     string GetExpectedRegisterIdFromControlState()

@@ -118,6 +118,12 @@ public class DataMemoryBank : MonoBehaviour
         ShowWordDetails(word);
     }
 
+    public void ClearPreview()
+    {
+        ClearHighlightedWord();
+        ClearDisplay();
+    }
+
     public void ShowWordDetails(MemoryWord word)
     {
         if (word == null)

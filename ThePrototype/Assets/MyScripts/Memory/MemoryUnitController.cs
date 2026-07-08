@@ -348,6 +348,7 @@ public class MemoryUnitController : MonoBehaviour
             return;
 
         m_MemReadValue = m_MemReadValue == "1" ? "0" : "1";
+        ResetScannersIfSignalStateIsInvalid();
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }
@@ -358,6 +359,7 @@ public class MemoryUnitController : MonoBehaviour
             return;
 
         m_MemWriteValue = m_MemWriteValue == "1" ? "0" : "1";
+        ResetScannersIfSignalStateIsInvalid();
         SetFeedback(string.Empty, false);
         RefreshPresentation();
     }
@@ -383,6 +385,22 @@ public class MemoryUnitController : MonoBehaviour
         m_AddressScanner?.SetExpectedPacketRole(DataPacketRole.AluResult);
         if (m_DataScanner != null)
             m_DataScanner.SetExpectedPacketRole(DataPacketRole.ReadData2);
+    }
+
+    void ResetScannersIfSignalStateIsInvalid()
+    {
+        if (m_CurrentInstruction == null || !UsesInteractiveMemory())
+            return;
+
+        var expectedMemRead = IsLoadInstruction() ? "1" : "0";
+        var expectedMemWrite = IsStoreInstruction() ? "1" : "0";
+
+        if (m_MemReadValue == expectedMemRead && m_MemWriteValue == expectedMemWrite)
+            return;
+
+        m_AddressScanner?.ResetScanner();
+        m_DataScanner?.ResetScanner();
+        m_MemoryBank?.ClearPreview();
     }
 
     void RefreshPresentation()

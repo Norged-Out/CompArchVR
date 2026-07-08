@@ -201,6 +201,9 @@ public class InstructionTerminal : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
+        if (m_Mode != TerminalMode.Downloader)
+            return;
+
         var module = other.GetComponentInParent<InstructionModule>();
         if (module == null)
             return;

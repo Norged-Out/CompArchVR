@@ -1283,6 +1283,8 @@ MonoBehaviour:
   m_LessonShiftText: {fileID: 0}
   m_LessonResultText: {fileID: 0}
   m_LessonEndText: {fileID: 0}
+  m_PcUpdateGroupRoot: {fileID: 0}
+  m_SignalsGroupRoot: {fileID: 0}
   m_PcIncrementSlider: {fileID: 0}
   m_BranchStatusText: {fileID: 0}
   m_JumpStatusText: {fileID: 0}
@@ -6532,7 +6534,6 @@ MonoBehaviour:
   m_ScanZone: {fileID: 8465295019629140824}
   m_ExpectedPacketRole: 6
   m_RequireSignExtended: 0
-  m_RequireShiftedImmediate: 0
 --- !u!1001 &6936773492214909041
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -6806,7 +6807,6 @@ MonoBehaviour:
   m_ScanZone: {fileID: 4285388186165402339}
   m_ExpectedPacketRole: 3
   m_RequireSignExtended: 1
-  m_RequireShiftedImmediate: 0
 --- !u!23 &8676129685714525164 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: 23321762944091716, guid: 8b4141ff278aa944e95d5357a1b9ad86, type: 3}

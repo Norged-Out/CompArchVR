@@ -152,6 +152,9 @@ public abstract class PedestalScannerBase : MonoBehaviour
 
     public void SetStepActive(bool isActive)
     {
+        if (m_IsStepActive == isActive)
+            return;
+
         m_IsStepActive = isActive;
         m_IsAwaitingValidation = false;
         m_IsLatchedSuccessful = false;

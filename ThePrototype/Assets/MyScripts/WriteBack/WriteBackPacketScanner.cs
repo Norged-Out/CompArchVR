@@ -59,6 +59,9 @@ public class WriteBackPacketScanner : PedestalScannerBase
     public new void ResetScanner()
     {
         m_PacketsInZone.Clear();
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
         base.ResetScanner();
     }
@@ -76,11 +79,8 @@ public class WriteBackPacketScanner : PedestalScannerBase
 
         m_PacketsInZone.Remove(dataPacketToken);
 
-        if (AcceptedPacket == dataPacketToken)
-        {
-            AcceptedPacket = null;
-            base.ResetScanner();
-        }
+        if (!IsLatchedSuccessful && AcceptedPacket == dataPacketToken)
+            ResetScanner();
     }
 
     /// <summary>
@@ -133,6 +133,9 @@ public class WriteBackPacketScanner : PedestalScannerBase
 
     protected override void HandleScannerReset()
     {
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
     }
 

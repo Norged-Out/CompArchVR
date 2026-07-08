@@ -65,6 +65,8 @@ Current prototype features:
   - `Instruction Terminal` in uploader mode
   - `Instruction Terminal` in downloader mode
   - decode staying locked until the uploaded module is delivered
+- authored `PC Update UI` now exists as the final control-flow / lesson-conclusion surface
+- first-pass `PC Update Station` support now exists for branch-resolution teaching
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
   - decode can now emit immediate packets from the second scanner spawn point for immediate-based instructions
@@ -88,7 +90,9 @@ Current prototype features:
   - `and`
   - `or`
   - `slt`
-- `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, and `slt` have now all been tested successfully through the current loop
+- `beq`
+- `bne`
+- `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, and `bne` have now all been tested successfully through the current loop
 - `lw` now uses a real MIPS-style memory address path:
   - base register contains a data-segment address
   - immediate acts as offset
@@ -141,6 +145,7 @@ Why:
 - the official demo deadline is `2026-07-29`
 - the current focus is no longer instruction coverage, but:
   - UI readability
+  - branch / PC-update readability
   - finishing the multi-panel UI conversion cleanly
   - map/environment quality
   - reset / quality-of-life polish
@@ -175,6 +180,7 @@ Before stopping:
 - what the cleanest next post-demo feature target should be now that the current instruction set is broader than the original checkpoint goal
 - how much of the current UI wording should move entirely into authored scene text versus stay runtime-driven
 - whether instruction choice should remain user-selected, become randomized, or support both
+- how far the branch / PC-update lesson should be pushed physically versus left as UI reasoning
 - the exact acceptance rule for pedestal validation:
   - immediate on release
   - after 1-2 seconds stable in-zone
@@ -201,6 +207,7 @@ The cleanest next work item is:
 - finish the pre-meeting polish pass on top of the now-working instruction set:
 - keep `Intro UI` and `Instruction Decode UI` authored in-scene
 - keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
+- keep the newer branch / PC-update finish stable as the current lesson conclusion
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code

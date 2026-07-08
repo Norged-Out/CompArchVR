@@ -116,6 +116,9 @@ public class AluInputScanner : PedestalScannerBase
 
     void ClearAcceptedPacket()
     {
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
     }
 

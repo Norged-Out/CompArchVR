@@ -243,7 +243,7 @@ public class InstructionDefinition : ScriptableObject
     /// </summary>
     public DataPacketRole GetDecodeRtPacketRole()
     {
-        if (mnemonic == InstructionMnemonic.Sw)
+        if (UsesBranchDecision() || mnemonic == InstructionMnemonic.Sw)
             return DataPacketRole.ReadData2;
 
         return usesImmediate ? DataPacketRole.Immediate : DataPacketRole.ReadData2;

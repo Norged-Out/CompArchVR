@@ -315,7 +315,7 @@ public class AluExecutionController : MonoBehaviour
             return false;
         }
 
-        var expectedAluSrc = m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate ? "1" : "0";
+        var expectedAluSrc = GetExpectedAluSrcValue(m_CurrentInstruction);
         if (m_CurrentAluSrcValue != expectedAluSrc)
         {
             validationMessage = "ALUSrc is routing the second operand down the wrong path.";
@@ -380,6 +380,9 @@ public class AluExecutionController : MonoBehaviour
             return;
 
         var resultPacketRole = GetResultPacketRole();
+        var packetValue = resultPacketRole == DataPacketRole.Zero
+            ? (resultValue == 0 ? 1 : 0)
+            : resultValue;
         var spawnedPacket = Instantiate(
             m_ResultPacketPrefab,
             m_ResultSpawnTransform.position,
@@ -388,7 +391,7 @@ public class AluExecutionController : MonoBehaviour
             resultPacketRole,
             resultPacketRole == DataPacketRole.Zero ? "zero" : "alu_result",
             resultPacketRole == DataPacketRole.Zero ? "Zero" : "ALU Result",
-            resultValue);
+            packetValue);
 
         m_SpawnedResultPacket = spawnedPacket;
     }
@@ -451,6 +454,16 @@ public class AluExecutionController : MonoBehaviour
             return;
 
         m_CurrentAluSrcValue = m_CurrentAluSrcValue == "1" ? "0" : "1";
+
+        var expectedInput2Role = GetExpectedInput2Role();
+        if (m_InputB != null &&
+            m_InputB.AcceptedPacket != null &&
+            m_InputB.AcceptedPacket.PacketRole != expectedInput2Role)
+        {
+            m_InputB.ResetScanner();
+            m_InputB.FlashFailure();
+        }
+
         RefreshExpectedInputRoles();
         SetFeedback(string.Empty, false);
         RefreshAllPresentation();
@@ -577,6 +590,9 @@ public class AluExecutionController : MonoBehaviour
     {
         if (m_CurrentInstruction == null)
             return $"ALU result ready: {resultValue}. Click Continue.";
+
+        if (m_CurrentInstruction.UsesBranchDecision())
+            return $"Zero result ready: {resultValue}. Click Continue to proceed to Program Counter Update.";
 
         if (m_CurrentInstruction.UsesInteractiveMemoryPhase())
             return $"ALU result ready: {resultValue}. Click Continue to proceed to Memory Access.";
@@ -803,6 +819,17 @@ public class AluExecutionController : MonoBehaviour
             InstructionMnemonic.Ori => "10",
             _ => "10",
         };
+    }
+
+    static string GetExpectedAluSrcValue(InstructionDefinition instruction)
+    {
+        if (instruction == null)
+            return "0";
+
+        if (instruction.UsesBranchDecision())
+            return "0";
+
+        return instruction.usesImmediate ? "1" : "0";
     }
 
     static AluOperation ResolveOperation(InstructionDefinition instruction, string aluOpValue)

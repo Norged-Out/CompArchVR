@@ -9,7 +9,7 @@ Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype focus:
-- playable `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, and `slt` lesson loops in `Testing Ground`
+- playable `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, and `bne` lesson loops in `Testing Ground`
 - scene-authored `Intro UI`, `Instruction Decode UI`, `ALU UI`, `Mem UI`, and `WB UI` under `Lesson Guide`
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
@@ -26,8 +26,9 @@ Current prototype focus:
   - uploader `Instruction Terminal`
   - downloader `Instruction Terminal`
   - decode gating on successful delivery
+- authored `PC Update UI` and first-pass `PC Update Station` now exist for branch resolution and lesson conclusion
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing post-demo polish, UI clarity work, and environment work on top of the now-working instruction set
+- preparing post-demo polish, UI clarity work, and environment work on top of the now-working instruction set and new branch flow
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
@@ -37,8 +38,8 @@ Current milestone:
   - complete the build a few days before the official deadline
   - use the remaining time for cleanup, map polish, and presentation safety
 - current checkpoint status:
-  - `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, and `slt` are working
-  - current focus has shifted from instruction coverage to UI clarity, IF polish, and map polish
+  - `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, and `bne` are working
+  - current focus has shifted from instruction coverage to UI clarity, IF polish, branch/PC-update polish, and map polish
 
 ## Current TODO Cutoff Before The Next Supervisor Meeting
 
@@ -383,6 +384,55 @@ Next:
 Risks / Notes:
 - terminal motion polish was intentionally removed in favor of stability
 - future fetch polish should stay conservative unless it clearly improves readability
+
+### 2026-07-09 - PC Update, Branch Resolution, And Final Flow Polish Added
+
+Completed:
+- added a dedicated `PC Update UI` and `PC Update Station` as the final lesson step instead of routing the learner back through the old intro-panel ending
+- implemented branch-resolution support for:
+  - `beq`
+  - `bne`
+- added a `Zero` datapacket result path from the ALU for branch comparisons
+- wired the branch route so:
+  - ALU compares register operands
+  - branch immediate is sign-extended
+  - branch immediate is shift-left-2 handled through the PC-update step
+  - `PCSrc` is calculated and validated there
+- stabilized branch/invalidation behavior across the later datapath zones so signal changes now properly release invalid locked packets instead of silently trapping them
+- fixed multiple cross-phase regressions that had appeared during the branching pass:
+  - ALU input 2 revalidation
+  - memory pedestal refresh loops
+  - immediate-extender reset edge cases
+  - write-back and PC-update completion handoff
+- added the decode-side `funct` substep for R-type instructions so decode now supports:
+  - opcode confirmation first
+  - funct confirmation second when needed
+  - then operand setup
+- confirmed the current working instruction set now includes:
+  - `add`
+  - `addi`
+  - `lw`
+  - `sw`
+  - `sub`
+  - `and`
+  - `or`
+  - `slt`
+  - `beq`
+  - `bne`
+
+Changed:
+- lesson conclusion now belongs to the PC-update step instead of the earlier recap-only ending
+- branch instructions are now modeled as real lesson paths rather than only future design ideas
+- the instruction set is now broad enough that remaining risk is mostly presentation, readability, and UX polish rather than missing core datapath routes
+
+Next:
+- continue the three-panel UI cleanup and authored-text split
+- finish map / environment work for presentation quality
+- add remaining quality-of-life items such as datapacket reset
+
+Risks / Notes:
+- branch flow currently relies on UI-side `PCSrc` reasoning instead of a more physical branch-control interaction, which is acceptable for now
+- the project now has enough instruction coverage for the meeting/demo path, so future work should resist turning into uncontrolled scope growth
 
 
 Next:

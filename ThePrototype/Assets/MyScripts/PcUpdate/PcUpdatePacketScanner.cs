@@ -14,7 +14,6 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         None,
         WrongPacketType,
         ImmediateNotSignExtended,
-        ImmediateNotShifted,
     }
 
     [SerializeField]
@@ -25,9 +24,6 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
 
     [SerializeField]
     bool m_RequireSignExtended = true;
-
-    [SerializeField]
-    bool m_RequireShiftedImmediate = false;
 
     readonly System.Collections.Generic.HashSet<DataPacketToken> m_PacketsInZone = new();
     PacketIssue m_CurrentIssue;
@@ -63,10 +59,9 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
             ResetScanner();
     }
 
-    public void SetImmediateRequirements(bool requireSignExtended, bool requireShiftedImmediate)
+    public void SetImmediateRequirements(bool requireSignExtended)
     {
         m_RequireSignExtended = requireSignExtended;
-        m_RequireShiftedImmediate = requireShiftedImmediate;
 
         if (AcceptedPacket == null)
             return;
@@ -74,8 +69,7 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         if (m_ExpectedPacketRole != DataPacketRole.Immediate)
             return;
 
-        if ((m_RequireSignExtended && !AcceptedPacket.IsSignExtended) ||
-            (m_RequireShiftedImmediate && !AcceptedPacket.IsShiftedLeftTwo))
+        if (m_RequireSignExtended && !AcceptedPacket.IsSignExtended)
         {
             ResetScanner();
         }
@@ -84,6 +78,9 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
     public new void ResetScanner()
     {
         m_PacketsInZone.Clear();
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
         m_CurrentIssue = PacketIssue.None;
         base.ResetScanner();
@@ -169,11 +166,6 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
                 return true;
             }
 
-            if (m_RequireShiftedImmediate && !dataPacketToken.IsShiftedLeftTwo)
-            {
-                m_CurrentIssue = PacketIssue.ImmediateNotShifted;
-                return true;
-            }
         }
 
         m_CurrentIssue = PacketIssue.None;
@@ -182,11 +174,17 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
 
     protected override void OnImmediateMismatch(Component _)
     {
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
     }
 
     protected override void HandleScannerReset()
     {
+        if (AcceptedPacket != null)
+            AcceptedPacket.ReleaseFromLatch();
+
         AcceptedPacket = null;
         m_CurrentIssue = PacketIssue.None;
     }

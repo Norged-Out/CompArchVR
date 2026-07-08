@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
+  m_Name: BneInstructionDefinition
+  m_EditorClassIdentifier: 
+  displayName: bne
+  mnemonic: 11
+  format: 1
+  category: 3
+  summary: Compare two registers and branch when they are not equal.
+  assemblyInstructionText: bne t0, t1, 8
+  fieldBreakdownText: "opcode: 000101\nrs: t0\nrt: t1\nimmediate: 8"
+  opcodeBits: 000101
+  functBits: 
+  expectedRs: t0
+  expectedRt: t1
+  expectedRd: 
+  expectedImmediateValue: 8
+  touchesDataMemory: 0
+  writesRegisterFile: 0
+  usesImmediate: 1
+  usesDestinationRegister: 0
+  initialRegisterValues:
+  - registerId: t0
+    value: 12
+  - registerId: t1
+    value: 5
+  flowSteps:
+  - stepName: Fetch
+    highlightedNode: 1
+    explanation: The Program Counter points at the next instruction. Fetch begins by using that address to retrieve bne from Instruction Memory.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Instruction Memory
+    highlightedNode: 2
+    explanation: bne is an I-type branch. rs and rt will be compared, and the immediate field becomes the branch offset.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Register Comparison Setup
+    highlightedNode: 3
+    explanation: Decode bne by reading rs and rt for comparison. The immediate packet is also prepared for the branch target calculation.
+    advanceVisualHighlight: 1
+    requiredInteraction: 2
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections:
+    - 1
+    - 2
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: ALU Compare
+    highlightedNode: 4
+    explanation: The ALU subtracts rt from rs. This branch uses the Zero output to decide whether the registers are different and the branch should be taken.
+    advanceVisualHighlight: 1
+    requiredInteraction: 3
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Program Counter Update
+    highlightedNode: 1
+    explanation: Use Branch, the Zero result, and the shifted immediate offset to decide whether the Program Counter stays on PC + 4 or takes the branch target.
+    advanceVisualHighlight: 1
+    requiredInteraction: 6
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Recap
+    highlightedNode: 1
+    explanation: Recap: bne fetched the instruction, compared rs and rt with the ALU, used the Zero output plus the branch offset to choose the next PC, and completed the branch decision.
+    advanceVisualHighlight: 1
+    requiredInteraction: 5
+    blockProgressUntilValidated: 0
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 

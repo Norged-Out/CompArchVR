@@ -139,6 +139,9 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
 
     public void SetScannerActive(bool isActive)
     {
+        if (m_IsActive == isActive)
+            return;
+
         m_IsActive = isActive;
         m_IsAwaitingValidation = false;
         m_IsLatchedSuccessful = false;
