@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using System.Collections.Generic;
 
 /// <summary>
 /// Physical value packet emitted by a successful register scanner.
@@ -10,6 +11,8 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 [DisallowMultipleComponent]
 public class DataPacketToken : MonoBehaviour
 {
+    static readonly HashSet<DataPacketToken> s_ActiveTokens = new();
+
     [SerializeField]
     DataPacketRole m_PacketRole = DataPacketRole.None;
 
@@ -36,17 +39,37 @@ public class DataPacketToken : MonoBehaviour
     [SerializeField]
     Rigidbody m_Rigidbody;
 
+    Vector3 m_SpawnPosition;
+    Quaternion m_SpawnRotation;
+    Transform m_SpawnParent;
+    bool m_HasCachedSpawnPose;
+
     public DataPacketRole PacketRole => m_PacketRole;
     public string SourceRegisterId => m_SourceRegisterId;
     public string SourceDisplayLabel => m_SourceDisplayLabel;
     public int Value => m_Value;
     public bool IsSignExtended => m_IsSignExtended;
     public bool IsGrabbed => m_GrabInteractable != null && m_GrabInteractable.isSelected;
+    public bool IsLatched => m_GrabInteractable != null && !m_GrabInteractable.enabled;
+    public static IReadOnlyCollection<DataPacketToken> ActiveTokens => s_ActiveTokens;
 
     void Awake()
     {
         CacheReferences();
+        CacheSpawnPose();
         RefreshText();
+    }
+
+    void OnEnable()
+    {
+        CacheReferences();
+        CacheSpawnPose();
+        s_ActiveTokens.Add(this);
+    }
+
+    void OnDisable()
+    {
+        s_ActiveTokens.Remove(this);
     }
 
     void OnValidate()
@@ -165,5 +188,37 @@ public class DataPacketToken : MonoBehaviour
 
         if (m_GrabInteractable != null)
             m_GrabInteractable.enabled = true;
+    }
+
+    /// <summary>
+    /// Returns the packet to the exact pose where it originally spawned.
+    /// Values and datapath metadata are intentionally preserved.
+    /// </summary>
+    public void ResetToSpawnPose()
+    {
+        if (!m_HasCachedSpawnPose || IsLatched)
+            return;
+
+        CacheReferences();
+
+        transform.SetParent(m_SpawnParent, true);
+        transform.SetPositionAndRotation(m_SpawnPosition, m_SpawnRotation);
+
+        if (m_Rigidbody != null)
+        {
+            m_Rigidbody.linearVelocity = Vector3.zero;
+            m_Rigidbody.angularVelocity = Vector3.zero;
+        }
+    }
+
+    void CacheSpawnPose()
+    {
+        if (m_HasCachedSpawnPose)
+            return;
+
+        m_SpawnParent = transform.parent;
+        m_SpawnPosition = transform.position;
+        m_SpawnRotation = transform.rotation;
+        m_HasCachedSpawnPose = true;
     }
 }

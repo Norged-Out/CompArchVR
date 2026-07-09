@@ -605,6 +605,8 @@ public class WriteBackController : MonoBehaviour
 
     void CacheReferences()
     {
+        // Keep this limited to prefab-local components. WB UI bindings are
+        // authored scene references and should not be rediscovered at runtime.
         m_RegisterScanner ??= FindChildComponent<WriteBackRegisterScanner>("Reg Input");
         m_PacketScanner ??= FindChildComponent<WriteBackPacketScanner>("Data Input");
         m_TransferParticles ??= GetComponentInChildren<ParticleSystem>(true);
@@ -621,30 +623,6 @@ public class WriteBackController : MonoBehaviour
             AddPipeRendererIfFound(renderers, "Pipe 3");
             AddPipeRendererIfFound(renderers, "RegPipe");
             m_PipeRenderers = renderers.ToArray();
-        }
-
-        if (m_WbUiRoot == null)
-        {
-            var wbUiTransform = FindSceneTransformByName("WB UI");
-            m_WbUiRoot = wbUiTransform != null ? wbUiTransform.gameObject : null;
-        }
-
-        if (m_WbUiRoot != null)
-        {
-            m_LessonRuntimeText ??= FindNamedText(m_WbUiRoot.transform, "Text Lesson Runtime");
-            m_RegDstStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text RegDst");
-            m_RegWriteStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text RegWrite");
-            m_MemToRegStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text MemToReg");
-            m_RegisterStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text Input 1");
-            m_DataStatusText ??= FindNamedText(m_WbUiRoot.transform, "Text Input 2");
-            m_FeedbackText ??= FindNamedText(m_WbUiRoot.transform, "Text Feedback");
-            m_HintRegDstText ??= FindNamedText(m_WbUiRoot.transform, "Hint RegDst");
-            m_HintRegWriteText ??= FindNamedText(m_WbUiRoot.transform, "Hint RegWrite");
-            m_HintMemToRegText ??= FindNamedText(m_WbUiRoot.transform, "Hint MemToReg");
-            m_ActionButton ??= m_WbUiRoot.GetComponentInChildren<Button>(true);
-            m_ActionButtonLabel ??= m_ActionButton != null
-                ? m_ActionButton.GetComponentInChildren<TMP_Text>(true)
-                : null;
         }
     }
 
@@ -766,41 +744,11 @@ public class WriteBackController : MonoBehaviour
         return null;
     }
 
-    static TMP_Text FindNamedText(Transform root, string objectName)
-    {
-        if (root == null)
-            return null;
-
-        foreach (var textMesh in root.GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (textMesh != null && textMesh.name == objectName)
-                return textMesh;
-        }
-
-        return null;
-    }
-
     static void SetHintBlockActive(TMP_Text textBlock, bool isActive)
     {
         if (textBlock == null)
             return;
 
         textBlock.gameObject.SetActive(isActive);
-    }
-
-    static Transform FindSceneTransformByName(string objectName)
-    {
-        foreach (var sceneTransform in Resources.FindObjectsOfTypeAll<Transform>())
-        {
-            if (sceneTransform == null || sceneTransform.name != objectName)
-                continue;
-
-            if (!sceneTransform.gameObject.scene.IsValid() || !sceneTransform.gameObject.scene.isLoaded)
-                continue;
-
-            return sceneTransform;
-        }
-
-        return null;
     }
 }

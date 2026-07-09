@@ -5605,6 +5605,35 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+--- !u!1 &536940304 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7516632524774199080, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+  m_PrefabInstance: {fileID: 1417576499}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &536940305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536940304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4b36a8ac12154379963542728f4a91d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DataPacketResetButton
+  m_Interactable: {fileID: 536940308}
+--- !u!114 &536940308 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 4462876067729667001, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+  m_PrefabInstance: {fileID: 1417576499}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 536940304}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8a35f6cfbfba9b548aaa00d52cfe8a50, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &551857486
 GameObject:
   m_ObjectHideFlags: 0
@@ -5752,10 +5781,10 @@ MonoBehaviour:
       m_Calls: []
   m_text: 'Only R-type instructions use this step.
 
-    
 
-    Choose the funct
-    value that matches the current instruction, then press Continue.'
+
+    Choose the funct value
+    that matches the current instruction, then press Continue.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
   m_sharedMaterial: {fileID: 4687939059374929122, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
@@ -9366,6 +9395,17 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3216959825443256955, guid: 9f6c18f415aa15b49909149f60340e43, type: 3}
   m_PrefabInstance: {fileID: 784033744}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &784033746 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6551510841997103898, guid: 9f6c18f415aa15b49909149f60340e43, type: 3}
+  m_PrefabInstance: {fileID: 784033744}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e2f3a4b5674890c1d2e3f4a5b67890, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &786031584
 GameObject:
   m_ObjectHideFlags: 0
@@ -14946,6 +14986,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fc075cc6e3c246589808e0f078637432, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  m_AuthoredScanners:
+  - {fileID: 5758274384089891703}
+  - {fileID: 784033746}
 --- !u!1001 &1254194894
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -17838,6 +17881,70 @@ MonoBehaviour:
       m_Calls: []
   m_SkinnedMeshRenderer: {fileID: 1333973421}
   m_BlendShapeIndex: 0
+--- !u!1001 &1417576499
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 4889826007080320566, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.044999987
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 2.5552294
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0.313
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 5.0237427
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5907828496073183821, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7516632524774199080, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      propertyPath: m_Name
+      value: Reset Data Packets
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 7516632524774199080, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 536940305}
+  m_SourcePrefab: {fileID: 100100000, guid: 9e6314bed734a374eb4c9b6bcc5eeae0, type: 3}
 --- !u!1 &1425285577
 GameObject:
   m_ObjectHideFlags: 0
@@ -18508,15 +18615,15 @@ MonoBehaviour:
   m_text: 'R-type instructions all share the same opcode, so the decode work is not
     finished yet.
 
-    
 
-    The funct field identifies which exact ALU operation
-    this instruction is asking for.
 
-    
+    The funct field identifies which exact ALU operation this
+    instruction is asking for.
 
-    In this step, confirm the funct
-    bits before the operand setup is unlocked.'
+
+
+    In this step, confirm the funct bits before
+    the operand setup is unlocked.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
   m_sharedMaterial: {fileID: 4687939059374929122, guid: f675742eaf9c20a4f909d78ee7a14fed, type: 2}
@@ -32550,6 +32657,17 @@ PrefabInstance:
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: 9f6c18f415aa15b49909149f60340e43, type: 3}
+--- !u!114 &5758274384089891703 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 6551510841997103898, guid: 9f6c18f415aa15b49909149f60340e43, type: 3}
+  m_PrefabInstance: {fileID: 5758274384089891702}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1e2f3a4b5674890c1d2e3f4a5b67890, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &5758691929376790832
 GameObject:
   m_ObjectHideFlags: 0
@@ -35445,3 +35563,4 @@ SceneRoots:
   - {fileID: 1563102963}
   - {fileID: 1499809711}
   - {fileID: 1558496427}
+  - {fileID: 1417576499}

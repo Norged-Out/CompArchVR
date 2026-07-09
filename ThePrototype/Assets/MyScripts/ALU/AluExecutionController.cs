@@ -704,6 +704,8 @@ public class AluExecutionController : MonoBehaviour
 
     void CacheReferences()
     {
+        // Only local prefab references are resolved here. Lesson/UI objects are
+        // authored in-scene and should be wired explicitly through the Inspector.
         m_InputA ??= FindChildComponent<AluInputScanner>("Input 1");
         m_InputB ??= FindChildComponent<AluInputScanner>("Input 2");
         m_OperationLabelText ??= FindChildText("Screen Canvas/Operation Label");
@@ -711,30 +713,6 @@ public class AluExecutionController : MonoBehaviour
         m_ComputeParticles ??= GetComponentInChildren<ParticleSystem>(true);
         m_AluOpButtonRoot ??= transform.Find("ALUOp Button");
         m_AluSrcButtonRoot ??= transform.Find("ALUSrc Button");
-
-        if (m_AluUiRoot == null)
-        {
-            var aluUiTransform = FindSceneTransformByName("ALU UI");
-            m_AluUiRoot = aluUiTransform != null ? aluUiTransform.gameObject : null;
-        }
-
-        if (m_AluUiRoot != null)
-        {
-            m_LessonRuntimeText ??= FindNamedText(m_AluUiRoot.transform, "Text Lesson Runtime");
-            m_AluOpStatusText ??= FindNamedText(m_AluUiRoot.transform, "Text ALUOp");
-            m_AluSrcStatusText ??= FindNamedText(m_AluUiRoot.transform, "Text ALUSrc");
-            m_Input1StatusText ??= FindNamedText(m_AluUiRoot.transform, "Text Input 1");
-            m_Input2StatusText ??= FindNamedText(m_AluUiRoot.transform, "Text Input 2");
-            m_FeedbackText ??= FindNamedText(m_AluUiRoot.transform, "Text Feedback");
-            m_HintAluOpText ??= FindNamedText(m_AluUiRoot.transform, "Hint ALUOp");
-            m_HintAluSrcText ??= FindNamedText(m_AluUiRoot.transform, "Hint ALUSrc");
-            m_HintAluControlText ??= FindNamedText(m_AluUiRoot.transform, "Hint ALU Control");
-            m_ExecuteButton ??= m_AluUiRoot.GetComponentInChildren<Button>(true);
-            m_ExecuteButtonLabel ??= m_ExecuteButton != null
-                ? m_ExecuteButton.GetComponentInChildren<TMP_Text>(true)
-                : null;
-            m_FunctDropdown ??= m_AluUiRoot.GetComponentInChildren<TMP_Dropdown>(true);
-        }
     }
 
     string BuildLessonRuntimeText()
@@ -925,42 +903,12 @@ public class AluExecutionController : MonoBehaviour
         return childTransform != null ? childTransform.GetComponent<TMP_Text>() : null;
     }
 
-    static TMP_Text FindNamedText(Transform root, string objectName)
-    {
-        if (root == null)
-            return null;
-
-        foreach (var textMesh in root.GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (textMesh != null && textMesh.name == objectName)
-                return textMesh;
-        }
-
-        return null;
-    }
-
     static void SetHintBlockActive(TMP_Text textBlock, bool isActive)
     {
         if (textBlock == null)
             return;
 
         textBlock.gameObject.SetActive(isActive);
-    }
-
-    static Transform FindSceneTransformByName(string objectName)
-    {
-        foreach (var sceneTransform in Resources.FindObjectsOfTypeAll<Transform>())
-        {
-            if (sceneTransform == null || sceneTransform.name != objectName)
-                continue;
-
-            if (!sceneTransform.gameObject.scene.IsValid() || !sceneTransform.gameObject.scene.isLoaded)
-                continue;
-
-            return sceneTransform;
-        }
-
-        return null;
     }
 
     enum AluOperation

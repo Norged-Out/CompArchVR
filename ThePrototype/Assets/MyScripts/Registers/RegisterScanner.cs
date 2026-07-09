@@ -168,24 +168,15 @@ public class RegisterScanner : PedestalScannerBase
 
         var scanZoneTransform = FindChildTransform("Scan Zone");
         m_ScanZone = scanZoneTransform != null ? scanZoneTransform.GetComponent<BoxCollider>() : null;
+    }
 
-        if (!m_OwningBank || m_OwningBank.gameObject.scene != gameObject.scene)
-        {
-            foreach (var registerBank in Resources.FindObjectsOfTypeAll<RegisterBank>())
-            {
-                if (registerBank == null)
-                    continue;
-
-                if (!registerBank.gameObject.scene.IsValid() || !registerBank.gameObject.scene.isLoaded)
-                    continue;
-
-                if (registerBank.gameObject.scene != gameObject.scene)
-                    continue;
-
-                m_OwningBank = registerBank;
-                break;
-            }
-        }
+    /// <summary>
+    /// Lets the authored register bank explicitly own this scanner instead of
+    /// the scanner trying to discover a bank on its own at runtime.
+    /// </summary>
+    public void SetOwningBank(RegisterBank owningBank)
+    {
+        m_OwningBank = owningBank;
     }
 
     void ConfigureSupportCollider()

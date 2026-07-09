@@ -27,6 +27,7 @@ Current prototype focus:
   - downloader `Instruction Terminal`
   - decode gating on successful delivery
 - authored `PC Update UI` and first-pass `PC Update Station` now exist for branch resolution and lesson conclusion
+- dedicated datapacket reset support now exists for loose, non-consumed packets
 - keeping lesson code small and tied to existing scene objects instead of building UI at runtime
 - preparing post-demo polish, UI clarity work, and environment work on top of the now-working instruction set and new branch flow
 
@@ -851,6 +852,27 @@ Risks / Notes:
   - whether `RegDst` belongs strictly in write-back
   - whether `ALUSrc` should remain purely execution-side
   - or whether either should be surfaced earlier for lesson clarity
+
+### 2026-07-09 - Datapacket Reset Added And Cleanup Checkpointed
+
+Completed:
+- added a dedicated `Reset Data Packets` path to complement the existing register reset button
+- datapacket reset now restores only loose, non-latched packets to their authored spawn transforms
+- kept datapacket value, sign-extension state, and other lesson data untouched during reset
+- confirmed that the full gameplay loop still works after the datapacket reset addition
+- checkpointed the current lesson-script cleanup pass, including the in-progress split of oversized lesson files into smaller focused parts
+
+Changed:
+- datapacket recovery is now separate from lesson reset and separate from register reset
+- packet reset deliberately ignores packets that are already latched/validated by active scanners
+
+Next:
+- move attention onto map/environment building for the next polish pass
+- revisit deeper lesson-code decoupling after the supervisor checkpoint rather than folding it into the current presentation push
+
+Risks / Notes:
+- this reset path is intentionally narrow and should stay transform-only unless a later usability issue proves it needs broader behavior
+- the lesson-code cleanup is in a safer place now, but the larger architectural cleanup is still deferred
 
 ## Current Working Baseline
 

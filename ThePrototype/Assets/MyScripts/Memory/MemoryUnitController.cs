@@ -635,6 +635,8 @@ public class MemoryUnitController : MonoBehaviour
 
     void CacheReferences()
     {
+        // Only prefab-local wiring is discovered here. The memory bank and Mem UI
+        // should now be treated as explicit authored references, not scene lookups.
         m_AddressScanner ??= FindChildComponent<MemoryAddressScanner>("Address Input");
         m_DataScanner ??= FindChildComponent<MemoryPacketScanner>("Data Input");
         m_MemReadButtonRoot ??= transform.Find("MemRead Button");
@@ -645,33 +647,6 @@ public class MemoryUnitController : MonoBehaviour
             var pedestalTransform = FindChildRecursive(transform, "Memory Data Pedestal");
             if (pedestalTransform != null)
                 m_MemoryDataSpawnTransform = FindChildRecursive(pedestalTransform, "Spawn Point");
-        }
-
-        if (m_MemoryBank == null)
-            m_MemoryBank = FindFirstSceneObject<DataMemoryBank>();
-
-        if (m_MemUiRoot == null)
-        {
-            var memUiTransform = FindSceneTransformByName("Mem UI");
-            m_MemUiRoot = memUiTransform != null ? memUiTransform.gameObject : null;
-        }
-
-        if (m_MemUiRoot != null)
-        {
-            m_LessonRuntimeText ??= FindNamedText(m_MemUiRoot.transform, "Text Lesson Runtime");
-            m_LoadLessonText ??= FindNamedText(m_MemUiRoot.transform, "Load lesson");
-            m_StoreLessonText ??= FindNamedText(m_MemUiRoot.transform, "Store lesson");
-            m_MemReadStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text MemRead");
-            m_MemWriteStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text MemWrite");
-            m_AddressStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text Address");
-            m_DataStatusText ??= FindNamedText(m_MemUiRoot.transform, "Text Data");
-            m_FeedbackText ??= FindNamedText(m_MemUiRoot.transform, "Text Feedback");
-            m_HintMemReadText ??= FindNamedText(m_MemUiRoot.transform, "Hint MemRead");
-            m_HintMemWriteText ??= FindNamedText(m_MemUiRoot.transform, "Hint MemWrite");
-            m_ActionButton ??= m_MemUiRoot.GetComponentInChildren<Button>(true);
-            m_ActionButtonLabel ??= m_ActionButton != null
-                ? m_ActionButton.GetComponentInChildren<TMP_Text>(true)
-                : null;
         }
     }
 
@@ -782,57 +757,11 @@ public class MemoryUnitController : MonoBehaviour
         return null;
     }
 
-    static TMP_Text FindNamedText(Transform root, string objectName)
-    {
-        if (root == null)
-            return null;
-
-        foreach (var textMesh in root.GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (textMesh != null && textMesh.name == objectName)
-                return textMesh;
-        }
-
-        return null;
-    }
-
     static void SetHintBlockActive(TMP_Text textBlock, bool isActive)
     {
         if (textBlock == null)
             return;
 
         textBlock.gameObject.SetActive(isActive);
-    }
-
-    static Transform FindSceneTransformByName(string objectName)
-    {
-        foreach (var sceneTransform in Resources.FindObjectsOfTypeAll<Transform>())
-        {
-            if (sceneTransform == null || sceneTransform.name != objectName)
-                continue;
-
-            if (!sceneTransform.gameObject.scene.IsValid() || !sceneTransform.gameObject.scene.isLoaded)
-                continue;
-
-            return sceneTransform;
-        }
-
-        return null;
-    }
-
-    static T FindFirstSceneObject<T>() where T : Component
-    {
-        foreach (var component in Resources.FindObjectsOfTypeAll<T>())
-        {
-            if (component == null)
-                continue;
-
-            if (!component.gameObject.scene.IsValid() || !component.gameObject.scene.isLoaded)
-                continue;
-
-            return component;
-        }
-
-        return null;
     }
 }

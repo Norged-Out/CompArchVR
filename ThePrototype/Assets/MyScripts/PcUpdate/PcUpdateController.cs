@@ -646,27 +646,12 @@ public class PcUpdateController : MonoBehaviour
 
     void CacheReferences()
     {
+        // Program-counter update now relies on explicit scene wiring for its UI.
+        // This method only patches up local prefab children when needed.
         m_ImmediateScanner ??= FindChildComponent<PcUpdatePacketScanner>(transform, "Immediate Input");
         m_ZeroScanner ??= FindChildComponent<PcUpdatePacketScanner>(transform, "Zero Input");
         m_BranchButtonRoot ??= FindChildTransform(transform, "Branch Button");
         m_JumpButtonRoot ??= FindChildTransform(transform, "Jump Button");
-
-        if (m_PcUpdateUiRoot == null)
-        {
-            var pcUiTransform = FindSceneTransformByName("PC Update UI");
-            m_PcUpdateUiRoot = pcUiTransform != null ? pcUiTransform.gameObject : null;
-        }
-
-        if (m_PcUpdateUiRoot != null)
-        {
-            m_LessonRuntimeText ??= FindNamedText(m_PcUpdateUiRoot.transform, "Runtime text");
-            m_LessonBranchText ??= FindNamedText(m_PcUpdateUiRoot.transform, "Branch");
-            m_LessonShiftText ??= FindNamedText(m_PcUpdateUiRoot.transform, "Shift");
-            m_LessonResultText ??= FindNamedText(m_PcUpdateUiRoot.transform, "Result");
-            m_LessonEndText ??= FindNamedText(m_PcUpdateUiRoot.transform, "End text");
-            m_PcUpdateGroupRoot ??= FindChildTransform(m_PcUpdateUiRoot.transform, "PC Update")?.gameObject;
-            m_SignalsGroupRoot ??= FindChildTransform(m_PcUpdateUiRoot.transform, "Signals")?.gameObject;
-        }
     }
 
     static void HookPhysicalButton(Transform buttonRoot, UnityEngine.Events.UnityAction<SelectEnterEventArgs> handler, bool subscribe)
@@ -698,22 +683,6 @@ public class PcUpdateController : MonoBehaviour
         {
             if (childTransform != null && childTransform.name == childName)
                 return childTransform;
-        }
-
-        return null;
-    }
-
-    static Transform FindSceneTransformByName(string objectName)
-    {
-        foreach (var sceneTransform in Resources.FindObjectsOfTypeAll<Transform>())
-        {
-            if (sceneTransform == null || sceneTransform.name != objectName)
-                continue;
-
-            if (!sceneTransform.gameObject.scene.IsValid() || !sceneTransform.gameObject.scene.isLoaded)
-                continue;
-
-            return sceneTransform;
         }
 
         return null;
@@ -783,20 +752,6 @@ public class PcUpdateController : MonoBehaviour
         SetTextActive(m_HintJumpText, selectedHint == 4);
         SetTextActive(m_HintShiftLeftTwoText, selectedHint == 5);
         SetTextActive(m_HintZeroText, selectedHint == 6);
-    }
-
-    static TMP_Text FindNamedText(Transform root, string objectName)
-    {
-        if (root == null)
-            return null;
-
-        foreach (var textMesh in root.GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (textMesh != null && textMesh.name == objectName)
-                return textMesh;
-        }
-
-        return null;
     }
 
     static void SetTextActive(TMP_Text textBlock, bool isActive)

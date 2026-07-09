@@ -10,7 +10,7 @@ using UnityEngine;
 /// - simple continue-style progression for non-placement steps
 /// </summary>
 [DisallowMultipleComponent]
-public class CpuLessonFlow : MonoBehaviour
+public partial class CpuLessonFlow : MonoBehaviour
 {
     const string k_LogPrefix = "[CpuLessonFlow]";
 
@@ -76,8 +76,6 @@ public class CpuLessonFlow : MonoBehaviour
     {
         if (m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
-
-        CacheSceneReferences();
     }
 
     /// <summary>
@@ -102,7 +100,6 @@ public class CpuLessonFlow : MonoBehaviour
 
     void OnEnable()
     {
-        CacheSceneReferences();
         RebindRegisterBank();
     }
 
@@ -239,35 +236,6 @@ public class CpuLessonFlow : MonoBehaviour
         SetFeedback(string.Empty, false);
     }
 
-    /// <summary>
-    /// Lets the fetch terminal announce that a fresh lesson instruction is now
-    /// loaded into the physical module.
-    /// </summary>
-    public void NotifyInstructionUploaded(InstructionDefinition instruction)
-    {
-        if (!HasStarted || !UsesInstructionTerminals || !IsFetchStep(CurrentStep) || instruction == null)
-            return;
-
-        SetFeedback(GetFetchTransportPrompt(), false);
-        StepChanged?.Invoke(this);
-    }
-
-    /// <summary>
-    /// Called by the decode terminal once the learner docks the carried module.
-    /// This unlocks progression out of fetch into the decode phase.
-    /// </summary>
-    public void NotifyInstructionModuleDownloaded(InstructionModule module)
-    {
-        if (!HasStarted || !UsesInstructionTerminals || !IsFetchStep(CurrentStep) || module == null)
-            return;
-
-        if (!HasDownloadedInstructionModule())
-            return;
-
-        SetFeedback("Instruction received at the decode terminal. Beginning Instruction Decode.", false);
-        AdvanceToNextStep();
-    }
-
     public void CompleteAluExecution(int resultValue)
     {
         if (!HasStarted || CurrentStep == null)
@@ -300,110 +268,6 @@ public class CpuLessonFlow : MonoBehaviour
         m_RuntimeSelection.hasAluResult = true;
         m_RegisterBank?.SetRegisterValue(destinationRegister, resultValue);
         SetFeedback($"Write-back complete. {destinationRegister} now stores {resultValue}. Press Continue to finish.", false);
-        StepChanged?.Invoke(this);
-    }
-
-    void RebindRegisterBank()
-    {
-        if (m_RegisterBank == null)
-            return;
-
-        m_RegisterBank.RegisterPressed -= HandleRegisterPressed;
-        m_RegisterBank.RegisterPressed += HandleRegisterPressed;
-        m_RegisterBank.RegisterScanned -= HandleRegisterScanned;
-        m_RegisterBank.RegisterScanned += HandleRegisterScanned;
-    }
-
-    void HandleRegisterPressed(string registerName)
-    {
-        if (!HasStarted || string.IsNullOrWhiteSpace(registerName))
-            return;
-
-        if (CurrentStep == null)
-            return;
-
-        switch (CurrentStep.requiredInteraction)
-        {
-            case InstructionStepInteractionType.RegisterSelection:
-                ValidateRegisterSelection(InstructionRegisterRole.None, registerName, false);
-                break;
-        }
-    }
-
-    void HandleRegisterScanned(InstructionRegisterRole scannedRole, string registerName)
-    {
-        if (!HasStarted || string.IsNullOrWhiteSpace(registerName))
-            return;
-
-        if (CurrentStep == null)
-            return;
-
-        switch (CurrentStep.requiredInteraction)
-        {
-            case InstructionStepInteractionType.RegisterSelection:
-                Debug.Log($"{k_LogPrefix} HandleRegisterScanned | role={scannedRole} register={registerName} selectionIndex={m_CurrentRegisterSelectionIndex} step={CurrentStep.stepName} frame={Time.frameCount}", this);
-                ValidateRegisterSelection(scannedRole, registerName, true);
-                break;
-        }
-    }
-
-    void ValidateRegisterSelection(InstructionRegisterRole scannedRole, string registerName, bool cameFromScanner)
-    {
-        var result = LessonChecks.ValidateRegisterSelection(
-            m_CurrentInstruction,
-            CurrentStep,
-            m_CurrentRegisterSelectionIndex,
-            registerName);
-
-        var expectedRole = result.expectedRole;
-        if (cameFromScanner && scannedRole != expectedRole)
-        {
-            m_RegisterBank?.FlashScannerFailure(scannedRole);
-            SetFeedback(
-                "That operand does not belong on this scanner.",
-                true);
-            return;
-        }
-
-        if (!result.isCorrect)
-        {
-            if (cameFromScanner)
-                m_RegisterBank?.FlashScannerFailure(scannedRole);
-            else
-                m_RegisterBank?.FlashFailure(registerName);
-
-            SetFeedback(
-                "That register does not match the current decode target.",
-                true);
-            return;
-        }
-
-        m_RuntimeSelection.SetSelectedRegister(result.expectedRole, registerName);
-        m_CurrentRegisterSelectionIndex++;
-
-        // Only rs / rt produce packets in the current datapath slice. The write
-        // register is still validated here, but it should never spawn output.
-        if (cameFromScanner)
-            m_RegisterBank?.SetScannerSuccess(scannedRole);
-        else
-            m_RegisterBank?.SetSelected(registerName);
-
-        if (result.completesStep)
-        {
-            m_RegisterSelectionReadyToContinue = true;
-            var completionMessage = "Operand collection is complete.";
-
-            if (m_CurrentInstruction != null && m_CurrentInstruction.usesImmediate)
-                completionMessage += " Press Continue to generate the immediate value for the next stage.";
-
-            SetFeedback($"{completionMessage}", false);
-            Debug.Log($"{k_LogPrefix} Register selection complete | step={CurrentStep.stepName} nextStepPending=true frame={Time.frameCount}", this);
-            StepChanged?.Invoke(this);
-            return;
-        }
-
-        m_RegisterSelectionReadyToContinue = false;
-        SetFeedback("Operand confirmed.", false);
         StepChanged?.Invoke(this);
     }
 
@@ -496,91 +360,10 @@ public class CpuLessonFlow : MonoBehaviour
         }
     }
 
-    void ConfigureScannersForCurrentStep()
-    {
-        if (m_RegisterBank == null)
-            return;
-
-        if (CurrentStep == null)
-        {
-            m_RegisterBank.ConfigureScannerRoles(Array.Empty<InstructionRegisterRole>());
-            return;
-        }
-
-        switch (CurrentStep.requiredInteraction)
-        {
-            case InstructionStepInteractionType.RegisterSelection:
-                m_RegisterSelectionReadyToContinue = false;
-                ConfigureRegisterDecodeScanners();
-                break;
-
-            default:
-                m_RegisterBank.ConfigureScannerRoles(Array.Empty<InstructionRegisterRole>());
-                break;
-        }
-    }
-
-    static string GetScannerLabel(InstructionRegisterRole registerRole)
-    {
-        return registerRole switch
-        {
-            InstructionRegisterRole.Rs => "Read Register 1",
-            InstructionRegisterRole.Rt => "Read Register 2",
-            InstructionRegisterRole.Rd => "Write Register",
-            _ => "the correct",
-        };
-    }
-
-    static string GetPacketLabel(InstructionRegisterRole registerRole)
-    {
-        return registerRole switch
-        {
-            InstructionRegisterRole.Rs => "Read Data 1",
-            InstructionRegisterRole.Rt => "Read Data 2",
-            _ => "data",
-        };
-    }
-
-    static string GetPacketLabel(DataPacketRole packetRole)
-    {
-        return packetRole switch
-        {
-            DataPacketRole.ReadData1 => "Read Data 1",
-            DataPacketRole.ReadData2 => "Read Data 2",
-            DataPacketRole.Immediate => "Immediate",
-            DataPacketRole.AluResult => "ALU Result",
-            DataPacketRole.MemoryData => "Memory Data",
-            DataPacketRole.Zero => "Zero",
-            _ => "Packet",
-        };
-    }
-
-    static bool ShouldSpawnPacket(InstructionRegisterRole registerRole)
-    {
-        return registerRole == InstructionRegisterRole.Rs ||
-               registerRole == InstructionRegisterRole.Rt;
-    }
-
-    void ConfigureRegisterDecodeScanners()
-    {
-        if (m_RegisterBank == null)
-            return;
-
-        // ID only exposes the register-file read ports. Destination selection
-        // is deferred to write-back, where the learner will choose the target
-        // register together with the final data source.
-        var activeRoles = LessonChecks.GetRequiredRoles(m_CurrentInstruction, CurrentStep);
-        m_RegisterBank.ConfigureScannerRoles(activeRoles);
-        m_RegisterBank.SetScannerOutputRole(InstructionRegisterRole.Rs, DataPacketRole.ReadData1);
-        m_RegisterBank.SetScannerOutputRole(InstructionRegisterRole.Rt, m_CurrentInstruction.GetDecodeRtPacketRole());
-    }
-
     bool TrySpawnImmediatePacket()
     {
         if (m_CurrentInstruction == null || !m_CurrentInstruction.usesImmediate)
             return false;
-
-        CacheSceneReferences();
 
         if (m_ImmediateExtender == null)
             return false;
@@ -592,47 +375,6 @@ public class CpuLessonFlow : MonoBehaviour
     void SetFeedback(string message, bool isFailure)
     {
         FeedbackChanged?.Invoke(message, isFailure);
-    }
-
-    void ApplyInitialRegisterValues()
-    {
-        if (m_RegisterBank == null)
-            return;
-
-        m_RegisterBank.ResetAllRegisterValues();
-
-        var initialRegisterValues = m_CurrentInstruction?.initialRegisterValues;
-        if (initialRegisterValues == null)
-            return;
-
-        foreach (var registerValue in initialRegisterValues)
-        {
-            if (registerValue == null || string.IsNullOrWhiteSpace(registerValue.registerId))
-                continue;
-
-            m_RegisterBank.SetRegisterValue(registerValue.registerId, registerValue.value);
-        }
-    }
-
-    InstructionDefinition LoadDefaultInstruction()
-    {
-        var loadedInstruction = Resources.Load<InstructionDefinition>(m_DefaultInstructionResourcePath);
-        return loadedInstruction != null ? loadedInstruction : InstructionDefaults.CreateFallbackAdd();
-    }
-
-    void CacheSceneReferences()
-    {
-        if (m_RegisterBank == null)
-            m_RegisterBank = FindFirstSceneObject<RegisterBank>();
-
-        if (m_ImmediateExtender == null)
-            m_ImmediateExtender = FindFirstSceneObject<ImmediateExtender>();
-
-        if (m_FetchUploadTerminal == null)
-            m_FetchUploadTerminal = FindInstructionTerminal(InstructionTerminal.TerminalMode.Uploader);
-
-        if (m_DecodeDownloadTerminal == null)
-            m_DecodeDownloadTerminal = FindInstructionTerminal(InstructionTerminal.TerminalMode.Downloader);
     }
 
     bool ShouldSkipStep(InstructionFlowStep step)
@@ -673,75 +415,4 @@ public class CpuLessonFlow : MonoBehaviour
         return $"ALU result produced: {resultValue}. Continue to Program Counter Update.";
     }
 
-    string GetFetchTransportPrompt()
-    {
-        if (!UsesInstructionTerminals)
-            return "Press Continue when you are ready.";
-
-        if (HasDownloadedInstructionModule())
-            return "Instruction received at the decode terminal. Press Continue to begin Instruction Decode.";
-
-        return "The selected instruction has been uploaded to the fetch terminal. Carry the module to the decode terminal before continuing.";
-    }
-
-    bool HasDownloadedInstructionModule()
-    {
-        return m_DecodeDownloadTerminal != null &&
-               m_CurrentInstruction != null &&
-               m_DecodeDownloadTerminal.HasMatchingDownloadedInstruction(m_CurrentInstruction);
-    }
-
-    void PrepareInstructionFetchTerminals()
-    {
-        if (!UsesInstructionTerminals || m_CurrentInstruction == null)
-            return;
-
-        // The decode terminal should keep its docking behavior but start empty.
-        // The upload terminal should always respawn a fresh blank module so the
-        // learner sees instruction fetch happen from a consistent baseline.
-        m_DecodeDownloadTerminal.ResetTerminal(false);
-        m_FetchUploadTerminal.ResetTerminal(true);
-        m_FetchUploadTerminal.UploadInstruction(m_CurrentInstruction);
-    }
-
-    static bool IsFetchStep(InstructionFlowStep step)
-    {
-        return step != null &&
-               step.stepName.IndexOf("Fetch", StringComparison.OrdinalIgnoreCase) >= 0;
-    }
-
-    // These scene lookups are fallback glue only. The intended workflow is still
-    // explicit Inspector wiring from the authored scene.
-    static InstructionTerminal FindInstructionTerminal(InstructionTerminal.TerminalMode mode)
-    {
-        foreach (var terminal in Resources.FindObjectsOfTypeAll<InstructionTerminal>())
-        {
-            if (terminal == null)
-                continue;
-
-            if (!terminal.gameObject.scene.IsValid() || !terminal.gameObject.scene.isLoaded)
-                continue;
-
-            if (terminal.Mode == mode)
-                return terminal;
-        }
-
-        return null;
-    }
-
-    static T FindFirstSceneObject<T>() where T : Component
-    {
-        foreach (var component in Resources.FindObjectsOfTypeAll<T>())
-        {
-            if (component == null)
-                continue;
-
-            if (!component.gameObject.scene.IsValid() || !component.gameObject.scene.isLoaded)
-                continue;
-
-            return component;
-        }
-
-        return null;
-    }
 }

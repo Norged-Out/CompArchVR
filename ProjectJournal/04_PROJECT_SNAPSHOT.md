@@ -34,6 +34,7 @@ Current prototype features:
 - reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
 - local register-bank reset button path separate from lesson reset
 - local register-bank reset now restores only register poses and does not clear lesson progress, scanner success state, or emitted packets
+- dedicated datapacket reset path now exists for loose, non-consumed packets
 - authored register placement validation in the register zone
 - authored lesson panels are now expected to be wired through serialized scene references, not found dynamically at runtime
 - working MVP path:
@@ -93,6 +94,7 @@ Current prototype features:
 - `beq`
 - `bne`
 - `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, and `bne` have now all been tested successfully through the current loop
+- datapackets can now be manually recovered to their authored spawn points without disturbing active latched interactions
 - `lw` now uses a real MIPS-style memory address path:
   - base register contains a data-segment address
   - immediate acts as offset
@@ -108,7 +110,13 @@ Current prototype features:
 ## Most Important Scripts Right Now
 
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.Fetch.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.Setup.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.Decode.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.Intro.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.Decode.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.Layout.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
@@ -126,6 +134,7 @@ Current prototype features:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScannerZone.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluPacketTypes.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\DataPacketToken.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\DataPacketResetButton.cs`
 
 ## Recommended Development Order
 

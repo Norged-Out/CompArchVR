@@ -218,6 +218,22 @@ Examples:
 
 Why:
 - this reduces accidental brush-triggering while still feeling physical
+
+## 2026-07-09 - Datapacket Reset Must Stay Separate And Conservative
+
+Decision:
+- keep datapacket reset as a local quality-of-life action that only restores free packet transforms
+
+Why:
+- the user explicitly wanted a datapacket equivalent to register reset, not another lesson-state reset
+- validated / latched packets should stay untouched so active phase logic is not accidentally broken
+- packet values and sign-extension state should survive reset because the reset is about recovery, not reinitialization
+
+Implication:
+- datapacket reset should:
+  - affect only loose packets
+  - restore only pose / parent / motion state
+  - avoid changing value, sign extension, or lesson progress
 - it gives the learner a clear "place and confirm" rhythm during later datapath phases
 
 Implication:

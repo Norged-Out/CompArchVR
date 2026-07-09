@@ -10,6 +10,10 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class RegisterBank : MonoBehaviour
 {
+    [Header("Scene References")]
+    [SerializeField]
+    RegisterScanner[] m_AuthoredScanners;
+
     readonly Dictionary<string, RegisterToken> m_RegisterTokens =
         new(StringComparer.OrdinalIgnoreCase);
     readonly Dictionary<InstructionRegisterRole, RegisterScanner> m_RegisterScanners =
@@ -92,22 +96,20 @@ public class RegisterBank : MonoBehaviour
     }
 
     /// <summary>
-    /// Re-scans authored register scanners in the current scene.
-    /// These scanners are not children of the bank, so we scene-filter them.
+    /// Rebuilds the scanner map from the authored scanner list.
+    /// Scanners are intentionally wired in the Inspector now rather than
+    /// discovered scene-wide at runtime.
     /// </summary>
     public void RefreshScannerCache()
     {
         m_RegisterScanners.Clear();
 
-        foreach (var registerScanner in Resources.FindObjectsOfTypeAll<RegisterScanner>())
+        if (m_AuthoredScanners == null)
+            return;
+
+        foreach (var registerScanner in m_AuthoredScanners)
         {
             if (registerScanner == null)
-                continue;
-
-            if (!registerScanner.gameObject.scene.IsValid() || !registerScanner.gameObject.scene.isLoaded)
-                continue;
-
-            if (registerScanner.gameObject.scene != gameObject.scene)
                 continue;
 
             if (!registerScanner.UseInLessonFlow)
@@ -116,6 +118,7 @@ public class RegisterBank : MonoBehaviour
             if (registerScanner.RegisterRole == InstructionRegisterRole.None)
                 continue;
 
+            registerScanner.SetOwningBank(this);
             m_RegisterScanners[registerScanner.RegisterRole] = registerScanner;
         }
     }
@@ -180,8 +183,6 @@ public class RegisterBank : MonoBehaviour
     /// </summary>
     public void ConfigureScannerRoles(InstructionRegisterRole[] activeRoles)
     {
-        RefreshScannerCache();
-
         foreach (var scannerPair in m_RegisterScanners)
         {
             var isActive = false;
@@ -206,8 +207,6 @@ public class RegisterBank : MonoBehaviour
     /// </summary>
     public void SetScannerSuccess(InstructionRegisterRole role)
     {
-        RefreshScannerCache();
-
         if (m_RegisterScanners.TryGetValue(role, out var registerScanner))
             registerScanner.MarkSuccess();
     }
@@ -217,8 +216,6 @@ public class RegisterBank : MonoBehaviour
     /// </summary>
     public void FlashScannerFailure(InstructionRegisterRole role)
     {
-        RefreshScannerCache();
-
         if (m_RegisterScanners.TryGetValue(role, out var registerScanner))
             registerScanner.FlashFailure();
     }
@@ -228,8 +225,6 @@ public class RegisterBank : MonoBehaviour
     /// </summary>
     public void SetScannerOutputRole(InstructionRegisterRole role, DataPacketRole packetRole)
     {
-        RefreshScannerCache();
-
         if (m_RegisterScanners.TryGetValue(role, out var registerScanner))
             registerScanner.SetOutputPacketRole(packetRole);
     }
@@ -246,8 +241,6 @@ public class RegisterBank : MonoBehaviour
         string sourceDisplayLabel,
         int value)
     {
-        RefreshScannerCache();
-
         if (!m_RegisterScanners.TryGetValue(role, out var registerScanner))
             return;
 
