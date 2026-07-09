@@ -8904,6 +8904,7 @@ GameObject:
   - component: {fileID: 690638432}
   - component: {fileID: 690638435}
   - component: {fileID: 690638434}
+  - component: {fileID: 690638438}
   m_Layer: 0
   m_Name: ID UI
   m_TagString: Untagged
@@ -9218,6 +9219,34 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &690638438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 690638430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa7f9f907c521e443905a6a6d63c5806, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DecodePanelController
+  m_OpcodeLessonText: {fileID: 1860944563}
+  m_RegisterLessonText: {fileID: 763011467}
+  m_FunctLessonText: {fileID: 1494644878}
+  m_OpcodeBodyText: {fileID: 515121380}
+  m_RegisterBodyText: {fileID: 522543492}
+  m_FunctBodyText: {fileID: 597985580}
+  m_OpcodeSelectionText: {fileID: 1714314555}
+  m_RegisterSelectionText: {fileID: 1496192687}
+  m_FunctSelectionText: {fileID: 1517452662}
+  m_Feedback: {fileID: 1782875552}
+  m_ActionButton: {fileID: 1759733884}
+  m_ActionLabel: {fileID: 359015012}
+  m_OpcodeDropdown: {fileID: 1593225376}
+  m_FunctDropdown: {fileID: 2076368835}
+  m_HintDropdown: {fileID: 611822510}
+  m_HintText: {fileID: 1204122141}
 --- !u!1001 &693054375
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15398,6 +15427,7 @@ GameObject:
   - component: {fileID: 1093474191}
   - component: {fileID: 1093474194}
   - component: {fileID: 1093474193}
+  - component: {fileID: 1093474197}
   m_Layer: 0
   m_Name: PC Update UI
   m_TagString: Untagged
@@ -15712,6 +15742,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &1093474197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1093474189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b4500a86ce3c75a4e86dc9dd845b098e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PcUpdatePanelController
+  m_Controller: {fileID: 1558496428}
 --- !u!1 &1100477708
 GameObject:
   m_ObjectHideFlags: 0
@@ -19706,6 +19749,7 @@ GameObject:
   - component: {fileID: 1333973420}
   - component: {fileID: 1333973423}
   - component: {fileID: 1333973422}
+  - component: {fileID: 1333973426}
   m_Layer: 0
   m_Name: WB UI
   m_TagString: Untagged
@@ -20020,6 +20064,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &1333973426
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333973418}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b7b0cd767853c448bf2ed9a4dc9fcfd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WriteBackPanelController
+  m_Controller: {fileID: 1917989371}
 --- !u!1 &1334771049
 GameObject:
   m_ObjectHideFlags: 0
@@ -24291,10 +24348,10 @@ PrefabInstance:
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 4907083271022662033, guid: d2420a69e504f28448400caba5e93ca7, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 3686144326835712667, guid: d2420a69e504f28448400caba5e93ca7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 0}
-    - targetCorrespondingSourceObject: {fileID: 6182426972209902759, guid: d2420a69e504f28448400caba5e93ca7, type: 3}
+    - targetCorrespondingSourceObject: {fileID: 1098557325007897608, guid: d2420a69e504f28448400caba5e93ca7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 0}
   m_SourcePrefab: {fileID: 100100000, guid: d2420a69e504f28448400caba5e93ca7, type: 3}
@@ -29006,6 +29063,7 @@ GameObject:
   - component: {fileID: 1901121197}
   - component: {fileID: 1901121200}
   - component: {fileID: 1901121199}
+  - component: {fileID: 1901121203}
   m_Layer: 0
   m_Name: Mem UI
   m_TagString: Untagged
@@ -29320,6 +29378,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &1901121203
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1901121195}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7e6b756cd1f298342b72be8062c5c1e0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryPanelController
+  m_Controller: {fileID: 1264249773}
 --- !u!1001 &1902044417
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32081,6 +32152,7 @@ GameObject:
   - component: {fileID: 2121333928}
   - component: {fileID: 2121333931}
   - component: {fileID: 2121333930}
+  - component: {fileID: 2121333934}
   m_Layer: 0
   m_Name: ALU UI
   m_TagString: Untagged
@@ -32395,6 +32467,19 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &2121333934
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2121333926}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a1c9912f76de5944ae12a878e63ea51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ExecutePanelController
+  m_Controller: {fileID: 904400269}
 --- !u!1 &2131422407
 GameObject:
   m_ObjectHideFlags: 0
@@ -32666,37 +32751,12 @@ MonoBehaviour:
   m_StartButtonLabel: Start Lesson
   m_ContinueButtonLabel: Continue
   m_RestartButtonLabel: Restart
-  m_IntroRoot: {fileID: 8076147309994601646}
-  m_IntroBody: {fileID: 105658619}
-  m_IntroFeedback: {fileID: 1773512314}
-  m_IntroActionButton: {fileID: 8421790730918759245}
-  m_IntroActionLabel: {fileID: 3683504704253126962}
-  m_InstructionDropdown: {fileID: 1425975340}
-  m_IDRoot: {fileID: 690638430}
-  m_IDOpcodeLessonText: {fileID: 1860944563}
-  m_IDRegisterLessonText: {fileID: 763011467}
-  m_IDFunctLessonText: {fileID: 1494644878}
-  m_IDOpcodeBodyText: {fileID: 515121380}
-  m_IDRegisterBodyText: {fileID: 522543492}
-  m_IDFunctBodyText: {fileID: 597985580}
-  m_IDOpcodeSelectionText: {fileID: 1714314555}
-  m_IDRegisterSelectionText: {fileID: 1496192687}
-  m_IDFunctSelectionText: {fileID: 1517452662}
-  m_IDFeedback: {fileID: 1782875552}
-  m_IDActionButton: {fileID: 1759733884}
-  m_IDActionLabel: {fileID: 359015012}
-  m_IDOpcodeDropdown: {fileID: 1593225376}
-  m_IDFunctDropdown: {fileID: 2076368835}
-  m_IDHintDropdown: {fileID: 611822510}
-  m_IDHintText: {fileID: 1204122141}
-  m_AluRoot: {fileID: 2121333926}
-  m_AluController: {fileID: 904400269}
-  m_MemRoot: {fileID: 1901121195}
-  m_MemoryController: {fileID: 1264249773}
-  m_WriteBackRoot: {fileID: 1333973418}
-  m_WriteBackController: {fileID: 1917989371}
-  m_PcUpdateRoot: {fileID: 1093474189}
-  m_PcUpdateController: {fileID: 1558496428}
+  m_IntroPanel: {fileID: 8890085447871772186}
+  m_DecodePanel: {fileID: 690638438}
+  m_ExecutePanel: {fileID: 2121333934}
+  m_MemoryPanel: {fileID: 1901121203}
+  m_WriteBackPanel: {fileID: 1333973426}
+  m_PcUpdatePanel: {fileID: 1093474197}
 --- !u!114 &169305219691273335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40928,6 +40988,7 @@ GameObject:
   - component: {fileID: 8890085447871772181}
   - component: {fileID: 8890085447871772183}
   - component: {fileID: 8890085447871772182}
+  - component: {fileID: 8890085447871772186}
   m_Layer: 0
   m_Name: Intro UI
   m_TagString: Untagged
@@ -41433,6 +41494,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &8890085447871772186
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8076147309994601646}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab3b546efc057194aadae89fc3eda07e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::IntroPanelController
+  m_Body: {fileID: 105658619}
+  m_Feedback: {fileID: 1773512314}
+  m_ActionButton: {fileID: 8421790730918759245}
+  m_ActionLabel: {fileID: 3683504704253126962}
+  m_InstructionDropdown: {fileID: 1425975340}
 --- !u!114 &8932796322556893704
 MonoBehaviour:
   m_ObjectHideFlags: 0

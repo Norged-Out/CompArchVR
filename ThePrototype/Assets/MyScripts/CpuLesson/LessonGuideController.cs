@@ -1,16 +1,15 @@
-using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
+using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 /// <summary>
-/// Drives the authored lesson guide panels already placed in Testing Ground.
-/// All scene references are assigned directly in the Inspector.
+/// Root coordinator for the authored lesson guide panels.
+/// It owns scene bindings and delegates each panel's presentation logic to a
+/// dedicated controller class.
 /// </summary>
 [DisallowMultipleComponent]
-public partial class LessonGuideController : MonoBehaviour
+public sealed class LessonGuideController : MonoBehaviour
 {
-    const float k_ActionButtonHeight = 56f;
     const string k_LogPrefix = "[LessonGuideController]";
 
     [SerializeField]
@@ -25,218 +24,162 @@ public partial class LessonGuideController : MonoBehaviour
     [SerializeField]
     string m_RestartButtonLabel = "Restart";
 
-    [Header("Intro UI")]
+    [Header("Panel Components")]
     [SerializeField]
-    GameObject m_IntroRoot;
+    IntroPanelController m_IntroPanel;
 
     [SerializeField]
-    TMP_Text m_IntroBody;
+    DecodePanelController m_DecodePanel;
 
     [SerializeField]
-    TMP_Text m_IntroFeedback;
+    ExecutePanelController m_ExecutePanel;
 
     [SerializeField]
-    Button m_IntroActionButton;
+    MemoryPanelController m_MemoryPanel;
 
     [SerializeField]
-    TMP_Text m_IntroActionLabel;
+    WriteBackPanelController m_WriteBackPanel;
 
     [SerializeField]
-    TMP_Dropdown m_InstructionDropdown;
+    PcUpdatePanelController m_PcUpdatePanel;
 
-    [Header("Instruction Decode UI")]
-    [SerializeField]
-    GameObject m_IDRoot;
-
-    [SerializeField]
-    TMP_Text m_IDOpcodeLessonText;
-
-    [SerializeField]
-    TMP_Text m_IDRegisterLessonText;
-
-    [SerializeField]
-    TMP_Text m_IDFunctLessonText;
-
-    [SerializeField]
-    TMP_Text m_IDOpcodeBodyText;
-
-    [SerializeField]
-    TMP_Text m_IDRegisterBodyText;
-
-    [SerializeField]
-    TMP_Text m_IDFunctBodyText;
-
-    [SerializeField]
-    TMP_Text m_IDOpcodeSelectionText;
-
-    [SerializeField]
-    TMP_Text m_IDRegisterSelectionText;
-
-    [SerializeField]
-    TMP_Text m_IDFunctSelectionText;
-
-    [SerializeField]
-    TMP_Text m_IDFeedback;
-
-    [SerializeField]
-    Button m_IDActionButton;
-
-    [SerializeField]
-    TMP_Text m_IDActionLabel;
-
-    [SerializeField]
-    TMP_Dropdown m_IDOpcodeDropdown;
-
-    [SerializeField]
-    TMP_Dropdown m_IDFunctDropdown;
-
-    [SerializeField]
-    TMP_Dropdown m_IDHintDropdown;
-
-    [SerializeField]
-    TMP_Text m_IDHintText;
-
-    [Header("ALU UI")]
-    [SerializeField]
-    GameObject m_AluRoot;
-
-    [SerializeField]
-    AluExecutionController m_AluController;
-
-    [Header("Memory UI")]
-    [SerializeField]
-    GameObject m_MemRoot;
-
-    [SerializeField]
-    MemoryUnitController m_MemoryController;
-
-    [Header("Write-Back UI")]
-    [SerializeField]
-    GameObject m_WriteBackRoot;
-
-    [SerializeField]
-    WriteBackController m_WriteBackController;
-
-    [Header("PC Update UI")]
-    [SerializeField]
-    GameObject m_PcUpdateRoot;
-
-    [SerializeField]
-    PcUpdateController m_PcUpdateController;
-
-    // Runtime caches mirror authored dropdown content so scene-authored UIs can
-    // stay simple while still reacting to the currently selected instruction set.
     readonly List<InstructionDefinition> m_AvailableInstructions = new();
-    readonly List<string> m_DecodeOpcodeOptions = new();
-    readonly List<string> m_DecodeFunctOptions = new();
     bool m_IsRefreshingInstructionDropdown;
     bool m_IsRefreshingDecodeDropdowns;
     bool m_IsDecodeFunctStepActive;
 
     void Awake()
     {
-        PopulateInstructionDropdown();
-        PopulateDecodeDropdowns();
+        RefreshInstructionLibrary();
         HookButtons();
         HookDropdowns();
-        EnsureButtonLayout(m_IntroActionButton);
-        EnsureButtonLayout(m_IDActionButton);
         RefreshView();
     }
 
     void OnEnable()
     {
-        PopulateInstructionDropdown();
-        PopulateDecodeDropdowns();
+        RefreshInstructionLibrary();
         HookDropdowns();
 
-        if (m_AluController != null)
-            m_AluController.ExecutionCompleted += HandleAluExecutionCompleted;
+        var aluController = m_ExecutePanel != null ? m_ExecutePanel.PhaseController : null;
+        if (aluController != null)
+            aluController.ExecutionCompleted += HandleAluExecutionCompleted;
 
-        if (m_WriteBackController != null)
+        var writeBackController = m_WriteBackPanel != null ? m_WriteBackPanel.PhaseController : null;
+        if (writeBackController != null)
         {
-            m_WriteBackController.WriteBackApplied += HandleWriteBackApplied;
-            m_WriteBackController.ContinueRequested += HandleWriteBackContinueRequested;
+            writeBackController.WriteBackApplied += HandleWriteBackApplied;
+            writeBackController.ContinueRequested += HandleWriteBackContinueRequested;
         }
 
-        if (m_MemoryController != null)
-            m_MemoryController.ContinueRequested += HandleMemoryContinueRequested;
+        var memoryController = m_MemoryPanel != null ? m_MemoryPanel.PhaseController : null;
+        if (memoryController != null)
+            memoryController.ContinueRequested += HandleMemoryContinueRequested;
 
-        if (m_PcUpdateController != null)
-            m_PcUpdateController.ContinueRequested += HandlePcUpdateContinueRequested;
+        var pcUpdateController = m_PcUpdatePanel != null ? m_PcUpdatePanel.PhaseController : null;
+        if (pcUpdateController != null)
+            pcUpdateController.ContinueRequested += HandlePcUpdateContinueRequested;
 
-        if (m_LessonFlow == null)
-            return;
+        if (m_LessonFlow != null)
+        {
+            m_LessonFlow.StepChanged += HandleStepChanged;
+            m_LessonFlow.FeedbackChanged += HandleFeedbackChanged;
+        }
 
-        m_LessonFlow.StepChanged += HandleStepChanged;
-        m_LessonFlow.FeedbackChanged += HandleFeedbackChanged;
         RefreshView();
     }
 
     void OnDisable()
     {
-        if (m_AluController != null)
-            m_AluController.ExecutionCompleted -= HandleAluExecutionCompleted;
+        var aluController = m_ExecutePanel != null ? m_ExecutePanel.PhaseController : null;
+        if (aluController != null)
+            aluController.ExecutionCompleted -= HandleAluExecutionCompleted;
 
-        if (m_WriteBackController != null)
+        var writeBackController = m_WriteBackPanel != null ? m_WriteBackPanel.PhaseController : null;
+        if (writeBackController != null)
         {
-            m_WriteBackController.WriteBackApplied -= HandleWriteBackApplied;
-            m_WriteBackController.ContinueRequested -= HandleWriteBackContinueRequested;
+            writeBackController.WriteBackApplied -= HandleWriteBackApplied;
+            writeBackController.ContinueRequested -= HandleWriteBackContinueRequested;
         }
 
-        if (m_MemoryController != null)
-            m_MemoryController.ContinueRequested -= HandleMemoryContinueRequested;
+        var memoryController = m_MemoryPanel != null ? m_MemoryPanel.PhaseController : null;
+        if (memoryController != null)
+            memoryController.ContinueRequested -= HandleMemoryContinueRequested;
 
-        if (m_PcUpdateController != null)
-            m_PcUpdateController.ContinueRequested -= HandlePcUpdateContinueRequested;
+        var pcUpdateController = m_PcUpdatePanel != null ? m_PcUpdatePanel.PhaseController : null;
+        if (pcUpdateController != null)
+            pcUpdateController.ContinueRequested -= HandlePcUpdateContinueRequested;
 
+        if (m_LessonFlow != null)
+        {
+            m_LessonFlow.StepChanged -= HandleStepChanged;
+            m_LessonFlow.FeedbackChanged -= HandleFeedbackChanged;
+        }
+    }
+
+    void RefreshInstructionLibrary()
+    {
         if (m_LessonFlow == null)
             return;
 
-        m_LessonFlow.StepChanged -= HandleStepChanged;
-        m_LessonFlow.FeedbackChanged -= HandleFeedbackChanged;
+        m_AvailableInstructions.Clear();
+        var loadedInstructions = Resources.LoadAll<InstructionDefinition>("InstructionDefinitions");
+        if (loadedInstructions != null && loadedInstructions.Length > 0)
+        {
+            m_AvailableInstructions.AddRange(loadedInstructions);
+            m_AvailableInstructions.Sort((left, right) =>
+                string.Compare(
+                    left != null ? left.displayName : string.Empty,
+                    right != null ? right.displayName : string.Empty,
+                    StringComparison.OrdinalIgnoreCase));
+        }
+
+        if (m_AvailableInstructions.Count == 0 && m_LessonFlow.CurrentInstruction != null)
+            m_AvailableInstructions.Add(m_LessonFlow.CurrentInstruction);
+
+        m_IntroPanel?.PopulateInstructionDropdown(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingInstructionDropdown);
+        m_DecodePanel?.PopulateDropdowns(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingDecodeDropdowns);
     }
 
     void HookButtons()
     {
-        if (m_IntroActionButton != null)
+        if (m_IntroPanel?.ActionButton != null)
         {
-            m_IntroActionButton.onClick.RemoveAllListeners();
-            m_IntroActionButton.onClick.AddListener(HandleIntroActionPressed);
+            m_IntroPanel.ActionButton.onClick.RemoveAllListeners();
+            m_IntroPanel.ActionButton.onClick.AddListener(HandleIntroActionPressed);
         }
 
-        if (m_IDActionButton != null)
+        if (m_DecodePanel?.ActionButton != null)
         {
-            m_IDActionButton.onClick.RemoveAllListeners();
-            m_IDActionButton.onClick.AddListener(HandleIDActionPressed);
+            m_DecodePanel.ActionButton.onClick.RemoveAllListeners();
+            m_DecodePanel.ActionButton.onClick.AddListener(HandleIDActionPressed);
         }
-
     }
 
     void HookDropdowns()
     {
-        if (m_InstructionDropdown != null)
+        if (m_IntroPanel?.InstructionDropdown != null)
         {
-            m_InstructionDropdown.onValueChanged.RemoveListener(HandleInstructionChanged);
-            m_InstructionDropdown.onValueChanged.AddListener(HandleInstructionChanged);
+            m_IntroPanel.InstructionDropdown.onValueChanged.RemoveListener(HandleInstructionChanged);
+            m_IntroPanel.InstructionDropdown.onValueChanged.AddListener(HandleInstructionChanged);
         }
 
-        if (m_IDOpcodeDropdown != null)
+        if (m_DecodePanel?.OpcodeDropdown != null)
         {
-            m_IDOpcodeDropdown.onValueChanged.RemoveListener(HandleDecodeOpcodeChanged);
-            m_IDOpcodeDropdown.onValueChanged.AddListener(HandleDecodeOpcodeChanged);
+            m_DecodePanel.OpcodeDropdown.onValueChanged.RemoveListener(HandleDecodeOpcodeChanged);
+            m_DecodePanel.OpcodeDropdown.onValueChanged.AddListener(HandleDecodeOpcodeChanged);
         }
 
-        if (m_IDFunctDropdown != null)
+        if (m_DecodePanel?.FunctDropdown != null)
         {
-            m_IDFunctDropdown.onValueChanged.RemoveListener(HandleDecodeFunctChanged);
-            m_IDFunctDropdown.onValueChanged.AddListener(HandleDecodeFunctChanged);
+            m_DecodePanel.FunctDropdown.onValueChanged.RemoveListener(HandleDecodeFunctChanged);
+            m_DecodePanel.FunctDropdown.onValueChanged.AddListener(HandleDecodeFunctChanged);
         }
 
-        if (m_IDHintDropdown != null)
+        if (m_DecodePanel?.HintDropdown != null)
         {
-            m_IDHintDropdown.onValueChanged.RemoveListener(HandleDecodeHintChanged);
-            m_IDHintDropdown.onValueChanged.AddListener(HandleDecodeHintChanged);
+            m_DecodePanel.HintDropdown.onValueChanged.RemoveListener(HandleDecodeHintChanged);
+            m_DecodePanel.HintDropdown.onValueChanged.AddListener(HandleDecodeHintChanged);
         }
     }
 
@@ -262,12 +205,257 @@ public partial class LessonGuideController : MonoBehaviour
 
         if (!m_LessonFlow.HasStarted)
             m_LessonFlow.StartLesson();
-        else if (IsDecodeOpcodeSelectionStep())
+        else if (m_DecodePanel.IsOpcodeSelectionStep(m_LessonFlow, m_IsDecodeFunctStepActive))
             HandleDecodeOpcodeContinue();
-        else if (IsDecodeFunctSelectionStep())
+        else if (m_DecodePanel.IsFunctSelectionStep(m_LessonFlow, m_IsDecodeFunctStepActive))
             HandleDecodeFunctContinue();
         else
             m_LessonFlow.Advance();
     }
 
+    void HandleInstructionChanged(int selectedIndex)
+    {
+        if (m_IsRefreshingInstructionDropdown)
+            return;
+
+        if (selectedIndex < 0 || selectedIndex >= m_AvailableInstructions.Count)
+            return;
+
+        m_LessonFlow?.SetCurrentInstruction(m_AvailableInstructions[selectedIndex]);
+        m_DecodePanel?.PopulateDropdowns(m_AvailableInstructions, m_LessonFlow != null ? m_LessonFlow.CurrentInstruction : null, ref m_IsRefreshingDecodeDropdowns);
+        RefreshView();
+    }
+
+    void HandleDecodeOpcodeChanged(int _)
+    {
+        if (m_IsRefreshingDecodeDropdowns)
+            return;
+
+        RefreshView();
+    }
+
+    void HandleDecodeFunctChanged(int _)
+    {
+        if (m_IsRefreshingDecodeDropdowns)
+            return;
+
+        RefreshView();
+    }
+
+    void HandleDecodeHintChanged(int _)
+    {
+        if (m_IsRefreshingDecodeDropdowns)
+            return;
+
+        m_DecodePanel?.RefreshHintText(m_AvailableInstructions);
+    }
+
+    void HandleStepChanged(CpuLessonFlow _)
+    {
+        Debug.Log($"{k_LogPrefix} StepChanged | step={m_LessonFlow?.CurrentStep?.stepName} frame={Time.frameCount}", this);
+        RefreshView();
+    }
+
+    void HandleAluExecutionCompleted(int resultValue)
+    {
+        m_LessonFlow?.CompleteAluExecution(resultValue);
+    }
+
+    void HandleWriteBackApplied(string destinationRegister, int resultValue)
+    {
+        m_LessonFlow?.CompleteWriteBackExecution(destinationRegister, resultValue);
+    }
+
+    void HandleWriteBackContinueRequested()
+    {
+        m_LessonFlow?.Advance();
+    }
+
+    void HandleMemoryContinueRequested()
+    {
+        m_LessonFlow?.Advance();
+    }
+
+    void HandlePcUpdateContinueRequested()
+    {
+        m_LessonFlow?.ResetLesson();
+    }
+
+    void HandleFeedbackChanged(string message, bool isFailure)
+    {
+        if (ShouldShowIDPanel())
+        {
+            m_DecodePanel?.SetFeedback(message, isFailure, m_AvailableInstructions);
+            return;
+        }
+
+        if (ShouldShowMemoryPanel() || ShouldShowAluPanel() || ShouldShowPcUpdatePanel())
+            return;
+
+        m_IntroPanel?.SetFeedback(message, isFailure);
+    }
+
+    void HandleDecodeOpcodeContinue()
+    {
+        if (m_LessonFlow == null || m_LessonFlow.CurrentInstruction == null || m_DecodePanel == null)
+            return;
+
+        var selectedOpcode = m_DecodePanel.GetSelectedOpcode();
+        if (string.IsNullOrWhiteSpace(selectedOpcode))
+        {
+            HandleFeedbackChanged("Select an opcode first.", true);
+            return;
+        }
+
+        var expectedOpcode = m_LessonFlow.CurrentInstruction.opcodeBits != null
+            ? m_LessonFlow.CurrentInstruction.opcodeBits.Trim()
+            : string.Empty;
+
+        if (!string.Equals(selectedOpcode, expectedOpcode, StringComparison.Ordinal))
+        {
+            HandleFeedbackChanged("That opcode does not match the selected instruction.", true);
+            return;
+        }
+
+        if (DecodePanelController.InstructionUsesDecodeFunct(m_LessonFlow.CurrentInstruction))
+        {
+            m_IsDecodeFunctStepActive = true;
+            m_DecodePanel.ResetFunctDropdown(ref m_IsRefreshingDecodeDropdowns);
+            HandleFeedbackChanged("Opcode confirmed. Now identify the funct field.", false);
+            RefreshView();
+            return;
+        }
+
+        HandleFeedbackChanged("Opcode confirmed. Continue into operand setup.", false);
+        m_LessonFlow.Advance();
+    }
+
+    void HandleDecodeFunctContinue()
+    {
+        if (m_LessonFlow == null || m_LessonFlow.CurrentInstruction == null || m_DecodePanel == null)
+            return;
+
+        var selectedFunct = m_DecodePanel.GetSelectedFunct();
+        if (string.IsNullOrWhiteSpace(selectedFunct))
+        {
+            HandleFeedbackChanged("Select a funct value first.", true);
+            return;
+        }
+
+        var expectedFunct = m_LessonFlow.CurrentInstruction.functBits != null
+            ? m_LessonFlow.CurrentInstruction.functBits.Trim()
+            : string.Empty;
+
+        if (!string.Equals(selectedFunct, expectedFunct, StringComparison.Ordinal))
+        {
+            HandleFeedbackChanged("That funct value does not match the selected instruction.", true);
+            return;
+        }
+
+        m_IsDecodeFunctStepActive = false;
+        HandleFeedbackChanged("Funct confirmed. Continue into operand setup.", false);
+        m_LessonFlow.Advance();
+    }
+
+    void RefreshView()
+    {
+        if (m_LessonFlow == null || m_IntroPanel == null)
+            return;
+
+        var showAluPanel = ShouldShowAluPanel();
+        var showWriteBackPanel = ShouldShowWriteBackPanel();
+        var showMemoryPanel = ShouldShowMemoryPanel();
+        var showPcUpdatePanel = ShouldShowPcUpdatePanel();
+        var showIDPanel = ShouldShowIDPanel();
+
+        Debug.Log(
+            $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} decode={showIDPanel} alu={showAluPanel} mem={showMemoryPanel} wb={showWriteBackPanel} pc={showPcUpdatePanel} frame={Time.frameCount}",
+            this);
+
+        m_ExecutePanel?.ApplyState(showAluPanel, m_LessonFlow.CurrentInstruction);
+        m_MemoryPanel?.ApplyState(showMemoryPanel, m_LessonFlow.CurrentInstruction);
+        m_WriteBackPanel?.ApplyState(showWriteBackPanel, m_LessonFlow.CurrentInstruction, m_LessonFlow.RegisterBank);
+        m_PcUpdatePanel?.ApplyState(showPcUpdatePanel, m_LessonFlow.CurrentInstruction);
+
+        m_IntroPanel.SetVisible(!showIDPanel && !showAluPanel && !showMemoryPanel && !showWriteBackPanel && !showPcUpdatePanel);
+        m_DecodePanel?.SetVisible(showIDPanel);
+
+        if (!m_LessonFlow.HasStarted)
+        {
+            m_ExecutePanel?.Reset();
+            m_MemoryPanel?.Reset();
+            m_WriteBackPanel?.Reset();
+            m_PcUpdatePanel?.Reset();
+            m_DecodePanel?.ResetDropdowns(ref m_IsRefreshingDecodeDropdowns, ref m_IsDecodeFunctStepActive);
+            m_IntroPanel.ShowBeforeStart(m_LessonFlow.CurrentInstruction, m_StartButtonLabel);
+            return;
+        }
+
+        var step = m_LessonFlow.CurrentStep;
+        if (step == null)
+            return;
+
+        m_IntroPanel.SetInstructionDropdownInteractable(false);
+
+        if (showAluPanel || showWriteBackPanel || showPcUpdatePanel || showMemoryPanel)
+        {
+            m_IntroPanel.HideAction();
+            m_DecodePanel?.HideAction();
+            return;
+        }
+
+        if (!showIDPanel)
+        {
+            m_IntroPanel.ShowStep(m_LessonFlow, step, m_ContinueButtonLabel, m_RestartButtonLabel);
+            return;
+        }
+
+        m_DecodePanel?.Refresh(
+            m_LessonFlow,
+            step,
+            m_AvailableInstructions,
+            m_IsDecodeFunctStepActive,
+            m_ContinueButtonLabel,
+            m_RestartButtonLabel);
+    }
+
+    bool ShouldShowIDPanel()
+    {
+        if (ShouldShowAluPanel())
+            return false;
+
+        var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
+        if (step == null)
+            return false;
+
+        return step.highlightedNode == DatapathNodeId.InstructionMemory ||
+               step.requiredInteraction == InstructionStepInteractionType.RegisterSelection;
+    }
+
+    bool ShouldShowAluPanel()
+    {
+        var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
+        return step != null && step.requiredInteraction == InstructionStepInteractionType.AluExecution;
+    }
+
+    bool ShouldShowMemoryPanel()
+    {
+        if (ShouldShowAluPanel() || ShouldShowWriteBackPanel())
+            return false;
+
+        var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
+        return step != null && step.highlightedNode == DatapathNodeId.DataMemory;
+    }
+
+    bool ShouldShowWriteBackPanel()
+    {
+        var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
+        return step != null && step.requiredInteraction == InstructionStepInteractionType.WriteBackExecution;
+    }
+
+    bool ShouldShowPcUpdatePanel()
+    {
+        var step = m_LessonFlow != null ? m_LessonFlow.CurrentStep : null;
+        return step != null && step.requiredInteraction == InstructionStepInteractionType.PcUpdateExecution;
+    }
 }
