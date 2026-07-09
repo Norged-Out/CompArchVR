@@ -22,10 +22,11 @@ public class RegisterBank : MonoBehaviour
     public event Action<string> RegisterPressed;
     public event Action<InstructionRegisterRole, string> RegisterScanned;
 
-    public bool HasRegisterScanners =>
-        m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rs) &&
-        m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rt) &&
-        m_RegisterScanners.ContainsKey(InstructionRegisterRole.Rd);
+    // The lesson no longer depends on a full rs/rt/rd scanner trio during
+    // decode. If any lesson-flow scanners are authored, direct grab-based
+    // register validation should stay disabled so scanner pedestals remain the
+    // single source of truth for ID progression and packet spawning.
+    public bool HasRegisterScanners => m_RegisterScanners.Count > 0;
 
     /// <summary>
     /// Reads a register's current logical value.

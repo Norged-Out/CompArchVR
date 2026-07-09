@@ -112,8 +112,12 @@ Prefer several focused scripts over one bloated controller.
 
 For the current `Testing Ground` lesson path:
 - `LessonGuideController` should stay focused on authored panel flow
-- `ControlDecodeController` should stay focused on control-signal interaction and checking
 - `CpuLessonFlow` should stay focused on lesson-step state and validation
+- phase-specific controllers should stay focused on their own station logic:
+  - ALU
+  - memory
+  - write-back
+  - PC update
 
 Also:
 - if older scene assumptions are no longer true, refactor or delete the dead code instead of layering more hacks on top
@@ -134,17 +138,19 @@ This rule exists because the user explicitly wants persistent project memory ins
 The old V1 milestone is complete.
 
 The active deadline framing is now:
-- next supervisor meeting target: `2026-07-09`
+- next supervisor meeting target: `2026-07-24`
 - official project/demo deadline: `2026-07-29`
 - preferred internal finish target:
   - complete the build a few days early
-  - use the remaining time for map work, polish, and presentation safety
+  - use the remaining time for polish, participant prep, and presentation safety
 
 Current short-term priorities:
-- cleaner multi-panel lesson UI
-- physical instruction-fetch embodiment
-- datapacket reset QoL
-- map/environment quality
+- door gating + path-guidance arrows
+- UI polish across the authored three-panel lesson surfaces
+- tutorial / onboarding flow
+- map lighting and route tightening
+- sound-guided navigation / feedback
+- experiment mode before the meeting if safely possible
 
 Do not casually re-scope away from presentation readiness unless the user explicitly changes direction.
 

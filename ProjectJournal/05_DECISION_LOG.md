@@ -715,6 +715,102 @@ Implication:
 - branch resolution can stay partly UI-driven for now as long as the reasoning remains clear
 - future control-flow expansion should build on this end-stage instead of scattering PC logic across unrelated phases
 
+## 2026-07-09 - The Map Is Now Part Of The Teaching Experience, Not Just Scenery
+
+Decision:
+- treat the routed environment as part of the lesson design itself
+
+Why:
+- the supervisor responded positively to the newer multi-room / multi-platform spatial layout
+- the path through fetch, decode, execute, memory, write-back, and PC update now reinforces datapath progression physically
+- the map is now doing instructional work, not only decorative work
+
+Implication:
+- future polish should improve route readability, spatial pacing, and visibility between major lesson zones
+- environment changes that make the lesson harder to read should be treated as regressions
+
+## 2026-07-09 - The Next Major Push Should Prioritize Guidance And Polish Over More Core Datapath Systems
+
+Decision:
+- before the `2026-07-24` supervisor checkpoint, prioritize:
+  - door gating
+  - path arrows
+  - tutorial/onboarding
+  - UI polish
+  - sound cues
+  - experiment mode if feasible
+
+Why:
+- the guided single-cycle lesson is now broad enough to demonstrate the core concept set
+- the remaining risk is not missing datapath phases, but whether the learner knows where to go, what to do, and how to recover when confused
+
+Implication:
+- new instruction/system work should be secondary unless it is already half-built and low risk
+- navigation clarity is now a first-class requirement
+
+## 2026-07-09 - Door Gating And Arrow Guidance Are The Preferred Navigation Solution
+
+Decision:
+- use physical door/gate progression plus arrow guidance to steer the learner through the map
+
+Why:
+- the supervisor explicitly wanted stronger directional guidance through the environment
+- the current map has meaningful spatial routing, but the learner still needs help knowing which area unlocks next
+- doors create obvious progression state, while arrows can give immediate local orientation
+
+Implication:
+- gate state should be tied to phase progression
+- arrows should be phase-aware and pulse or otherwise stand out only when needed
+- later audio cues can reinforce the same navigation path instead of competing with it
+
+## 2026-07-09 - 3D Audio Is A Guidance Tool, Not Just Cosmetic Polish
+
+Decision:
+- treat sound as part of player guidance, not only as presentation polish
+
+Why:
+- the user proposed using directional audio to attract the learner toward the next active zone
+- the supervisor liked the idea of better wayfinding
+- spatial audio can support the new map without adding too much visual clutter
+
+Implication:
+- future sound work should prioritize:
+  - phase completion cues
+  - gate unlock cues
+  - next-destination cues
+- pure ambience should stay secondary to instructional clarity
+
+## 2026-07-09 - Experiment Mode Must Arrive Before The Final Checkpoint If Scope Allows
+
+Decision:
+- keep a non-handheld / experiment-mode variant on the short list before the next supervisor checkpoint
+
+Why:
+- the guided mode is becoming stable enough that a freer replay mode now has educational value
+- experiment mode would help show that the prototype is not only a scripted walkthrough
+
+Implication:
+- this mode should come only after navigation/tutorial polish is safe
+- it does not need to be the most feature-rich mode; it needs to prove that guided support can be reduced
+
+## 2026-07-09 - Multicycle / Pipelining Should Be Documented As The Main Future Extension Path
+
+Decision:
+- do not force multicycle/pipeline implementation into the current pre-demo build
+- do document it as the clearest future upgrade path
+
+Why:
+- the user already has a plausible concept for extending the instruction-module system across later phases
+- it would be valuable to discuss in the dissertation and presentation as the natural "what comes next"
+- it is likely too large and risky to wedge into the current polish window
+
+Implication:
+- the post-demo or dissertation-facing roadmap should frame:
+  - additional download terminals per phase
+  - multiple instructions in flight
+  - stall / hazard explanation
+as the next major evolution of the project
+
 ## 2026-07-09 - Signal Changes Should Release Invalid Latched Inputs
 
 Decision:

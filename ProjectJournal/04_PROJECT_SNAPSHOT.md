@@ -23,7 +23,7 @@ Current prototype features:
 - lesson framework re-wired around `Lesson Guide`
 - scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
 - scene-authored `Instruction Decode UI` near the register area
-- lesson UIs are now being refactored toward a three-panel structure:
+- lesson UIs now use a three-panel structure:
   - lesson panel
   - interaction panel
   - hint / info panel
@@ -59,8 +59,8 @@ Current prototype features:
   - a dedicated `WB UI`
   - a bonus loose register scanner for value inspection / confirmation
   - lesson-flow wiring for a real write-back phase instead of only a temporary intro-panel explanation
-- authored lesson panel layout for `Intro UI` and `Instruction Decode UI` has now been stabilized around edit-mode content plus code-triggered layout rebuilds
-- `Instruction Decode`, `EX`, `Mem`, and `WB` are now in the middle of that authored split, with code updated to support more scene-authored static/toggle text
+- authored lesson panel layout is now stabilized around edit-mode content plus code-triggered layout rebuilds
+- `Instruction Decode`, `EX`, `Mem`, `WB`, and `PC Update` now follow the authored multi-panel direction, with code updated to support more scene-authored static/toggle text
 - physical instruction fetch now exists through:
   - `Instruction Module`
   - `Instruction Terminal` in uploader mode
@@ -68,6 +68,14 @@ Current prototype features:
   - decode staying locked until the uploaded module is delivered
 - authored `PC Update UI` now exists as the final control-flow / lesson-conclusion surface
 - first-pass `PC Update Station` support now exists for branch-resolution teaching
+- the routed environment/map is now largely authored and validated by the supervisor:
+  - elevated intro/fetch start space
+  - decode room
+  - ALU platform
+  - memory hall
+  - write-back area
+  - PC-update conclusion platform
+  - return path toward the ending gate
 - first-pass value pipeline groundwork now exists in code:
   - register scanners can emit data packets
   - decode can now emit immediate packets from the second scanner spawn point for immediate-based instructions
@@ -80,8 +88,13 @@ Current prototype features:
   - expected immediate values
   - write-back target resolution (`rd` vs `rt`)
   - immediate packets carrying a simple sign-extension boolean for now
-- planned later zone-specific lesson panels for `ALU`, control/decode, `Data Memory`, and `WriteBack`
-- draft instruction assets for `add`, `addi`, and `lw`
+- the full guided zone set is now present for:
+  - `Instruction Fetch`
+  - `Instruction Decode`
+  - `EX`
+  - `Mem`
+  - `WB`
+  - `PC Update`
 - instruction assets now exist for:
   - `add`
   - `addi`
@@ -136,7 +149,7 @@ Current prototype features:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\DataPacketToken.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\DataPacketResetButton.cs`
 
-## Recommended Development Order
+## Historical Initial Rollout Order
 
 1. `add`
 2. `addi`
@@ -150,16 +163,18 @@ Why:
 ## Current Non-Negotiable Milestone
 
 - the June 29, 2026 supervisor demo has been completed
-- the next supervisor checkpoint is on `2026-07-09`
+- the post-map / post-branch supervisor checkpoint is now `2026-07-24`
 - the official demo deadline is `2026-07-29`
 - the current focus is no longer instruction coverage, but:
+  - navigation clarity
+  - door / gate progression
+  - path guidance
+  - tutorial/onboarding
   - UI readability
-  - branch / PC-update readability
-  - finishing the multi-panel UI conversion cleanly
-  - map/environment quality
-  - reset / quality-of-life polish
-  - datapacket reset QoL
-  - presentation readiness
+  - map lighting / route polish
+  - sound cues
+  - experiment-mode planning
+  - overall presentation readiness
 
 ## If Starting A New Chat
 
@@ -176,55 +191,52 @@ Before stopping:
 
 ## Current Open Questions
 
-- how readable and comfortable the current lesson UI and register bank feel in-headset
-- how aggressively guide/explanation UI should be separated from interaction UI after the demo feedback
-- whether a permanent settings / cheatsheet panel should mirror all closed lesson information
-- how much instruction decoding should be physical vs UI-driven
-- exactly where `RegDst` and `ALUSrc` should live pedagogically:
-  - both in their strict hardware-derivation sense
-  - and in the simplified lesson flow sense
-- how immediate generation and sign extension should be visualized physically for `addi` and `lw`
-- what the cleanest ALU-control teaching interaction should be beyond the current `ALUOp` / `ALUSrc` layer
-- what the cleanest memory interaction should be for `lw` / `sw`, especially when handling address packets, memory-data packets, and store-data packets
-- what the cleanest next post-demo feature target should be now that the current instruction set is broader than the original checkpoint goal
+- how strong the door + arrow + audio guidance should be without becoming visually noisy
+- whether a persistent settings / cheatsheet panel should mirror all closed lesson information
+- what the minimum viable experiment mode should hide, skip, or ungate
 - how much of the current UI wording should move entirely into authored scene text versus stay runtime-driven
 - whether instruction choice should remain user-selected, become randomized, or support both
-- how far the branch / PC-update lesson should be pushed physically versus left as UI reasoning
-- the exact acceptance rule for pedestal validation:
-  - immediate on release
-  - after 1-2 seconds stable in-zone
-  - or some combination of both
-- how pedestal feedback should distinguish:
-  - wrong register
-  - right register
-  - right register but wrong phase
+- whether jump-family instructions are worth fitting in before the July 24 checkpoint
+- how much onboarding belongs in a dedicated tutorial versus just-in-time prompts in the map
+- how much post-meeting time should be reserved for participant prep instead of feature work
 
 ## Current Pre-Meeting Priorities
 
 Ordered cutoff list before the next supervisor meeting:
 
-1. finish splitting lesson UI into cleaner lesson / interaction / hint panels
-2. add a datapacket reset button that only resets present non-consumed packets
-3. improve the map/environment using the newer asset packs
-4. polish the new physical instruction-fetch handoff instead of redesigning it again
+1. door gating + arrow system
+2. jump-family evaluation / inclusion only if safe
+3. UI polish
+4. map lighting and path tightening
+5. proper tutorial UI, and possibly settings/cheatsheet support
+6. sound pass
+7. final polish
+8. experiment mode before the checkpoint if feasible
 
-Everything else should be treated as post-cutoff unless a blocking regression appears.
+Everything else should be treated as future work unless a blocking regression appears.
 
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- finish the pre-meeting polish pass on top of the now-working instruction set:
-- keep `Intro UI` and `Instruction Decode UI` authored in-scene
-- keep the flow order fixed as intro -> instruction decode -> ALU -> memory -> write-back unless the user explicitly changes it
-- keep the newer branch / PC-update finish stable as the current lesson conclusion
+- finish the presentation/polish pass on top of the now-working instruction set
+- keep the flow order fixed as:
+  - fetch
+  - decode
+  - execute
+  - memory when needed
+  - write-back when needed
+  - PC update when needed
+- keep the branch / PC-update finish stable as the current lesson conclusion
 - keep the current lesson UI layout approach:
   - authored in scene
   - updated by code
   - not generated at runtime
-- split guide/explanation content away from active interaction content where practical through the three-panel layout
-- add datapacket reset support without coupling it to register reset or lesson reset
-- improve the physical environment only after the instructional scene remains readable
-- keep the new `IF` module/terminal handoff stable while the rest of the UI and map work catches up
+- add navigation clarity through:
+  - physical doors/gates
+  - arrow guidance
+  - audio cues
+- improve the environment without sacrificing lesson readability
+- add experiment mode before the checkpoint if it can be done safely
 
 ## Personal Reminder
 

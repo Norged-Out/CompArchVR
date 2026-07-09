@@ -3,7 +3,7 @@
 ## Current Status
 
 Project phase:
-- post-demo refinement pass after the June 29, 2026 supervisor check-in
+- post-meeting polish and final-delivery pass after the routed-map / branch-resolution checkpoint
 
 Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
@@ -28,36 +28,46 @@ Current prototype focus:
   - decode gating on successful delivery
 - authored `PC Update UI` and first-pass `PC Update Station` now exist for branch resolution and lesson conclusion
 - dedicated datapacket reset support now exists for loose, non-consumed packets
-- keeping lesson code small and tied to existing scene objects instead of building UI at runtime
-- preparing post-demo polish, UI clarity work, and environment work on top of the now-working instruction set and new branch flow
+- keeping lesson code tied to existing scene objects instead of building UI at runtime
+- treating the new routed map as part of the lesson experience instead of only scenery
+- preparing navigation, tutorial, audio, and presentation polish on top of the now-working instruction set and branch flow
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
-- next supervisor checkpoint target: `2026-07-09`
+- routed-map / branch-resolution checkpoint completed
+- next supervisor checkpoint target: `2026-07-24`
 - official demo deadline: `2026-07-29`
 - preferred internal finish target:
   - complete the build a few days before the official deadline
-  - use the remaining time for cleanup, map polish, and presentation safety
+  - use the remaining time for participant prep and presentation safety
 - current checkpoint status:
   - `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, and `bne` are working
-  - current focus has shifted from instruction coverage to UI clarity, IF polish, branch/PC-update polish, and map polish
+  - current focus has shifted from instruction coverage to:
+    - wayfinding
+    - tutorial quality
+    - UI readability
+    - map polish
+    - sound/design polish
+    - experiment-mode planning
 
 ## Current TODO Cutoff Before The Next Supervisor Meeting
 
 The user-defined cutoff for the next meeting is:
 
-1. finish splitting each lesson zone UI into a cleaner three-panel structure:
-   - lesson panel
-   - interaction panel
-   - hint / info panel
-2. add a data-packet reset button that only resets present non-consumed packets to their authored spawn locations
-3. improve the map / environment using the new asset packs
-4. polish the new Instruction Fetch module/terminal flow only if it materially helps presentation quality
+1. Door gating + arrow system
+2. Add at least some jump instructions if the existing system can absorb them safely
+3. UI polishing
+4. Add proper lighting to the map, and tighten the path if needed
+5. Proper tutorial UI, and possibly a settings / cheatsheet UI
+6. Proper sound pass
+7. Final polish
+8. Experiment mode without handholding before the meeting if feasible
 
 Interpretation:
 - the core instructional loop is already present
-- the next meeting should emphasize usability, readability, IF framing, and presentation quality rather than another major systems rewrite
-- unless a blocking bug appears, work beyond these three items should be treated as stretch work
+- the next meeting should emphasize usability, wayfinding, onboarding, and presentation quality rather than another major systems rewrite
+- jump work is stretch scope, not the first priority
+- unless a blocking bug appears, polish/navigation/tutorial work should win over new datapath invention
 
 ## Post-Meeting Backlog (Ordered Recommendation)
 
@@ -73,27 +83,11 @@ Recommended order after the current meeting cutoff:
    - improves onboarding immediately
    - reduces friction before adding more instruction complexity
 
-3. proper exit option
+3. proper exit option / cleaner end-state flow
    Why:
-   - small scope
    - makes the build feel more complete and presentation-ready
 
-4. test mode without handholding
-   Why:
-   - strong educational value once the guided mode is stable
-   - can reuse most of the current interactions while reducing prompts and gating
-
-5. proper instruction decoding
-   Why:
-   - pedagogically important
-   - should come after the persistent cheatsheet/reference path exists, so the learner has support while decoding manually
-
-6. re-evaluate reincluding the control decode phase
-   Why:
-   - potentially valuable for learning
-   - but it risks clutter and pacing issues if reintroduced too early
-
-7. additional immediate-family instructions:
+4. additional immediate-family instructions:
    - `slti`
    - `andi`
    - `ori`
@@ -101,23 +95,28 @@ Recommended order after the current meeting cutoff:
    - relatively natural extensions once the immediate path is stable
    - may expose the need to distinguish sign extension from zero extension more clearly
 
-8. `beq` / `bne`
+5. `j` / `jal` / `jr`
    Why:
-   - pedagogically useful and closer to the current datapath than jumps
-   - branch behavior introduces comparison plus control-flow redirection, which is meaningful but still manageable
+   - the system is already partway toward control-flow variety
+   - but these should stay secondary to the polish pass
 
-9. `j` / `jal` / `jr`
+6. `lui`
    Why:
-   - useful for completeness
-   - but these are less aligned with the current physical interaction setup and may require a more deliberate PC/control-flow redesign
+   - possible, but more specialized
 
-10. `lui`
-    Why:
-    - possible, but it is a specialized immediate-path case and lower value than the more common arithmetic/branch instructions
+7. deeper audio / VFX polish
+   Why:
+   - worthwhile once guidance and clarity are already safe
 
-11. audio and VFX polish
-    Why:
-    - worthwhile, but only after the UX structure is settled
+8. future multicycle / pipeline extension
+   Why:
+   - this is now the clearest long-term upgrade path
+   - it should be documented and discussed even if not implemented before the final demo
+
+Rationale:
+- polish and onboarding now come before raw scope growth
+- the instruction additions expand scope only after the learner experience is easier to follow
+- multicycle/pipeline belongs to future-work framing unless time opens unexpectedly
 
 ## Latest Summary
 
@@ -132,6 +131,7 @@ The project now has:
 - register scanner pedestals for `Read Register 1`, `Read Register 2`, and `Write Register`
 - logical register values stored on register tokens, with lesson-time value seeding from instruction assets
 - a working lesson flow that now runs through fetch -> decode -> execute -> memory when needed -> write-back when needed
+- a routed environment that now physically separates the lesson into fetch, decode, execute, memory, write-back, and PC-update spaces
 - a smaller lesson architecture centered on focused lesson and register scripts
 - cleaned instruction assets for `add`, `addi`, and `lw`
 - cleaned instruction assets for `sw`, `sub`, `and`, `or`, and `slt`
@@ -159,6 +159,7 @@ The project now has:
   - ALU consumes its accepted input packets once the ALU result is produced
   - Memory consumes address/store packets once the memory interaction has completed
   - write-back still owns the final register value update
+- branch resolution now finishes through a real `PC Update` step instead of bouncing back to an earlier generic panel
 
 ### 2026-06-29 - V1 Closed Out, V2 Design Started
 
@@ -874,6 +875,42 @@ Risks / Notes:
 - this reset path is intentionally narrow and should stay transform-only unless a later usability issue proves it needs broader behavior
 - the lesson-code cleanup is in a safer place now, but the larger architectural cleanup is still deferred
 
+### 2026-07-09 - Post-Meeting Direction Reset Toward Final Polish
+
+Completed:
+- completed the routed-map / branch-resolution checkpoint with the supervisor
+- validated the broader routed environment as a real lesson path rather than only a sandbox arrangement
+- confirmed that the current single-cycle guided build now covers:
+  - fetch
+  - decode
+  - execute
+  - memory when needed
+  - write-back when needed
+  - PC update for branch resolution and lesson conclusion
+- received positive supervisor feedback on:
+  - the newer map
+  - the broader instruction coverage
+  - the three-panel lesson UI layout
+
+Changed:
+- the main project risk is no longer "can the datapath work?"
+- the main project risk is now:
+  - can the learner tell where to go next
+  - can the learner understand the lesson comfortably
+  - can the build feel finished enough for the next checkpoint and the final demo
+
+Next:
+- add door gating tied to phase progression
+- add directional arrows tied to the active lesson phase
+- add tutorial/onboarding support
+- improve lighting and route readability
+- add audio cues as guidance support
+- plan and, if safe, introduce experiment mode before the next meeting
+
+Risks / Notes:
+- further large core-system changes should now be treated cautiously
+- multicycle/pipeline expansion remains valuable, but should stay documented as future work unless extra time appears
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
@@ -889,6 +926,13 @@ Risks / Notes:
   - uploader `Instruction Terminal`
   - `Instruction Module`
   - downloader `Instruction Terminal`
+- physical route progression now matters because the lesson space is no longer flat:
+  - intro/fetch start
+  - decode room
+  - ALU platform
+  - memory hall
+  - write-back area
+  - PC-update conclusion platform
 
 ### Architecture / Script Baseline
 
@@ -920,26 +964,24 @@ Interpretation:
 
 Recommended next development priorities:
 
-1. Finish the three-panel lesson UI pass without changing the authored-scene direction.
+1. Add door gating + arrow-guidance support.
    Focus on:
-   - cleaner `Intro UI` layout
-   - cleaner `Instruction Decode UI` layout
-   - matching multi-panel structure in `EX`, `Mem`, and `WB`
-   - clearer feedback text
-   - simpler inspector wiring where possible
-   - keeping more static wording in edit mode where practical
+   - unlocking the next valid route by phase progression
+   - reducing confusion about where to head next
 
-2. Add a dedicated datapacket reset path.
+2. Add tutorial/onboarding support.
    Focus on:
-   - resetting only present, non-consumed packets
-   - not disturbing lesson progress
-   - not overlapping with register reset or lesson reset
+   - controls
+   - lesson rhythm
+   - recovery expectations
 
-3. Improve the environment / map.
+3. Polish the authored UIs and environment together.
    Focus on:
-   - keeping lesson readability intact
-   - making the prototype feel presentation-ready
-   - avoiding map work that obscures interaction zones
+   - readability
+   - lighting
+   - path clarity
+   - sound-guided feedback
+   - experiment-mode feasibility before the next checkpoint
 
 ## Risks To Watch
 

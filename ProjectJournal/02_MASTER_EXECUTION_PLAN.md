@@ -42,15 +42,15 @@ This principle should override ambitious expansion pressure.
 
 Near-term deadline:
 - the June 29, 2026 V1 checkpoint has already been completed
-- next supervisor meeting target: `2026-07-09`
-- official project/demo deadline: `2026-07-29`
+- the next supervisor meeting target is now `2026-07-24`
+- official project/demo deadline remains `2026-07-29`
 - preferred internal target:
   - finish the build a few days early
-  - use the final buffer for polish, map setup, and presentation safety
+  - use the final buffer for final polish, participant prep, and presentation safety
 
 Important clarification:
 - the original V1 instruction target has already been realized
-- the active risk is now readability, presentation quality, and final-project fit rather than basic datapath coverage
+- the active risk is now readability, navigation, onboarding quality, and final-project fit rather than missing single-cycle datapath coverage
 
 ## Design Philosophy
 
@@ -138,10 +138,10 @@ Note:
 
 ### Nice To Have
 
-- random instruction generation
-- advanced control-signal detail
 - richer audiovisual polish
-- extra instruction families like branches or jumps
+- jump-family instruction support
+- experiment mode without guided handholding
+- persistent cheatsheet/settings support
 
 The project has already moved beyond the old three-instruction V1 boundary, so future prioritization should now favor clarity and presentation over raw instruction count.
 
@@ -223,7 +223,7 @@ Poor candidate interactions for a first version:
 
 Current near-term note:
 - `RegDst` vs `ALUSrc` lesson placement is still an open pedagogical question
-- for the demo, finish the write-back interaction first and revisit that split only afterward
+- for the current polish phase, keep the existing interaction split stable unless a clearer teaching need emerges
 
 ## Architecture Direction
 
@@ -277,7 +277,7 @@ This structure aligns better with the emerging design than a simple "advance hig
 - make the demo stable and understandable to a first-time viewer
 
 Current deadline anchor:
-- the next anchor is the `2026-07-09` supervisor meeting
+- the next anchor is the `2026-07-24` supervisor meeting
 - the official project/demo target remains `2026-07-29`
 
 ## Fallback Plan
@@ -300,53 +300,59 @@ A strong demo should show that a learner can:
 
 ## Current Pre-Meeting Cutoff
 
-Before the next supervisor meeting, prioritize only:
+Before the next supervisor meeting on `2026-07-24`, prioritize:
 
-1. split lesson panels into cleaner lesson / interaction / hint panels
-2. add a dedicated datapacket reset path
-3. improve the environment / map presentation
-4. stabilize and lightly polish the new physical `IF` instruction-module handoff
+1. door gating plus path-guidance arrows
+2. UI polish across the authored three-panel lesson surfaces
+3. a proper tutorial / onboarding layer
+4. map lighting, path tightening, and presentation-quality environment cleanup
+5. sound pass for spatial guidance and feedback
+6. experiment mode without handholding
+7. jump-family instruction additions only if the above is already safe
 
 Reason:
-- the functional lesson loop is now broad enough for the current checkpoint
-- the main remaining risk is how understandable and presentable the experience feels
-
-Current note on `IF`:
-- the instruction-module handoff now exists
-- the active work is to keep it stable, readable, and presentation-friendly
-- for now, only fetch and decode depend on the module
-- later full-phase carrying is optional, not required
-
-Do not let lower-priority expansion crowd out these three items unless a blocking bug appears.
+- the functional lesson loop is now broad enough for the checkpoint
+- the main remaining risk is no longer missing datapath coverage
+- the main remaining risk is whether the experience feels readable, guided, polished, and complete
 
 ## Recommended Backlog After The Meeting
 
-Recommended order once the cutoff items are done:
+Recommended order once the `2026-07-24` checkpoint build is safe:
 
 1. settings menu / cheatsheet panel
-2. controls tutorial / onboarding
-3. exit flow
-4. test mode without handholding
-5. proper instruction decoding
-6. deliberate review of whether to reintroduce control decode
-7. immediate-family expansion:
+2. cleaner exit / restart / free-roam transitions
+3. immediate-family expansion:
    - `slti`
    - `andi`
    - `ori`
-8. branch instructions:
-   - `beq`
-   - `bne`
-9. jump instructions:
+4. jump instructions:
    - `j`
    - `jal`
    - `jr`
-10. `lui`
-11. audio / VFX polish
+5. `lui`
+6. deeper audio / VFX polish
 
 Rationale:
-- the first five items improve usability and educational delivery
-- the instruction additions expand scope only after the learner experience is easier to follow
-- polish should not outrun instructional clarity
+- the learner experience should be presentation-ready first
+- post-checkpoint scope can expand only if the final guided build is already stable
+- instruction additions are now secondary to clarity and delivery
+
+## Future Work Beyond The Final Demo
+
+The clearest post-demo extension path is:
+- multicycle datapath extension
+- then real pipelining concepts
+- then stalls / hazards as a higher-difficulty teaching mode
+
+Current concept:
+- place additional instruction download terminals at later phases
+- physically move instruction modules between phases
+- allow multiple instructions to exist in-flight
+- use that structure to discuss overlap, sequencing, and pipeline disruption
+
+This is intentionally future work:
+- valuable for the dissertation and presentation discussion
+- probably too large to force into the current pre-demo build without destabilizing it
 
 ## Paper Preparation Implication
 

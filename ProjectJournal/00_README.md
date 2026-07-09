@@ -63,7 +63,7 @@ This rule is now part of the repository working process.
 
 ## Current Resume Note
 
-As of `2026-07-07`, the active baseline is:
+As of `2026-07-09`, the active baseline is:
 - `Testing Ground.unity` remains the active prototype scene
 - the working lesson set currently includes:
   - `add`
@@ -74,15 +74,25 @@ As of `2026-07-07`, the active baseline is:
   - `and`
   - `or`
   - `slt`
-- the lesson flow is now:
+  - `beq`
+  - `bne`
+- the working lesson flow is now:
   - `Instruction Fetch`
   - `Instruction Decode`
   - `Execution`
   - `Memory Access` when needed
   - `Write Back` when needed
-- `Instruction Fetch` now has a physical instruction-module / terminal handoff
-- lesson UI is being refactored into three authored panels per zone:
+  - `PC Update` for branch resolution and lesson conclusion
+- `Instruction Fetch` now has a physical instruction-module / instruction-terminal handoff
+- lesson UIs now use the authored three-panel pattern per zone:
   - lesson
   - interaction
   - hint
+- the environment/map is now part of the teaching flow rather than just sandbox staging
 - scene-authored wiring remains preferred over runtime-built UI
+- the next major phase is:
+  - navigation clarity
+  - tutorial/onboarding
+  - door/arrow/audio guidance
+  - UI polish
+  - experiment-mode planning
