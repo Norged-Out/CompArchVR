@@ -43,18 +43,6 @@ public static class LessonChecks
         }
     }
 
-    public readonly struct WriteBackResult
-    {
-        public readonly bool isCorrect;
-        public readonly string expectedRegister;
-
-        public WriteBackResult(bool isCorrect, string expectedRegister)
-        {
-            this.isCorrect = isCorrect;
-            this.expectedRegister = expectedRegister;
-        }
-    }
-
     /// <summary>
     /// Returns the logical register order a step expects.
     /// </summary>
@@ -117,18 +105,5 @@ public static class LessonChecks
             expectedRegister: expectedRegister,
             nextRole: nextRole,
             nextRegister: nextRegister);
-    }
-
-    /// <summary>
-    /// Validates the final write-back confirmation register.
-    /// </summary>
-    public static WriteBackResult ValidateWriteBack(
-        InstructionDefinition instruction,
-        InstructionFlowStep step,
-        string registerName)
-    {
-        var expectedRegister = instruction.GetExpectedRegisterName(step.confirmationRegisterRole);
-        var isCorrect = string.Equals(expectedRegister, registerName, StringComparison.OrdinalIgnoreCase);
-        return new WriteBackResult(isCorrect, expectedRegister);
     }
 }
