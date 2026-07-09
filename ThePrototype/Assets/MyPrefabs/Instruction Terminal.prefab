@@ -870,8 +870,9 @@ MonoBehaviour:
   m_LessonFlow: {fileID: 0}
   m_InstructionOverride: {fileID: 0}
   m_SpawnPoint: {fileID: 4462810149642235656}
-  m_ScanTrigger: {fileID: 4306411265382403415}
   m_ParticleSystem: {fileID: 1846259045846916847}
+  m_ParticleBurstSeconds: 1.25
+  m_StateChangeDelaySeconds: 0.35
   m_SpawnEmptyModuleOnEnable: 1
   m_RequireInstructionBeforeDownload: 1
   m_LockModuleOnDownload: 1
