@@ -911,6 +911,30 @@ Risks / Notes:
 - further large core-system changes should now be treated cautiously
 - multicycle/pipeline expansion remains valuable, but should stay documented as future work unless extra time appears
 
+### 2026-07-10 - CPULesson Refactor Stabilized
+
+Completed:
+- finished the full `CpuLesson` refactor into a proper foldered structure instead of the older oversized / split-file arrangement
+- replaced the earlier lesson layout with focused files under:
+  - `Flow`
+  - `Support`
+  - `UI`
+  - shared UI helpers under `Assets/MyScripts/Shared/UI`
+- kept the validated gameplay loop working while the refactor was happening instead of treating it as a separate throwaway experiment
+- updated the shared lesson panel base so authored UIs can now bind one or several panel roots / scroll views cleanly
+
+Changed:
+- lesson lifecycle, fetch/decode progression, decode text/hint helpers, and panel presentation are now easier to reason about file-by-file
+- the lesson system is now better aligned with the scene-authored workflow instead of older runtime-heavy assumptions
+
+Next:
+- keep further polish work building on top of this refactored lesson baseline
+- avoid reintroducing oversized lesson root scripts unless a future rewrite is intentional
+
+Risks / Notes:
+- the refactor is now considered the stable baseline
+- future cleanup should be incremental rather than another large disruptive reshape right before delivery
+
 ## Current Working Baseline
 
 ### Scene / Interaction Baseline
@@ -937,9 +961,25 @@ Risks / Notes:
 ### Architecture / Script Baseline
 
 Current relevant scripts:
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\CpuLessonFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonLifecycle.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonState.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonStepActions.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\FetchFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\DecodeFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\FlowProgress.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonChecks.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonPhaseRouter.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\InstructionCatalog.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeTextBuilder.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeHintBuilder.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeGuideFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeDropdownView.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideView.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\IntroPanelController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\DecodePanelController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Shared\UI\LessonPanelBase.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluExecutionController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScanner.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScannerZone.cs`

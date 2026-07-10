@@ -112,25 +112,36 @@ Current prototype features:
   - base register contains a data-segment address
   - immediate acts as offset
   - ALU result maps into the authored data-memory bank
-- slim lesson scripts now reduced to:
-  - `CpuLessonFlow`
-  - `LessonGuideController`
-  - `LessonChecks`
-  - register bank / token / scanner scripts
-  - ALU packet / scanner / controller scripts
+- the `CpuLesson` area has now been fully refactored into:
+  - `Flow`
+  - `Support`
+  - `UI`
+  - shared UI helpers under `Assets/MyScripts/Shared/UI`
+- the lesson system no longer depends on the older oversized `CpuLessonFlow.*` / `LessonGuideController.*` structure
+- current lesson code is now explicitly organized around scene-authored bindings and smaller focused classes
 - `Assets/MyScripts` has now had an additional pre-demo cleanup pass to remove obvious leftovers and improve code comments without changing the validated MVP flow
 
 ## Most Important Scripts Right Now
 
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.Fetch.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.Setup.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\CpuLessonFlow.Decode.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.Intro.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.Decode.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonGuideController.Layout.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\LessonChecks.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\CpuLessonFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonLifecycle.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonState.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonStepActions.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\FetchFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\DecodeFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\FlowProgress.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonChecks.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonPhaseRouter.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\InstructionCatalog.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeTextBuilder.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeHintBuilder.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeGuideFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeDropdownView.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideView.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\IntroPanelController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\DecodePanelController.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Shared\UI\LessonPanelBase.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankResetButton.cs`

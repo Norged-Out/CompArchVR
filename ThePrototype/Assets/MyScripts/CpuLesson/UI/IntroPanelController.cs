@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Events;
 
 /// <summary>
 /// Presentation owner for the intro and instruction-fetch lesson panel.
 /// </summary>
 [DisallowMultipleComponent]
-public sealed class IntroPanelController : MonoBehaviour
+public sealed class IntroPanelController : LessonPanelBase
 {
-    const float k_ActionButtonHeight = 56f;
+    readonly LessonPhaseRouter m_PhaseRouter = new();
 
     [SerializeField]
     TMP_Text m_Body;
@@ -27,9 +28,9 @@ public sealed class IntroPanelController : MonoBehaviour
     [SerializeField]
     TMP_Dropdown m_InstructionDropdown;
 
-    public Button ActionButton => m_ActionButton;
-    public TMP_Dropdown InstructionDropdown => m_InstructionDropdown;
-
+    /// <summary>
+    /// Rebuilds the instruction dropdown from the current authored instruction catalog.
+    /// </summary>
     public void PopulateInstructionDropdown(IReadOnlyList<InstructionDefinition> instructions, InstructionDefinition currentInstruction, ref bool isRefreshing)
     {
         if (m_InstructionDropdown == null)
@@ -61,65 +62,105 @@ public sealed class IntroPanelController : MonoBehaviour
         isRefreshing = false;
     }
 
+    /// <summary>
+    /// Locks or unlocks instruction selection before the lesson officially begins.
+    /// </summary>
     public void SetInstructionDropdownInteractable(bool interactable)
     {
         if (m_InstructionDropdown != null)
             m_InstructionDropdown.interactable = interactable;
     }
 
+    /// <summary>
+    /// Shows or hides the authored intro panel.
+    /// </summary>
     public void SetVisible(bool isVisible)
     {
-        gameObject.SetActive(isVisible);
+        SetPanelVisible(isVisible);
     }
 
+    /// <summary>
+    /// Shows the pre-start screen where the learner chooses an instruction and begins the walkthrough.
+    /// </summary>
     public void ShowBeforeStart(InstructionDefinition currentInstruction, string startButtonLabel)
     {
         SetVisible(true);
-        SetText(
+        SetTextField(
             m_Body,
             $"Lesson Introduction\n\nSelected instruction: {currentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin.");
-        SetText(m_Feedback, string.Empty);
+        SetTextField(m_Feedback, string.Empty);
         SetButtonState(m_ActionButton, m_ActionLabel, startButtonLabel, true);
         SetInstructionDropdownInteractable(true);
-        RefreshLayout();
+        RefreshPanelLayout(m_ActionButton);
     }
 
+    /// <summary>
+    /// Shows the currently active fetch or recap step on the intro panel.
+    /// </summary>
     public void ShowStep(CpuLessonFlow lessonFlow, InstructionFlowStep step, string continueButtonLabel, string restartButtonLabel)
     {
         if (lessonFlow == null || step == null)
             return;
 
         SetVisible(true);
-        SetText(m_Body, BuildIntroBody(lessonFlow, step));
-        SetText(m_Feedback, string.Empty);
+        SetTextField(m_Body, BuildIntroBody(lessonFlow, step));
+        SetTextField(m_Feedback, string.Empty);
         SetButtonState(
             m_ActionButton,
             m_ActionLabel,
             step.requiredInteraction == InstructionStepInteractionType.Completion ? restartButtonLabel : continueButtonLabel,
             step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
             step.requiredInteraction == InstructionStepInteractionType.Completion);
-        RefreshLayout();
+        RefreshPanelLayout(m_ActionButton);
     }
 
+    /// <summary>
+    /// Hides the authored action button when another phase owns the learner's progression button.
+    /// </summary>
     public void HideAction()
     {
         SetButtonState(m_ActionButton, m_ActionLabel, string.Empty, false);
-        RefreshLayout();
+        RefreshPanelLayout(m_ActionButton);
     }
 
+    /// <summary>
+    /// Applies shared intro feedback styling.
+    /// </summary>
     public void SetFeedback(string message, bool isFailure)
     {
-        if (m_Feedback == null)
-            return;
-
-        m_Feedback.text = message;
-        m_Feedback.color = isFailure
-            ? new Color(1f, 0.55f, 0.55f, 1f)
-            : new Color(0.78f, 0.96f, 0.82f, 1f);
-        m_Feedback.gameObject.SetActive(!string.IsNullOrWhiteSpace(message));
-        RefreshLayout();
+        SetFeedbackField(m_Feedback, message, isFailure);
+        RefreshPanelLayout(m_ActionButton);
     }
 
+    /// <summary>
+    /// Rebinds the authored intro action button to the supplied lesson callback.
+    /// </summary>
+    public void BindAction(UnityAction listener)
+    {
+        if (m_ActionButton == null)
+            return;
+
+        m_ActionButton.onClick.RemoveAllListeners();
+        if (listener != null)
+            m_ActionButton.onClick.AddListener(listener);
+    }
+
+    /// <summary>
+    /// Rebinds the instruction dropdown to the supplied lesson callback.
+    /// </summary>
+    public void BindInstructionSelection(UnityAction<int> listener)
+    {
+        if (m_InstructionDropdown == null)
+            return;
+
+        m_InstructionDropdown.onValueChanged.RemoveAllListeners();
+        if (listener != null)
+            m_InstructionDropdown.onValueChanged.AddListener(listener);
+    }
+
+    /// <summary>
+    /// Builds the learner-facing description for the current intro-owned lesson step.
+    /// </summary>
     string BuildIntroBody(CpuLessonFlow lessonFlow, InstructionFlowStep step)
     {
         var instruction = lessonFlow.CurrentInstruction;
@@ -153,103 +194,6 @@ public sealed class IntroPanelController : MonoBehaviour
             $"Instruction: {instruction.displayName}\n" +
             $"Assembly: {instruction.assemblyInstructionText}\n\n" +
             $"{step.explanation}\n\n" +
-            $"Next: {GetNextStageLabel(lessonFlow, step)}.";
-    }
-
-    static string GetNextStageLabel(CpuLessonFlow lessonFlow, InstructionFlowStep currentStep)
-    {
-        var instruction = lessonFlow != null ? lessonFlow.CurrentInstruction : null;
-        if (currentStep == null || instruction == null)
-            return "Continue";
-
-        if (currentStep.requiredInteraction == InstructionStepInteractionType.Completion)
-            return "Restart";
-
-        if (currentStep.requiredInteraction == InstructionStepInteractionType.RegisterSelection ||
-            currentStep.highlightedNode == DatapathNodeId.InstructionMemory)
-        {
-            return currentStep.highlightedNode == DatapathNodeId.InstructionMemory ? "Register Setup" : "Execution";
-        }
-
-        if (currentStep.requiredInteraction == InstructionStepInteractionType.AluExecution)
-        {
-            return instruction.UsesInteractiveMemoryPhase() ? "Memory Access" :
-                instruction.UsesWriteBackPhase() ? "Write Back" : "Recap";
-        }
-
-        if (currentStep.highlightedNode == DatapathNodeId.DataMemory)
-            return instruction.UsesWriteBackPhase() ? "Write Back" : "Recap";
-
-        if (currentStep.requiredInteraction == InstructionStepInteractionType.WriteBackExecution)
-            return "Program Counter Update";
-
-        if (currentStep.requiredInteraction == InstructionStepInteractionType.PcUpdateExecution)
-            return "Restart";
-
-        return "Continue";
-    }
-
-    static void SetText(TMP_Text target, string text)
-    {
-        if (target == null)
-            return;
-
-        target.text = text;
-        target.gameObject.SetActive(!string.IsNullOrWhiteSpace(text));
-    }
-
-    static void SetButtonState(Button button, TMP_Text label, string labelText, bool visibleAndEnabled)
-    {
-        if (button == null)
-            return;
-
-        button.gameObject.SetActive(visibleAndEnabled);
-        button.interactable = visibleAndEnabled;
-
-        if (label != null)
-            label.text = labelText;
-    }
-
-    static void EnsureButtonLayout(Button button)
-    {
-        if (button == null)
-            return;
-
-        var layoutElement = button.GetComponent<LayoutElement>();
-        if (layoutElement == null)
-            layoutElement = button.gameObject.AddComponent<LayoutElement>();
-
-        if (layoutElement.preferredHeight <= 0f)
-            layoutElement.preferredHeight = k_ActionButtonHeight;
-
-        if (layoutElement.minHeight <= 0f)
-            layoutElement.minHeight = k_ActionButtonHeight;
-    }
-
-    void RefreshLayout()
-    {
-        if (!gameObject.activeInHierarchy)
-            return;
-
-        foreach (var textMesh in GetComponentsInChildren<TMP_Text>(true))
-            textMesh?.ForceMeshUpdate();
-
-        EnsureButtonLayout(m_ActionButton);
-        Canvas.ForceUpdateCanvases();
-
-        var scrollRect = GetComponentInChildren<ScrollRect>(true);
-        if (scrollRect != null && scrollRect.content != null)
-        {
-            LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.content);
-
-            if (scrollRect.viewport != null)
-                LayoutRebuilder.ForceRebuildLayoutImmediate(scrollRect.viewport);
-        }
-
-        var rootRect = GetComponent<RectTransform>();
-        if (rootRect != null)
-            LayoutRebuilder.ForceRebuildLayoutImmediate(rootRect);
-
-        Canvas.ForceUpdateCanvases();
+            $"Next: {m_PhaseRouter.GetNextStageLabel(lessonFlow, step)}.";
     }
 }

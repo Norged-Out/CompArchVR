@@ -26,6 +26,9 @@ public static class LessonChecks
         public readonly InstructionRegisterRole nextRole;
         public readonly string nextRegister;
 
+        /// <summary>
+        /// Captures both the validation result and the next scanner target for the decode phase.
+        /// </summary>
         public RegisterSelectionResult(
             bool isCorrect,
             bool completesStep,

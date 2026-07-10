@@ -3729,6 +3729,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1035790433963668018, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
   m_PrefabInstance: {fileID: 214365689}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &214365692 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3017879602858219969, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
+  m_PrefabInstance: {fileID: 214365689}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!4 &231083126 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4642215332722772, guid: 68a175f629f570f429cddf1860f76ad3, type: 3}
@@ -8333,6 +8344,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1035790433963668018, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
   m_PrefabInstance: {fileID: 646915131}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &646915134 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3017879602858219969, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
+  m_PrefabInstance: {fileID: 646915131}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &653361215
 GameObject:
   m_ObjectHideFlags: 0
@@ -9231,6 +9253,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa7f9f907c521e443905a6a6d63c5806, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DecodePanelController
+  m_ScrollRects:
+  - {fileID: 214365692}
+  - {fileID: 646915134}
+  - {fileID: 1337771904}
+  m_RootRects:
+  - {fileID: 214365690}
+  - {fileID: 646915132}
+  - {fileID: 1337771902}
   m_OpcodeLessonText: {fileID: 1860944563}
   m_RegisterLessonText: {fileID: 763011467}
   m_FunctLessonText: {fileID: 1494644878}
@@ -9640,6 +9670,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1035790433963668018, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
   m_PrefabInstance: {fileID: 705460929}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &705460932 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3017879602858219969, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
+  m_PrefabInstance: {fileID: 705460929}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!64 &705871144 stripped
 MeshCollider:
   m_CorrespondingSourceObject: {fileID: 64769380439121818, guid: e274c7bd48f126345961fb198e1c16db, type: 3}
@@ -15427,7 +15468,6 @@ GameObject:
   - component: {fileID: 1093474191}
   - component: {fileID: 1093474194}
   - component: {fileID: 1093474193}
-  - component: {fileID: 1093474197}
   m_Layer: 0
   m_Name: PC Update UI
   m_TagString: Untagged
@@ -15742,19 +15782,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &1093474197
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1093474189}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b4500a86ce3c75a4e86dc9dd845b098e, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PcUpdatePanelController
-  m_Controller: {fileID: 1558496428}
 --- !u!1 &1100477708
 GameObject:
   m_ObjectHideFlags: 0
@@ -19749,7 +19776,6 @@ GameObject:
   - component: {fileID: 1333973420}
   - component: {fileID: 1333973423}
   - component: {fileID: 1333973422}
-  - component: {fileID: 1333973426}
   m_Layer: 0
   m_Name: WB UI
   m_TagString: Untagged
@@ -20064,19 +20090,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &1333973426
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1333973418}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b7b0cd767853c448bf2ed9a4dc9fcfd, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::WriteBackPanelController
-  m_Controller: {fileID: 1917989371}
 --- !u!1 &1334771049
 GameObject:
   m_ObjectHideFlags: 0
@@ -20324,6 +20337,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 1035790433963668018, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
   m_PrefabInstance: {fileID: 1337771901}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1337771904 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 3017879602858219969, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
+  m_PrefabInstance: {fileID: 1337771901}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1341070961
 GameObject:
   m_ObjectHideFlags: 0
@@ -29063,7 +29087,6 @@ GameObject:
   - component: {fileID: 1901121197}
   - component: {fileID: 1901121200}
   - component: {fileID: 1901121199}
-  - component: {fileID: 1901121203}
   m_Layer: 0
   m_Name: Mem UI
   m_TagString: Untagged
@@ -29378,19 +29401,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &1901121203
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1901121195}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7e6b756cd1f298342b72be8062c5c1e0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MemoryPanelController
-  m_Controller: {fileID: 1264249773}
 --- !u!1001 &1902044417
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -32152,7 +32162,6 @@ GameObject:
   - component: {fileID: 2121333928}
   - component: {fileID: 2121333931}
   - component: {fileID: 2121333930}
-  - component: {fileID: 2121333934}
   m_Layer: 0
   m_Name: ALU UI
   m_TagString: Untagged
@@ -32467,19 +32476,6 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
---- !u!114 &2121333934
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2121333926}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4a1c9912f76de5944ae12a878e63ea51, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ExecutePanelController
-  m_Controller: {fileID: 904400269}
 --- !u!1 &2131422407
 GameObject:
   m_ObjectHideFlags: 0
@@ -32724,7 +32720,6 @@ MonoBehaviour:
   m_ImmediateExtender: {fileID: 963121453}
   m_FetchUploadTerminal: {fileID: 578641185}
   m_DecodeDownloadTerminal: {fileID: 1474807041}
-  m_PcUpdateController: {fileID: 0}
   m_RuntimeSelection:
     definition: {fileID: 0}
     selectedRs: 
@@ -32753,10 +32748,14 @@ MonoBehaviour:
   m_RestartButtonLabel: Restart
   m_IntroPanel: {fileID: 8890085447871772186}
   m_DecodePanel: {fileID: 690638438}
-  m_ExecutePanel: {fileID: 2121333934}
-  m_MemoryPanel: {fileID: 1901121203}
-  m_WriteBackPanel: {fileID: 1333973426}
-  m_PcUpdatePanel: {fileID: 1093474197}
+  m_ExecutePanelRoot: {fileID: 2121333926}
+  m_ExecuteController: {fileID: 904400269}
+  m_MemoryPanelRoot: {fileID: 1901121195}
+  m_MemoryController: {fileID: 1264249773}
+  m_WriteBackPanelRoot: {fileID: 1333973418}
+  m_WriteBackController: {fileID: 1917989371}
+  m_PcUpdatePanelRoot: {fileID: 1093474189}
+  m_PcUpdateController: {fileID: 1558496428}
 --- !u!114 &169305219691273335
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -41506,6 +41505,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ab3b546efc057194aadae89fc3eda07e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::IntroPanelController
+  m_ScrollRects:
+  - {fileID: 705460932}
+  m_RootRects:
+  - {fileID: 705460930}
   m_Body: {fileID: 105658619}
   m_Feedback: {fileID: 1773512314}
   m_ActionButton: {fileID: 8421790730918759245}
