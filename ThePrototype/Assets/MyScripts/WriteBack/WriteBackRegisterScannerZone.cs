@@ -1,31 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// Trigger forwarder for the write-back register input pedestal.
-/// The zone itself stays scene-authored; this helper simply relays enter/exit
-/// events to the owning scanner component.
+/// Shared-zone implementation for the write-back register pedestal.
 /// </summary>
 [DisallowMultipleComponent]
-public class WriteBackRegisterScannerZone : MonoBehaviour
+public sealed class WriteBackRegisterScannerZone
+    : PedestalScannerZoneBase<WriteBackRegisterScanner, RegisterToken>
 {
-    WriteBackRegisterScanner m_OwningScanner;
-
-    public void Bind(WriteBackRegisterScanner owningScanner)
+    protected override void HandleCandidateEntered(WriteBackRegisterScanner owningScanner, RegisterToken candidate)
     {
-        m_OwningScanner = owningScanner;
+        owningScanner.NotifyTokenEntered(candidate);
     }
 
-    void OnTriggerEnter(Collider other)
+    protected override void HandleCandidateExited(WriteBackRegisterScanner owningScanner, RegisterToken candidate)
     {
-        var registerToken = other.GetComponentInParent<RegisterToken>();
-        if (registerToken != null)
-            m_OwningScanner?.NotifyTokenEntered(registerToken);
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        var registerToken = other.GetComponentInParent<RegisterToken>();
-        if (registerToken != null)
-            m_OwningScanner?.NotifyTokenExited(registerToken);
+        owningScanner.NotifyTokenExited(candidate);
     }
 }

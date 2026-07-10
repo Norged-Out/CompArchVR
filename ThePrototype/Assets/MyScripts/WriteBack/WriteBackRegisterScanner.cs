@@ -107,18 +107,6 @@ public class WriteBackRegisterScanner : PedestalScannerBase
         return null;
     }
 
-    protected override void CacheVisualReferences()
-    {
-        base.CacheVisualReferences();
-
-        if (m_ScanZone == null)
-        {
-            var scanZoneTransform = transform.Find("Scan Zone");
-            if (scanZoneTransform != null)
-                m_ScanZone = scanZoneTransform.GetComponent<Collider>();
-        }
-    }
-
     void BindZoneHelper()
     {
         if (m_ScanZone == null)

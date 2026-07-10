@@ -1180,6 +1180,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7730914251639538408}
+  - component: {fileID: 7459604366734617573}
   m_Layer: 0
   m_Name: Pipes
   m_TagString: Untagged
@@ -1209,6 +1210,28 @@ Transform:
   - {fileID: 7376438299173252191}
   m_Father: {fileID: 2127858430573488158}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &7459604366734617573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6097791342328978198}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87416f33d72d3f84f87bdd4093a7f329, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PipeSequencePlayer
+  m_PipeRenderers:
+  - {fileID: 1174205804153947786}
+  - {fileID: 2478994627280666981}
+  - {fileID: 7624492311922031341}
+  - {fileID: 7882236970089201752}
+  - {fileID: 8508833865900562224}
+  m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
+  m_WaitingMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
+  m_SuccessMaterial: {fileID: 2100000, guid: 1a63d72c6152ef54493960acf859fc4a, type: 2}
+  m_DefaultStepDelaySeconds: 0.4
 --- !u!1 &6297095481714544604
 GameObject:
   m_ObjectHideFlags: 0
@@ -1491,16 +1514,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::WriteBackController
   m_RegisterScanner: {fileID: 7973439541059784053}
   m_PacketScanner: {fileID: 6609462089253498110}
+  m_PipeSequencePlayer: {fileID: 7459604366734617573}
   m_TransferParticles: {fileID: 1846259045846916847}
   m_RegDstButtonRoot: {fileID: 1364021660308291361}
   m_RegWriteButtonRoot: {fileID: 3582767479301052988}
   m_MemToRegButtonRoot: {fileID: 8609213945429780975}
-  m_PipeRenderers:
-  - {fileID: 1174205804153947786}
-  - {fileID: 2478994627280666981}
-  - {fileID: 7624492311922031341}
-  - {fileID: 7882236970089201752}
-  - {fileID: 8508833865900562224}
   m_WbUiRoot: {fileID: 0}
   m_LessonRuntimeText: {fileID: 0}
   m_RegDstStatusText: {fileID: 0}
@@ -1515,7 +1533,6 @@ MonoBehaviour:
   m_HintRegDstText: {fileID: 0}
   m_HintRegWriteText: {fileID: 0}
   m_HintMemToRegText: {fileID: 0}
-  m_PipeStepDelaySeconds: 0.3
   m_ParticleLeadTimeSeconds: 0.75
   m_ExecuteButtonText: Execute Write Back
   m_ContinueButtonText: Continue

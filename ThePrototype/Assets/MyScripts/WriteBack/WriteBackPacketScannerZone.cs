@@ -1,29 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// Trigger forwarder for the write-back packet input pedestal.
+/// Shared-zone implementation for the write-back packet pedestal.
 /// </summary>
 [DisallowMultipleComponent]
-public class WriteBackPacketScannerZone : MonoBehaviour
+public sealed class WriteBackPacketScannerZone
+    : PedestalScannerZoneBase<WriteBackPacketScanner, DataPacketToken>
 {
-    WriteBackPacketScanner m_OwningScanner;
-
-    public void Bind(WriteBackPacketScanner owningScanner)
+    protected override void HandleCandidateEntered(WriteBackPacketScanner owningScanner, DataPacketToken candidate)
     {
-        m_OwningScanner = owningScanner;
+        owningScanner.NotifyPacketEntered(candidate);
     }
 
-    void OnTriggerEnter(Collider other)
+    protected override void HandleCandidateExited(WriteBackPacketScanner owningScanner, DataPacketToken candidate)
     {
-        var dataPacketToken = other.GetComponentInParent<DataPacketToken>();
-        if (dataPacketToken != null)
-            m_OwningScanner?.NotifyPacketEntered(dataPacketToken);
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        var dataPacketToken = other.GetComponentInParent<DataPacketToken>();
-        if (dataPacketToken != null)
-            m_OwningScanner?.NotifyPacketExited(dataPacketToken);
+        owningScanner.NotifyPacketExited(candidate);
     }
 }
