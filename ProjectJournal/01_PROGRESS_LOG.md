@@ -1050,3 +1050,23 @@ Next:
 
 Risks / Notes:
 - item
+
+### 2026-07-11 - End-Of-Day Map Planning Locked In
+
+Completed:
+- reviewed the current routed map after the post-meeting refactor pass
+- explored a new grid-based map revision concept to improve pacing between intro, decode, ALU, memory, write-back, and PC update
+- stopped diagram iteration once the high-level route direction was clear enough to build directly in-scene
+
+Changed:
+- tomorrow's focus is now explicitly environmental/presentation work rather than lesson-logic expansion
+- the next short-term target is to tighten navigation and readability before adding anything ambitious
+
+Next:
+- map retouch
+- UI cleanup
+- gate + arrow introduction
+
+Risks / Notes:
+- the map-layout discussion was useful for direction, but not precise enough to preserve as a final spatial spec yet
+- tomorrow should bias toward practical in-scene iteration rather than more abstract diagram work

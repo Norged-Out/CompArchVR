@@ -230,6 +230,7 @@ Everything else should be treated as future work unless a blocking regression ap
 
 The cleanest next work item is:
 - finish the presentation/polish pass on top of the now-working instruction set
+- start with map retouch, UI cleanup, and gate + arrow introduction before reopening broader design questions
 - keep the flow order fixed as:
   - fetch
   - decode
