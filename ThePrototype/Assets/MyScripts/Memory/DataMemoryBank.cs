@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
@@ -15,6 +13,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public class DataMemoryBank : MonoBehaviour
 {
+    readonly DataMemoryStore m_Store = new();
+
     [Header("Word Entries")]
     [SerializeField]
     MemoryWord[] m_Words = Array.Empty<MemoryWord>();
@@ -28,150 +28,28 @@ public class DataMemoryBank : MonoBehaviour
 
     [Header("Pipe Animation")]
     [SerializeField]
-    Renderer[] m_PipeRenderers = Array.Empty<Renderer>();
-
-    [SerializeField]
-    Material m_IdlePipeMaterial;
-
-    [SerializeField]
-    Material m_WaitingPipeMaterial;
-
-    [SerializeField]
-    Material m_TransferPipeMaterial;
-
-    [SerializeField]
-    float m_PipeStepDelaySeconds = 0.5f;
+    PipeSequencePlayer m_PipeSequencePlayer;
 
     MemoryWord m_HighlightedWord;
-    Coroutine m_WaitingRoutine;
-    Coroutine m_TransferRoutine;
     bool m_IsWaitingAnimationActive;
 
     public int WordCount => m_Words != null ? m_Words.Length : 0;
 
     void Awake()
     {
-        CacheReferences();
         RebindWords();
-        ResetPipeMaterials();
+        RebuildStore();
+        m_PipeSequencePlayer?.ResetToIdle();
         ClearDisplay();
     }
 
     void OnEnable()
     {
-        CacheReferences();
         RebindWords();
+        RebuildStore();
     }
 
-    public void SetPhaseState(bool isActive, bool animateWaiting)
-    {
-        m_IsWaitingAnimationActive = isActive && animateWaiting;
-
-        if (!isActive)
-        {
-            StopAllAnimations();
-            ClearHighlightedWord();
-            return;
-        }
-
-        if (animateWaiting)
-            StartWaitingAnimation();
-        else
-            StopWaitingAnimation();
-    }
-
-    public bool TryReadWord(int address, out int value, out MemoryWord word)
-    {
-        word = GetWordByAddress(address);
-        if (word == null)
-        {
-            value = 0;
-            return false;
-        }
-
-        value = word.StoredValue;
-        return true;
-    }
-
-    public bool TryWriteWord(int address, int value, out MemoryWord word)
-    {
-        word = GetWordByAddress(address);
-        if (word == null)
-            return false;
-
-        word.SetStoredValue(value);
-        ShowWordDetails(word);
-        return true;
-    }
-
-    public void PreviewAddress(int address)
-    {
-        var word = GetWordByAddress(address);
-        if (word == null)
-        {
-            ClearHighlightedWord();
-            SetDisplay($"Address: {FormatAddress(address)}", "Value: no mapped word");
-            return;
-        }
-
-        SetHighlightedWord(word);
-        ShowWordDetails(word);
-    }
-
-    public void ClearPreview()
-    {
-        ClearHighlightedWord();
-        ClearDisplay();
-    }
-
-    public void ShowWordDetails(MemoryWord word)
-    {
-        if (word == null)
-            return;
-
-        SetDisplay($"Address: {word.AddressDisplay}", $"Value: {word.DataDisplay}");
-    }
-
-    public bool ShouldAllowHoverPreview()
-    {
-        return m_HighlightedWord == null;
-    }
-
-    public void HandleWordHoverExited(MemoryWord word)
-    {
-        if (m_HighlightedWord != null)
-        {
-            ShowWordDetails(m_HighlightedWord);
-            return;
-        }
-
-        if (word != null)
-            ClearDisplay();
-    }
-
-    public void PlayTransferSequence(bool bankToUnit, Action onComplete = null)
-    {
-        if (m_TransferRoutine != null)
-            StopCoroutine(m_TransferRoutine);
-
-        StopWaitingAnimation(false);
-        m_TransferRoutine = StartCoroutine(PlayTransferSequenceRoutine(bankToUnit, onComplete));
-    }
-
-    public void StopAllAnimations()
-    {
-        StopWaitingAnimation();
-
-        if (m_TransferRoutine != null)
-        {
-            StopCoroutine(m_TransferRoutine);
-            m_TransferRoutine = null;
-        }
-
-        ResetPipeMaterials();
-    }
-
-    void CacheReferences()
+    void OnValidate()
     {
         if (m_Words == null || m_Words.Length == 0)
             m_Words = GetComponentsInChildren<MemoryWord>(true);
@@ -195,14 +73,157 @@ public class DataMemoryBank : MonoBehaviour
             }
         }
 
-        if (m_PipeRenderers == null || m_PipeRenderers.Length == 0)
-        {
-            var pipeRoot = FindChildRecursive(transform, "Pipes");
-            if (pipeRoot != null)
-                m_PipeRenderers = pipeRoot.GetComponentsInChildren<Renderer>(true);
-        }
+        if (m_PipeSequencePlayer == null)
+            m_PipeSequencePlayer = GetComponentInChildren<PipeSequencePlayer>(true);
     }
 
+    /// <summary>
+    /// Tells the bank whether the Mem phase is currently active and whether the
+    /// pipes should settle into their waiting state.
+    /// </summary>
+    public void SetPhaseState(bool isActive, bool animateWaiting)
+    {
+        m_IsWaitingAnimationActive = isActive && animateWaiting;
+
+        if (!isActive)
+        {
+            StopWaitingAnimation(false);
+            m_PipeSequencePlayer?.PlayIdleSweep();
+            ClearHighlightedWord();
+            return;
+        }
+
+        if (animateWaiting)
+            StartWaitingAnimation();
+        else
+            StopWaitingAnimation();
+    }
+
+    /// <summary>
+    /// Reads a word from the internal store using its byte address.
+    /// </summary>
+    public bool TryReadWord(int address, out int value, out MemoryWord word)
+    {
+        return m_Store.TryReadWord(address, out value, out word);
+    }
+
+    /// <summary>
+    /// Writes a new value into the addressed word and refreshes the central display.
+    /// </summary>
+    public bool TryWriteWord(int address, int value, out MemoryWord word)
+    {
+        if (!m_Store.TryWriteWord(address, value, out word))
+            return false;
+
+        ShowWordDetails(word);
+        return true;
+    }
+
+    /// <summary>
+    /// Highlights the addressed word and updates the central display, if that
+    /// address is currently part of the authored bank.
+    /// </summary>
+    public void PreviewAddress(int address)
+    {
+        var word = GetWordByAddress(address);
+        if (word == null)
+        {
+            ClearHighlightedWord();
+            SetDisplay($"Address: {FormatAddress(address)}", "Value: no mapped word");
+            return;
+        }
+
+        SetHighlightedWord(word);
+        ShowWordDetails(word);
+    }
+
+    /// <summary>
+    /// Clears temporary hover or address-driven preview state.
+    /// </summary>
+    public void ClearPreview()
+    {
+        ClearHighlightedWord();
+        ClearDisplay();
+    }
+
+    /// <summary>
+    /// Pushes one word's address/value pair into the central bank display.
+    /// </summary>
+    public void ShowWordDetails(MemoryWord word)
+    {
+        if (word == null)
+            return;
+
+        SetDisplay($"Address: {word.AddressDisplay}", $"Value: {word.DataDisplay}");
+    }
+
+    /// <summary>
+    /// Hover previews are only allowed when no explicit address packet is being previewed.
+    /// </summary>
+    public bool ShouldAllowHoverPreview()
+    {
+        return m_HighlightedWord == null;
+    }
+
+    /// <summary>
+    /// Restores the explicit address preview after a hover ends, or clears the
+    /// display if no preview is locked.
+    /// </summary>
+    public void HandleWordHoverExited(MemoryWord word)
+    {
+        if (m_HighlightedWord != null)
+        {
+            ShowWordDetails(m_HighlightedWord);
+            return;
+        }
+
+        if (word != null)
+            ClearDisplay();
+    }
+
+    /// <summary>
+    /// Plays the one-shot success sweep between the unit and the bank.
+    /// `bankToUnit=true` means a load path, while `false` means a store path.
+    /// </summary>
+    public void PlayTransferSequence(bool bankToUnit, Action onComplete = null)
+    {
+        if (m_PipeSequencePlayer == null)
+        {
+            onComplete?.Invoke();
+            return;
+        }
+
+        m_PipeSequencePlayer.StopPlayback();
+
+        if (m_IsWaitingAnimationActive)
+            m_PipeSequencePlayer.ApplyWaitingState();
+        else
+            m_PipeSequencePlayer.ResetToIdle();
+
+        m_PipeSequencePlayer.PlaySuccessSweep(
+            reverse: bankToUnit,
+            stepDelaySeconds: null,
+            onComplete: () =>
+            {
+                if (!m_IsWaitingAnimationActive)
+                    m_PipeSequencePlayer.ResetToIdle();
+
+                onComplete?.Invoke();
+            });
+    }
+
+    /// <summary>
+    /// Stops any active pipe animation and restores the bank pipes to idle.
+    /// </summary>
+    public void StopAllAnimations()
+    {
+        StopWaitingAnimation();
+        m_PipeSequencePlayer?.ResetToIdle();
+    }
+
+    /// <summary>
+    /// Reattaches each authored word to this bank after scene changes or validation.
+    /// </summary>
     void RebindWords()
     {
         if (m_Words == null)
@@ -215,18 +236,17 @@ public class DataMemoryBank : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Rebuilds the pure address lookup model from the currently authored words.
+    /// </summary>
+    void RebuildStore()
+    {
+        m_Store.Rebuild(m_Words);
+    }
+
     MemoryWord GetWordByAddress(int address)
     {
-        if (m_Words == null)
-            return null;
-
-        foreach (var memoryWord in m_Words)
-        {
-            if (memoryWord != null && memoryWord.Address == address)
-                return memoryWord;
-        }
-
-        return null;
+        return m_Store.GetWordByAddress(address);
     }
 
     void SetHighlightedWord(MemoryWord word)
@@ -270,122 +290,16 @@ public class DataMemoryBank : MonoBehaviour
         if (!m_IsWaitingAnimationActive)
             return;
 
-        if (m_WaitingRoutine != null)
-            return;
-
-        m_WaitingRoutine = StartCoroutine(PlayWaitingAnimationRoutine());
+        m_PipeSequencePlayer?.ResetToIdle();
+        m_PipeSequencePlayer?.PlayWaitingSweep();
     }
 
     void StopWaitingAnimation(bool resetMaterials = true)
     {
-        if (m_WaitingRoutine != null)
-        {
-            StopCoroutine(m_WaitingRoutine);
-            m_WaitingRoutine = null;
-        }
+        m_PipeSequencePlayer?.StopPlayback();
 
         if (resetMaterials)
-            ResetPipeMaterials();
-    }
-
-    IEnumerator PlayWaitingAnimationRoutine()
-    {
-        if (m_PipeRenderers == null || m_PipeRenderers.Length == 0)
-        {
-            m_WaitingRoutine = null;
-            yield break;
-        }
-
-        ResetPipeMaterials();
-
-        for (var index = 0; index < m_PipeRenderers.Length; index++)
-        {
-            ApplyPipeMaterial(m_PipeRenderers[index], m_WaitingPipeMaterial);
-            yield return new WaitForSeconds(m_PipeStepDelaySeconds);
-
-            if (!m_IsWaitingAnimationActive)
-            {
-                m_WaitingRoutine = null;
-                yield break;
-            }
-        }
-
-        m_WaitingRoutine = null;
-    }
-
-    IEnumerator PlayTransferSequenceRoutine(bool bankToUnit, Action onComplete)
-    {
-        if (m_IsWaitingAnimationActive)
-            ApplyWaitingStateToAllPipes();
-        else
-            ResetPipeMaterials();
-
-        if (m_PipeRenderers != null && m_PipeRenderers.Length > 0)
-        {
-            if (bankToUnit)
-            {
-                for (var index = m_PipeRenderers.Length - 1; index >= 0; index--)
-                {
-                    ApplyPipeMaterial(m_PipeRenderers[index], m_TransferPipeMaterial);
-                    yield return new WaitForSeconds(m_PipeStepDelaySeconds);
-                }
-            }
-            else
-            {
-                for (var index = 0; index < m_PipeRenderers.Length; index++)
-                {
-                    ApplyPipeMaterial(m_PipeRenderers[index], m_TransferPipeMaterial);
-                    yield return new WaitForSeconds(m_PipeStepDelaySeconds);
-                }
-            }
-        }
-
-        m_TransferRoutine = null;
-
-        if (!m_IsWaitingAnimationActive)
-            ResetPipeMaterials();
-
-        onComplete?.Invoke();
-    }
-
-    void ResetPipeMaterials()
-    {
-        if (m_PipeRenderers == null)
-            return;
-
-        foreach (var pipeRenderer in m_PipeRenderers)
-            ApplyPipeMaterial(pipeRenderer, m_IdlePipeMaterial);
-    }
-
-    void ApplyWaitingStateToAllPipes()
-    {
-        if (m_PipeRenderers == null)
-            return;
-
-        foreach (var pipeRenderer in m_PipeRenderers)
-            ApplyPipeMaterial(pipeRenderer, m_WaitingPipeMaterial);
-    }
-
-    void ApplyPipeMaterial(Renderer pipeRenderer, Material pipeMaterial)
-    {
-        if (pipeRenderer == null || pipeMaterial == null)
-            return;
-
-        pipeRenderer.sharedMaterial = pipeMaterial;
-    }
-
-    static Transform FindChildRecursive(Transform root, string childName)
-    {
-        if (root == null)
-            return null;
-
-        foreach (var childTransform in root.GetComponentsInChildren<Transform>(true))
-        {
-            if (childTransform != null && childTransform.name == childName)
-                return childTransform;
-        }
-
-        return null;
+            m_PipeSequencePlayer?.ResetToIdle();
     }
 
     static string FormatAddress(int value)

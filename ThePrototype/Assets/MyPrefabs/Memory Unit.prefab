@@ -1272,7 +1272,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ad1a06ff50576947a6cc3b2c5aec810, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MemoryUnitController
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryController
   m_AddressScanner: {fileID: 2834090301039670117}
   m_DataScanner: {fileID: 8484546047887632578}
   m_MemoryDataSpawnTransform: {fileID: 5033044483061681566}

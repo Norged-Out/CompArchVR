@@ -13,9 +13,9 @@ sealed class LessonGuideView
     readonly IntroPanelController m_IntroPanel;
     readonly DecodePanelController m_DecodePanel;
     readonly GameObject m_ExecutePanelRoot;
-    readonly AluExecutionController m_ExecuteController;
+    readonly AluController m_ExecuteController;
     readonly GameObject m_MemoryPanelRoot;
-    readonly MemoryUnitController m_MemoryController;
+    readonly MemoryController m_MemoryController;
     readonly GameObject m_WriteBackPanelRoot;
     readonly WriteBackController m_WriteBackController;
     readonly GameObject m_PcUpdatePanelRoot;
@@ -29,9 +29,9 @@ sealed class LessonGuideView
         IntroPanelController introPanel,
         DecodePanelController decodePanel,
         GameObject executePanelRoot,
-        AluExecutionController executeController,
+        AluController executeController,
         GameObject memoryPanelRoot,
-        MemoryUnitController memoryController,
+        MemoryController memoryController,
         GameObject writeBackPanelRoot,
         WriteBackController writeBackController,
         GameObject pcUpdatePanelRoot,
@@ -163,8 +163,6 @@ sealed class LessonGuideView
             return;
 
         m_MemoryController.SetPhaseState(isVisible, lessonFlow != null ? lessonFlow.CurrentInstruction : null);
-        if (!isVisible)
-            m_MemoryController.ResetMemoryState();
     }
 
     /// <summary>

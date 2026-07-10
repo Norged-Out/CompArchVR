@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -8,153 +7,23 @@ using UnityEngine;
 /// the accepted address in place for the current memory access.
 /// </summary>
 [DisallowMultipleComponent]
-public class MemoryAddressScanner : MemoryPillarScannerBase
+public class MemoryAddressScanner : MemoryPacketLatchScannerBase<MemoryAddressScannerZone, MemoryAddressScanner>
 {
-    [SerializeField]
-    Collider m_ScanZone;
-
-    [SerializeField]
-    DataPacketRole m_ExpectedPacketRole = DataPacketRole.AluResult;
-
-    readonly HashSet<DataPacketToken> m_PacketsInZone = new();
-
-    public DataPacketToken AcceptedPacket { get; private set; }
+    /// <summary>
+    /// Convenience accessor for the currently latched byte address.
+    /// </summary>
     public int AcceptedAddress => AcceptedPacket != null ? AcceptedPacket.Value : 0;
-    public DataPacketRole ExpectedPacketRole => m_ExpectedPacketRole;
-
-    public event Action<MemoryAddressScanner, DataPacketToken> PacketAccepted;
-
-    protected override void Awake()
-    {
-        base.Awake();
-        BindZoneHelper();
-    }
-
-    protected override void OnEnable()
-    {
-        base.OnEnable();
-        BindZoneHelper();
-    }
-
-    public void SetActive(bool isActive)
-    {
-        SetScannerActive(isActive);
-    }
-
-    public void SetExpectedPacketRole(DataPacketRole packetRole)
-    {
-        m_ExpectedPacketRole = packetRole;
-
-        if (AcceptedPacket != null && AcceptedPacket.PacketRole != m_ExpectedPacketRole)
-            ResetScanner();
-    }
-
-    public new void ResetScanner()
-    {
-        m_PacketsInZone.Clear();
-        if (AcceptedPacket != null)
-            AcceptedPacket.ReleaseFromLatch();
-
-        AcceptedPacket = null;
-        base.ResetScanner();
-    }
 
     /// <summary>
-    /// Consumes the latched address packet once the memory stage has used it.
+    /// Raised once the address pedestal has successfully latched a packet.
     /// </summary>
-    public void ConsumeAcceptedPacket()
+    public event Action<MemoryAddressScanner, DataPacketToken> PacketAccepted;
+
+    /// <summary>
+    /// Forwards the accepted packet to whichever controller owns this scanner.
+    /// </summary>
+    protected override void RaisePacketAccepted(DataPacketToken packetToken)
     {
-        var packetToConsume = AcceptedPacket;
-        if (packetToConsume != null)
-        {
-            if (Application.isPlaying)
-                Destroy(packetToConsume.gameObject);
-            else
-                DestroyImmediate(packetToConsume.gameObject);
-        }
-
-        ResetScanner();
-    }
-
-    public void NotifyPacketEntered(DataPacketToken dataPacketToken)
-    {
-        if (dataPacketToken != null)
-            m_PacketsInZone.Add(dataPacketToken);
-    }
-
-    public void NotifyPacketExited(DataPacketToken dataPacketToken)
-    {
-        if (dataPacketToken == null)
-            return;
-
-        m_PacketsInZone.Remove(dataPacketToken);
-
-        if (!IsLatchedSuccessful && AcceptedPacket == dataPacketToken)
-            ResetScanner();
-    }
-
-    protected override void CacheVisualReferences()
-    {
-        base.CacheVisualReferences();
-
-        if (m_ScanZone == null)
-        {
-            var scanZoneTransform = transform.Find("Scan Zone");
-            if (scanZoneTransform != null)
-                m_ScanZone = scanZoneTransform.GetComponent<Collider>();
-        }
-    }
-
-    protected override void HandleScannerReset()
-    {
-        if (AcceptedPacket != null)
-            AcceptedPacket.ReleaseFromLatch();
-
-        AcceptedPacket = null;
-    }
-
-    protected override Component GetStableCandidate()
-    {
-        m_PacketsInZone.RemoveWhere(packet => packet == null);
-
-        foreach (var dataPacket in m_PacketsInZone)
-        {
-            if (dataPacket == null || dataPacket.IsGrabbed)
-                continue;
-
-            return dataPacket;
-        }
-
-        return null;
-    }
-
-    protected override void HandleStableCandidate(Component candidate)
-    {
-        var stablePacket = candidate as DataPacketToken;
-        if (stablePacket == null)
-            return;
-
-        if (stablePacket.PacketRole != m_ExpectedPacketRole)
-        {
-            FlashFailure();
-            return;
-        }
-
-        AcceptedPacket = stablePacket;
-        AcceptedPacket.LatchInPlace(transform);
-        PacketAccepted?.Invoke(this, stablePacket);
-        MarkSuccess();
-    }
-
-    void BindZoneHelper()
-    {
-        if (m_ScanZone == null)
-            return;
-
-        var helper = m_ScanZone.GetComponent<MemoryAddressScannerZone>();
-        if (helper == null)
-            helper = m_ScanZone.gameObject.AddComponent<MemoryAddressScannerZone>();
-
-        helper.Bind(this);
+        PacketAccepted?.Invoke(this, packetToken);
     }
 }

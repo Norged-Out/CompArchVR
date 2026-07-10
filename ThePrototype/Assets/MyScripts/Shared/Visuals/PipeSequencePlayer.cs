@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -38,6 +39,11 @@ public sealed class PipeSequencePlayer : MonoBehaviour
     /// </summary>
     public float DefaultStepDelaySeconds => m_DefaultStepDelaySeconds;
 
+    /// <summary>
+    /// Number of authored pipe renderers bound to this player.
+    /// </summary>
+    public int PipeCount => m_PipeRenderers != null ? m_PipeRenderers.Length : 0;
+
     void Awake()
     {
         CacheOriginalMaterials();
@@ -72,7 +78,7 @@ public sealed class PipeSequencePlayer : MonoBehaviour
     /// </summary>
     public void PlayWaitingSweep(bool reverse = false, float? stepDelaySeconds = null)
     {
-        PlaySweep(m_WaitingMaterial, reverse, stepDelaySeconds);
+        PlaySweep(m_WaitingMaterial, reverse, stepDelaySeconds, null);
     }
 
     /// <summary>
@@ -80,7 +86,33 @@ public sealed class PipeSequencePlayer : MonoBehaviour
     /// </summary>
     public void PlaySuccessSweep(bool reverse = false, float? stepDelaySeconds = null)
     {
-        PlaySweep(m_SuccessMaterial, reverse, stepDelaySeconds);
+        PlaySweep(m_SuccessMaterial, reverse, stepDelaySeconds, null);
+    }
+
+    /// <summary>
+    /// Plays a one-shot idle sweep so a phase can visually settle back to its
+    /// baseline after it finishes.
+    /// </summary>
+    public void PlayIdleSweep(bool reverse = false, float? stepDelaySeconds = null, Action onComplete = null)
+    {
+        PlaySweep(m_IdleMaterial, reverse, stepDelaySeconds, onComplete);
+    }
+
+    /// <summary>
+    /// Plays a one-shot success sweep and fires a callback when the authored
+    /// sweep finishes.
+    /// </summary>
+    public void PlaySuccessSweep(bool reverse, float? stepDelaySeconds, Action onComplete)
+    {
+        PlaySweep(m_SuccessMaterial, reverse, stepDelaySeconds, onComplete);
+    }
+
+    /// <summary>
+    /// Forces all authored pipes into the waiting material without animation.
+    /// </summary>
+    public void ApplyWaitingState()
+    {
+        ApplyMaterialToAll(m_WaitingMaterial);
     }
 
     /// <summary>
@@ -96,17 +128,18 @@ public sealed class PipeSequencePlayer : MonoBehaviour
         m_PlaybackRoutine = null;
     }
 
-    void PlaySweep(Material targetMaterial, bool reverse, float? stepDelaySeconds)
+    void PlaySweep(Material targetMaterial, bool reverse, float? stepDelaySeconds, Action onComplete)
     {
         StopPlayback();
-        m_PlaybackRoutine = StartCoroutine(PlaySweepRoutine(targetMaterial, reverse, stepDelaySeconds ?? m_DefaultStepDelaySeconds));
+        m_PlaybackRoutine = StartCoroutine(PlaySweepRoutine(targetMaterial, reverse, stepDelaySeconds ?? m_DefaultStepDelaySeconds, onComplete));
     }
 
-    IEnumerator PlaySweepRoutine(Material targetMaterial, bool reverse, float stepDelaySeconds)
+    IEnumerator PlaySweepRoutine(Material targetMaterial, bool reverse, float stepDelaySeconds, Action onComplete)
     {
         if (m_PipeRenderers == null || m_PipeRenderers.Length == 0 || targetMaterial == null)
         {
             m_PlaybackRoutine = null;
+            onComplete?.Invoke();
             yield break;
         }
 
@@ -128,6 +161,7 @@ public sealed class PipeSequencePlayer : MonoBehaviour
         }
 
         m_PlaybackRoutine = null;
+        onComplete?.Invoke();
     }
 
     void CacheOriginalMaterials()
@@ -149,6 +183,15 @@ public sealed class PipeSequencePlayer : MonoBehaviour
         return pipeRenderer != null && m_OriginalMaterials.TryGetValue(pipeRenderer, out var material)
             ? material
             : null;
+    }
+
+    void ApplyMaterialToAll(Material material)
+    {
+        if (material == null || m_PipeRenderers == null)
+            return;
+
+        foreach (var pipeRenderer in m_PipeRenderers)
+            ApplyMaterial(pipeRenderer, material);
     }
 
     static void ApplyMaterial(Renderer pipeRenderer, Material material)

@@ -6,32 +6,15 @@ using UnityEngine;
 /// scanner script with Unity message plumbing.
 /// </summary>
 [DisallowMultipleComponent]
-public class MemoryAddressScannerZone : MonoBehaviour
+public class MemoryAddressScannerZone : MemoryPacketScannerZoneBase<MemoryAddressScanner>
 {
-    MemoryAddressScanner m_OwningScanner;
-
-    public void Bind(MemoryAddressScanner owningScanner)
+    protected override void HandleCandidateEntered(MemoryAddressScanner owningScanner, DataPacketToken candidate)
     {
-        m_OwningScanner = owningScanner;
+        owningScanner.NotifyPacketEntered(candidate);
     }
 
-    void OnTriggerEnter(Collider other)
+    protected override void HandleCandidateExited(MemoryAddressScanner owningScanner, DataPacketToken candidate)
     {
-        if (m_OwningScanner == null || other == null)
-            return;
-
-        var packetToken = other.GetComponentInParent<DataPacketToken>();
-        if (packetToken != null)
-            m_OwningScanner.NotifyPacketEntered(packetToken);
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (m_OwningScanner == null || other == null)
-            return;
-
-        var packetToken = other.GetComponentInParent<DataPacketToken>();
-        if (packetToken != null)
-            m_OwningScanner.NotifyPacketExited(packetToken);
+        owningScanner.NotifyPacketExited(candidate);
     }
 }

@@ -227,6 +227,10 @@ public class WriteBackController : MonoBehaviour
 
         m_RegisterScanner?.SetActive(isActive);
         m_PacketScanner?.SetActive(isActive);
+
+        if (!isActive)
+            EndPipeVisuals();
+
         RefreshExpectedTargets();
         RefreshPresentation();
     }
@@ -358,7 +362,7 @@ public class WriteBackController : MonoBehaviour
 
         m_RegisterScanner?.ResetScanner();
         m_PacketScanner?.ResetScanner();
-        ResetPipeVisuals();
+        StartWaitingPipeVisuals();
         SetFeedback(string.Empty, false);
         RefreshExpectedTargets();
         RefreshPresentation();
@@ -557,6 +561,18 @@ public class WriteBackController : MonoBehaviour
     void ResetPipeVisuals()
     {
         m_PipeSequencePlayer?.ResetToIdle();
+    }
+
+    void StartWaitingPipeVisuals()
+    {
+        m_PipeSequencePlayer?.ResetToIdle();
+        m_PipeSequencePlayer?.PlayWaitingSweep();
+    }
+
+    void EndPipeVisuals()
+    {
+        m_PipeSequencePlayer?.StopPlayback();
+        m_PipeSequencePlayer?.PlayIdleSweep();
     }
 
     public TMP_Text LessonRuntimeText => m_LessonRuntimeText;

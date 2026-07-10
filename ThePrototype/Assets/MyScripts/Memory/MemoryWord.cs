@@ -50,22 +50,26 @@ public class MemoryWord : MonoBehaviour
     bool m_IsHovered;
     bool m_IsHighlighted;
 
+    /// <summary>The byte address owned by this memory word.</summary>
     public int Address => m_Address;
+
+    /// <summary>The current stored integer value for this word.</summary>
     public int StoredValue => m_StoredValue;
+
+    /// <summary>Formatted address string shown on the bank display.</summary>
     public string AddressDisplay => string.IsNullOrWhiteSpace(m_DisplayAddress) ? FormatAddress(m_Address) : m_DisplayAddress;
+
+    /// <summary>Formatted value string shown on the bank display.</summary>
     public string DataDisplay => string.IsNullOrWhiteSpace(m_DisplayData) ? m_StoredValue.ToString() : m_DisplayData;
 
     void Awake()
     {
-        CacheReferences();
         RefreshLocalLabel();
         RefreshMaterial();
     }
 
     void OnEnable()
     {
-        CacheReferences();
-
         if (m_Interactable == null)
             return;
 
@@ -84,23 +88,44 @@ public class MemoryWord : MonoBehaviour
         m_Interactable.lastHoverExited.RemoveListener(HandleHoverExited);
     }
 
+    void OnValidate()
+    {
+        if (m_Renderer == null)
+            m_Renderer = GetComponent<Renderer>();
+
+        if (m_Interactable == null)
+            m_Interactable = GetComponent<XRSimpleInteractable>();
+    }
+
+    /// <summary>
+    /// Binds this word back to its bank so hover previews can update the shared display.
+    /// </summary>
     public void SetOwningBank(DataMemoryBank owningBank)
     {
         m_OwningBank = owningBank;
     }
 
+    /// <summary>
+    /// Updates the stored value without altering the word's address identity.
+    /// </summary>
     public void SetStoredValue(int storedValue)
     {
         m_StoredValue = storedValue;
         RefreshLocalLabel();
     }
 
+    /// <summary>
+    /// Updates the authored address and refreshes the local label.
+    /// </summary>
     public void SetAddress(int address)
     {
         m_Address = address;
         RefreshLocalLabel();
     }
 
+    /// <summary>
+    /// Marks this word as the currently addressed slot during Mem phase preview.
+    /// </summary>
     public void SetAddressHighlighted(bool isHighlighted)
     {
         m_IsHighlighted = isHighlighted;
@@ -121,13 +146,6 @@ public class MemoryWord : MonoBehaviour
         m_IsHovered = false;
         RefreshMaterial();
         m_OwningBank?.HandleWordHoverExited(this);
-    }
-
-    void CacheReferences()
-    {
-        m_Renderer ??= GetComponent<Renderer>();
-        m_Interactable ??= GetComponent<XRSimpleInteractable>();
-        m_OwningBank ??= GetComponentInParent<DataMemoryBank>();
     }
 
     void RefreshLocalLabel()

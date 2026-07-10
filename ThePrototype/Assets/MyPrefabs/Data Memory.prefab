@@ -245,6 +245,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8799026932342785221}
+  - component: {fileID: 5382344313446559553}
   m_Layer: 0
   m_Name: Pipes
   m_TagString: Untagged
@@ -269,6 +270,33 @@ Transform:
   - {fileID: 8049252217285743380}
   m_Father: {fileID: 2127858430573488158}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5382344313446559553
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1738527103144563601}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87416f33d72d3f84f87bdd4093a7f329, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PipeSequencePlayer
+  m_PipeRenderers:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 9223263056401295483}
+  m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
+  m_WaitingMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
+  m_SuccessMaterial: {fileID: 2100000, guid: 1a63d72c6152ef54493960acf859fc4a, type: 2}
+  m_DefaultStepDelaySeconds: 0.4
 --- !u!1 &3363666705496178123
 GameObject:
   m_ObjectHideFlags: 0
@@ -950,13 +978,7 @@ MonoBehaviour:
   - {fileID: 8692226154030553956}
   m_AddressText: {fileID: 4569443550285306970}
   m_DataText: {fileID: 3844400763943137945}
-  m_PipeRenderers:
-  - {fileID: 0}
-  - {fileID: 9223263056401295483}
-  m_IdlePipeMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
-  m_WaitingPipeMaterial: {fileID: 2100000, guid: eb42043ce030bd64abb0a0f6dfc0e4fd, type: 2}
-  m_TransferPipeMaterial: {fileID: 2100000, guid: 1a63d72c6152ef54493960acf859fc4a, type: 2}
-  m_PipeStepDelaySeconds: 0.5
+  m_PipeSequencePlayer: {fileID: 5382344313446559553}
 --- !u!1 &6978649567393268976
 GameObject:
   m_ObjectHideFlags: 0

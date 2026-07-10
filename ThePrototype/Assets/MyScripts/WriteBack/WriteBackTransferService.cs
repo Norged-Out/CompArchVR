@@ -100,8 +100,9 @@ public sealed class WriteBackTransferService
         var packetValue = packet != null ? packet.Value : 0;
         var packetRole = packet != null ? packet.PacketRole : DataPacketRole.None;
 
-        // The pipe sweep intentionally happens before the particle cue so the
-        // learner can visually follow the transfer path toward the register.
+        // The success sweep starts from the authored waiting state so the
+        // learner sees the path progress rather than jump straight from idle.
+        pipeSequencePlayer?.ApplyWaitingState();
         pipeSequencePlayer?.PlaySuccessSweep();
 
         if (pipeSequencePlayer != null)

@@ -785,7 +785,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7929776729948288225, guid: 57db70ddcd377bd4ca9432e1243541a6, type: 3}
       propertyPath: m_Name
-      value: PipeMedium_Blue (2)
+      value: 4
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -2767,20 +2767,28 @@ PrefabInstance:
     m_TransformParent: {fileID: 2094636798}
     m_Modifications:
     - target: {fileID: 57717861698720602, guid: 7158e456a09117a48b70eadb7ad0ed62, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.0000004172325
+      objectReference: {fileID: 0}
+    - target: {fileID: 57717861698720602, guid: 7158e456a09117a48b70eadb7ad0ed62, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.045000046
+      value: 0.045000166
       objectReference: {fileID: 0}
     - target: {fileID: 57717861698720602, guid: 7158e456a09117a48b70eadb7ad0ed62, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0.000000059604645
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2564932365250852423, guid: 7158e456a09117a48b70eadb7ad0ed62, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0.0000004172325
       objectReference: {fileID: 0}
     - target: {fileID: 2564932365250852423, guid: 7158e456a09117a48b70eadb7ad0ed62, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.045000046
+      value: 0.045000166
       objectReference: {fileID: 0}
     - target: {fileID: 2564932365250852423, guid: 7158e456a09117a48b70eadb7ad0ed62, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -0.000000059604645
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3216959825443256955, guid: 7158e456a09117a48b70eadb7ad0ed62, type: 3}
       propertyPath: m_LocalPosition.x
@@ -3991,7 +3999,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7929776729948288225, guid: 57db70ddcd377bd4ca9432e1243541a6, type: 3}
       propertyPath: m_Name
-      value: PipeMedium_Blue (3)
+      value: 5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -4074,7 +4082,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 661712233527224672, guid: d149db5695821ff41a07e15d8981861a, type: 3}
       propertyPath: m_Name
-      value: PipeSmall_Blue (1)
+      value: 8
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -6996,6 +7004,42 @@ PrefabInstance:
       propertyPath: 'm_PipeRenderers.Array.data[9]'
       value: 
       objectReference: {fileID: 429723516}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[0]'
+      value: 
+      objectReference: {fileID: 37743302}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[1]'
+      value: 
+      objectReference: {fileID: 277084841}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[2]'
+      value: 
+      objectReference: {fileID: 1325577498}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[3]'
+      value: 
+      objectReference: {fileID: 1663774704}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[4]'
+      value: 
+      objectReference: {fileID: 1921346314}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[5]'
+      value: 
+      objectReference: {fileID: 1935623119}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[6]'
+      value: 
+      objectReference: {fileID: 1536612474}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[7]'
+      value: 
+      objectReference: {fileID: 1643694269}
+    - target: {fileID: 5382344313446559553, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
+      propertyPath: 'm_PipeRenderers.Array.data[8]'
+      value: 
+      objectReference: {fileID: 956048041}
     - target: {fileID: 6524586531415313360, guid: 3192add228cc4de4a9c9decb30902c37, type: 3}
       propertyPath: m_Name
       value: Data Memory
@@ -9700,7 +9744,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1245105710069254749, guid: aa614496c9a77e541a0dcd02ecc2f687, type: 3}
       propertyPath: m_Name
-      value: PipeJointSmall_Blue
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 1876964924535427303, guid: aa614496c9a77e541a0dcd02ecc2f687, type: 3}
       propertyPath: m_LocalScale.x
@@ -13948,7 +13992,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7929776729948288225, guid: 57db70ddcd377bd4ca9432e1243541a6, type: 3}
       propertyPath: m_Name
-      value: PipeMedium_Blue
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -18590,7 +18634,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 661712233527224672, guid: d149db5695821ff41a07e15d8981861a, type: 3}
       propertyPath: m_Name
-      value: PipeSmall_Blue
+      value: 6
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -19004,7 +19048,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2ad1a06ff50576947a6cc3b2c5aec810, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::MemoryUnitController
+  m_EditorClassIdentifier: Assembly-CSharp::MemoryController
 --- !u!4 &1264612597 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 4642215332722772, guid: 68a175f629f570f429cddf1860f76ad3, type: 3}
@@ -19692,7 +19736,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1245105710069254749, guid: aa614496c9a77e541a0dcd02ecc2f687, type: 3}
       propertyPath: m_Name
-      value: PipeJointSmall_Blue (1)
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 1876964924535427303, guid: aa614496c9a77e541a0dcd02ecc2f687, type: 3}
       propertyPath: m_LocalScale.x
@@ -23924,7 +23968,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7929776729948288225, guid: 57db70ddcd377bd4ca9432e1243541a6, type: 3}
       propertyPath: m_Name
-      value: PipeMedium_Blue (1)
+      value: 3
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

@@ -37,14 +37,14 @@ public sealed class LessonGuideController : MonoBehaviour
     GameObject m_ExecutePanelRoot;
 
     [SerializeField]
-    AluExecutionController m_ExecuteController;
+    AluController m_ExecuteController;
 
     [Header("Memory Phase")]
     [SerializeField]
     GameObject m_MemoryPanelRoot;
 
     [SerializeField]
-    MemoryUnitController m_MemoryController;
+    MemoryController m_MemoryController;
 
     [Header("Write-Back Phase")]
     [SerializeField]

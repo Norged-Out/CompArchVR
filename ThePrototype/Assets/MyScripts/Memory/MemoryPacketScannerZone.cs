@@ -4,32 +4,15 @@ using UnityEngine;
 /// Trigger helper for the Memory Unit's data input.
 /// </summary>
 [DisallowMultipleComponent]
-public class MemoryPacketScannerZone : MonoBehaviour
+public class MemoryPacketScannerZone : MemoryPacketScannerZoneBase<MemoryPacketScanner>
 {
-    MemoryPacketScanner m_OwningScanner;
-
-    public void Bind(MemoryPacketScanner owningScanner)
+    protected override void HandleCandidateEntered(MemoryPacketScanner owningScanner, DataPacketToken candidate)
     {
-        m_OwningScanner = owningScanner;
+        owningScanner.NotifyPacketEntered(candidate);
     }
 
-    void OnTriggerEnter(Collider other)
+    protected override void HandleCandidateExited(MemoryPacketScanner owningScanner, DataPacketToken candidate)
     {
-        if (m_OwningScanner == null || other == null)
-            return;
-
-        var packetToken = other.GetComponentInParent<DataPacketToken>();
-        if (packetToken != null)
-            m_OwningScanner.NotifyPacketEntered(packetToken);
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        if (m_OwningScanner == null || other == null)
-            return;
-
-        var packetToken = other.GetComponentInParent<DataPacketToken>();
-        if (packetToken != null)
-            m_OwningScanner.NotifyPacketExited(packetToken);
+        owningScanner.NotifyPacketExited(candidate);
     }
 }
