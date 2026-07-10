@@ -52,11 +52,17 @@ public class AluInputScanner : PedestalScannerBase
         BindZoneHelper();
     }
 
+    /// <summary>
+    /// Enables or disables this ALU input for the active lesson step.
+    /// </summary>
     public void SetActive(bool isActive)
     {
         SetStepActive(isActive);
     }
 
+    /// <summary>
+    /// Updates the packet role this hand should currently accept.
+    /// </summary>
     public void SetExpectedPacketRole(DataPacketRole expectedPacketRole)
     {
         if (m_ExpectedPacketRole == expectedPacketRole)
@@ -70,6 +76,9 @@ public class AluInputScanner : PedestalScannerBase
             ResetScanner();
     }
 
+    /// <summary>
+    /// Fully clears the hand back to its idle state.
+    /// </summary>
     public void ResetScanner()
     {
         m_PacketsInZone.Clear();
@@ -103,6 +112,9 @@ public class AluInputScanner : PedestalScannerBase
             m_PacketsInZone.Add(dataPacketToken);
     }
 
+    /// <summary>
+    /// Stops tracking a packet that has left the trigger volume.
+    /// </summary>
     public void NotifyPacketExited(DataPacketToken dataPacketToken)
     {
         if (dataPacketToken == null)
@@ -114,6 +126,9 @@ public class AluInputScanner : PedestalScannerBase
             ClearAcceptedPacket();
     }
 
+    /// <summary>
+    /// Releases the currently latched packet, if any, without destroying it.
+    /// </summary>
     void ClearAcceptedPacket()
     {
         if (AcceptedPacket != null)
@@ -151,6 +166,10 @@ public class AluInputScanner : PedestalScannerBase
         }
     }
 
+    /// <summary>
+    /// Ensures the authored trigger volume has a forwarding helper that routes
+    /// enter / exit events back into this scanner.
+    /// </summary>
     void BindZoneHelper()
     {
         if (m_ScanZone == null)

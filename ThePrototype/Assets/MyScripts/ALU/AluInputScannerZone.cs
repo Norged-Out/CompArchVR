@@ -8,6 +8,9 @@ public class AluInputScannerZone : MonoBehaviour
 {
     AluInputScanner m_OwningScanner;
 
+    /// <summary>
+    /// Assigns the scanner that should receive trigger events from this helper.
+    /// </summary>
     public void Bind(AluInputScanner owningScanner)
     {
         m_OwningScanner = owningScanner;
