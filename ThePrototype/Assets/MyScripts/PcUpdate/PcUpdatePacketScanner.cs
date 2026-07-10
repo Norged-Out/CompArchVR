@@ -46,11 +46,19 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         BindZoneHelper();
     }
 
+    /// <summary>
+    /// Enables or disables the pedestal as a whole for the current lesson
+    /// state.
+    /// </summary>
     public void SetActive(bool isActive)
     {
         SetScannerActive(isActive);
     }
 
+    /// <summary>
+    /// Changes which packet role this pedestal currently accepts. If the
+    /// latched packet no longer matches, the pedestal resets immediately.
+    /// </summary>
     public void SetExpectedPacketRole(DataPacketRole packetRole)
     {
         m_ExpectedPacketRole = packetRole;
@@ -59,6 +67,10 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
             ResetScanner();
     }
 
+    /// <summary>
+    /// Toggles whether Immediate packets must already be sign-extended before
+    /// the pedestal will accept them.
+    /// </summary>
     public void SetImmediateRequirements(bool requireSignExtended)
     {
         m_RequireSignExtended = requireSignExtended;
@@ -75,6 +87,10 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         }
     }
 
+    /// <summary>
+    /// Clears local candidate tracking and releases any currently latched
+    /// packet.
+    /// </summary>
     public new void ResetScanner()
     {
         m_PacketsInZone.Clear();
@@ -86,6 +102,10 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         base.ResetScanner();
     }
 
+    /// <summary>
+    /// Destroys the currently accepted packet and then resets the pedestal.
+    /// Used when a packet is fully consumed by downstream logic.
+    /// </summary>
     public void ConsumeAcceptedPacket()
     {
         var packetToConsume = AcceptedPacket;
@@ -100,12 +120,20 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         ResetScanner();
     }
 
+    /// <summary>
+    /// Registers a packet that has entered the trigger zone so the pedestal can
+    /// later evaluate it for stable placement.
+    /// </summary>
     public void NotifyPacketEntered(DataPacketToken dataPacketToken)
     {
         if (dataPacketToken != null)
             m_PacketsInZone.Add(dataPacketToken);
     }
 
+    /// <summary>
+    /// Unregisters a packet that has left the trigger zone and clears the
+    /// current acceptance when the packet was not yet fully latched.
+    /// </summary>
     public void NotifyPacketExited(DataPacketToken dataPacketToken)
     {
         if (dataPacketToken == null)
@@ -117,6 +145,10 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
             AcceptedPacket = null;
     }
 
+    /// <summary>
+    /// Falls back to the conventional child-object name when the trigger
+    /// collider was not serialized explicitly.
+    /// </summary>
     protected override void CacheVisualReferences()
     {
         base.CacheVisualReferences();
@@ -129,6 +161,10 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         }
     }
 
+    /// <summary>
+    /// Chooses the first non-grabbed packet still resting inside the trigger as
+    /// the current scan candidate.
+    /// </summary>
     protected override Component GetStableCandidate()
     {
         m_PacketsInZone.RemoveWhere(packet => packet == null);
@@ -144,6 +180,9 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         return null;
     }
 
+    /// <summary>
+    /// Performs PC-update-specific validation on the current packet candidate.
+    /// </summary>
     protected override bool IsImmediateMismatch(Component candidate)
     {
         if (candidate is not DataPacketToken dataPacketToken)
@@ -165,13 +204,16 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
                 m_CurrentIssue = PacketIssue.ImmediateNotSignExtended;
                 return true;
             }
-
         }
 
         m_CurrentIssue = PacketIssue.None;
         return false;
     }
 
+    /// <summary>
+    /// Releases any previously accepted packet when a new invalid candidate
+    /// takes its place.
+    /// </summary>
     protected override void OnImmediateMismatch(Component _)
     {
         if (AcceptedPacket != null)
@@ -180,6 +222,9 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         AcceptedPacket = null;
     }
 
+    /// <summary>
+    /// Shared reset hook from the base scanner.
+    /// </summary>
     protected override void HandleScannerReset()
     {
         if (AcceptedPacket != null)
@@ -189,11 +234,19 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         m_CurrentIssue = PacketIssue.None;
     }
 
+    /// <summary>
+    /// Clears transient issue state when the current packet candidate is lost
+    /// before it can be accepted.
+    /// </summary>
     protected override void OnCandidateLost()
     {
         m_CurrentIssue = PacketIssue.None;
     }
 
+    /// <summary>
+    /// Latches the validated packet in place and notifies the PC update station
+    /// that the pedestal is ready.
+    /// </summary>
     protected override void HandleStableCandidate(Component candidate)
     {
         var stablePacket = candidate as DataPacketToken;
@@ -207,6 +260,10 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
         MarkSuccess();
     }
 
+    /// <summary>
+    /// Ensures the trigger helper component exists on the authored scan zone
+    /// and points back to this scanner instance.
+    /// </summary>
     void BindZoneHelper()
     {
         if (m_ScanZone == null)

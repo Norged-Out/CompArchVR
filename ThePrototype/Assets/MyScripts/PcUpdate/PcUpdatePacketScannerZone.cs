@@ -1,29 +1,19 @@
 using UnityEngine;
 
 /// <summary>
-/// Trigger bridge for the Program Counter update station scanners.
+/// Shared-zone implementation for Program Counter update packet pedestals.
 /// </summary>
 [DisallowMultipleComponent]
-public class PcUpdatePacketScannerZone : MonoBehaviour
+public sealed class PcUpdatePacketScannerZone
+    : PedestalScannerZoneBase<PcUpdatePacketScanner, DataPacketToken>
 {
-    PcUpdatePacketScanner m_Scanner;
-
-    public void Bind(PcUpdatePacketScanner scanner)
+    protected override void HandleCandidateEntered(PcUpdatePacketScanner owningScanner, DataPacketToken candidate)
     {
-        m_Scanner = scanner;
+        owningScanner.NotifyPacketEntered(candidate);
     }
 
-    void OnTriggerEnter(Collider other)
+    protected override void HandleCandidateExited(PcUpdatePacketScanner owningScanner, DataPacketToken candidate)
     {
-        var dataPacketToken = other.GetComponentInParent<DataPacketToken>();
-        if (dataPacketToken != null)
-            m_Scanner?.NotifyPacketEntered(dataPacketToken);
-    }
-
-    void OnTriggerExit(Collider other)
-    {
-        var dataPacketToken = other.GetComponentInParent<DataPacketToken>();
-        if (dataPacketToken != null)
-            m_Scanner?.NotifyPacketExited(dataPacketToken);
+        owningScanner.NotifyPacketExited(candidate);
     }
 }
