@@ -132,6 +132,7 @@ public class PcUpdateController : MonoBehaviour
     PcBranchService m_BranchService;
 
     public event System.Action ContinueRequested;
+    public event System.Action PcUpdateConfirmed;
 
     /// <summary>
     /// Builds the authored services and wires every authored UI / scanner event
@@ -265,6 +266,7 @@ public class PcUpdateController : MonoBehaviour
         }
 
         m_IsAwaitingContinue = true;
+        PcUpdateConfirmed?.Invoke();
         SetFeedback("Program Counter update confirmed. Press Continue to reset the lesson.", false);
         RefreshPresentation();
     }

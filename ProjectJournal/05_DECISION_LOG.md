@@ -207,6 +207,20 @@ Implication:
 - each pedestal should validate only when its lesson step is active
 - each pedestal should read the placed register token's identity and drive success/failure feedback
 
+## 2026-07-12 - Navigation Guidance Should Be Physical, Gated, And Minimal
+
+Decision:
+- use authored doors/gates plus authored arrow routes to guide the learner through the map
+
+Why:
+- the routed scene is now large enough that phase order needs environmental support
+- the supervisor specifically wanted clearer indication of where the learner should head next
+- visual clutter should stay low, so inactive arrows should disappear instead of remaining onscreen
+
+Implication:
+- route arrows should activate only for the currently relevant path
+- sequential pulsing is preferred over every arrow flashing in sync, because it reads more like a route than a beacon wall
+
 ## 2026-06-26 - Register Placement Validation May Use A Short Stable-Placement Rule
 
 Decision:

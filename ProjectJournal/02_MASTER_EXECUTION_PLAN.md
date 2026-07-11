@@ -62,6 +62,7 @@ Use VR for:
 - register manipulation
 - mux/gateway decisions
 - embodied progression through datapath stages
+- authored route-following cues when the map itself becomes part of the lesson readability
 
 Use UI for:
 - lookup tables
@@ -142,6 +143,8 @@ Note:
 - jump-family instruction support
 - experiment mode without guided handholding
 - persistent cheatsheet/settings support
+- optional helper NPC / guide presence
+- optional in-world music / ambience interaction if it improves presentation feel without becoming distracting
 
 The project has already moved beyond the old three-instruction V1 boundary, so future prioritization should now favor clarity and presentation over raw instruction count.
 

@@ -11,6 +11,7 @@ Current working scene:
 Current prototype focus:
 - playable `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, and `bne` lesson loops in `Testing Ground`
 - scene-authored `Intro UI`, `Instruction Decode UI`, `ALU UI`, `Mem UI`, and `WB UI` under `Lesson Guide`
+- scene-authored route gating and first-pass arrow guidance now prototyped for wayfinding
 - authored 32-register MIPS bank with local reset
 - per-register logical values now supported in code
 - register scanner validation path for decode-stage source operands
@@ -31,6 +32,7 @@ Current prototype focus:
 - keeping lesson code tied to existing scene objects instead of building UI at runtime
 - treating the new routed map as part of the lesson experience instead of only scenery
 - preparing navigation, tutorial, audio, and presentation polish on top of the now-working instruction set and branch flow
+- user is taking the next day off for recovery, so the current checkpoint should preserve enough context to resume directly into polish work
 
 Current milestone:
 - June 29, 2026 supervisor demo completed
@@ -62,6 +64,8 @@ The user-defined cutoff for the next meeting is:
 6. Proper sound pass
 7. Final polish
 8. Experiment mode without handholding before the meeting if feasible
+9. Optional helper NPC / guide character if time remains
+10. Optional in-scene music player / ambient music interaction if it strengthens presentation
 
 Interpretation:
 - the core instructional loop is already present
@@ -160,6 +164,28 @@ The project now has:
   - Memory consumes address/store packets once the memory interaction has completed
   - write-back still owns the final register value update
 - branch resolution now finishes through a real `PC Update` step instead of bouncing back to an earlier generic panel
+- lesson progression can now physically gate map traversal through authored doors/gates
+- first-pass route arrows now exist to support navigation across the larger map
+
+### 2026-07-12 - Gated Routing And Guidance Prototype
+
+Completed:
+- added lesson-gated door progression tied to lesson phases
+- validated moving gates instead of simple active/inactive blockers
+- prototyped route arrows as authored scene objects with pulsing guidance behavior
+- updated the route prototype so arrows can stay hidden when not needed
+- updated the route prototype so arrows in a group can pulse sequentially instead of all in sync
+
+Changed:
+- navigation is now starting to become part of the lesson readability strategy, not only a scene-polish extra
+- the project can now communicate both:
+  - where the learner is allowed to go
+  - where the learner should probably go next
+
+Next:
+- tune the arrow visual language
+- decide how many arrows each route truly needs
+- add sound cues only after the visual route language feels clear enough
 
 ### 2026-06-29 - V1 Closed Out, V2 Design Started
 

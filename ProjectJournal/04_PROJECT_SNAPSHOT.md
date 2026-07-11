@@ -210,6 +210,8 @@ Before stopping:
 - whether jump-family instructions are worth fitting in before the July 24 checkpoint
 - how much onboarding belongs in a dedicated tutorial versus just-in-time prompts in the map
 - how much post-meeting time should be reserved for participant prep instead of feature work
+- whether a helper NPC / guide would actually improve onboarding or only add scope/noise
+- whether an optional music player / ambient scene audio source would help presentation tone without distracting from the lesson
 
 ## Current Pre-Meeting Priorities
 
@@ -223,6 +225,8 @@ Ordered cutoff list before the next supervisor meeting:
 6. sound pass
 7. final polish
 8. experiment mode before the checkpoint if feasible
+9. optional helper NPC / guide if time remains
+10. optional in-world music player / ambience pass if time remains
 
 Everything else should be treated as future work unless a blocking regression appears.
 
@@ -231,6 +235,7 @@ Everything else should be treated as future work unless a blocking regression ap
 The cleanest next work item is:
 - finish the presentation/polish pass on top of the now-working instruction set
 - start with map retouch, UI cleanup, and gate + arrow introduction before reopening broader design questions
+- resume from the now-working gated route / arrow prototype rather than rebuilding navigation logic again
 - keep the flow order fixed as:
   - fetch
   - decode

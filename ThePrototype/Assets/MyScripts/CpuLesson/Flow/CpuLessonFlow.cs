@@ -49,7 +49,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
     public InstructionRuntimeSelection RuntimeSelection => m_State.RuntimeSelection;
     public int CurrentStepIndex => m_State.CurrentStepIndex;
     public int CurrentRegisterSelectionIndex => m_State.CurrentRegisterSelectionIndex;
-    public bool HasStarted => m_State.HasStarted;
+    public bool HasStarted => m_State != null && m_State.HasStarted;
     public RegisterBank RegisterBank => m_RegisterBank;
     public bool RegisterSelectionReadyToContinue => m_State.RegisterSelectionReadyToContinue;
     public bool UsesInstructionTerminals => m_Fetch.UsesTerminals;
