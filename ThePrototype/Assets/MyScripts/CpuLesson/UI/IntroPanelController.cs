@@ -72,6 +72,15 @@ public sealed class IntroPanelController : LessonPanelBase
     }
 
     /// <summary>
+    /// Shows or hides the authored instruction dropdown when the lesson begins or resets.
+    /// </summary>
+    public void SetInstructionDropdownVisible(bool isVisible)
+    {
+        if (m_InstructionDropdown != null)
+            m_InstructionDropdown.gameObject.SetActive(isVisible);
+    }
+
+    /// <summary>
     /// Shows or hides the authored intro panel.
     /// </summary>
     public void SetVisible(bool isVisible)
@@ -87,10 +96,13 @@ public sealed class IntroPanelController : LessonPanelBase
         SetVisible(true);
         SetTextField(
             m_Body,
-            $"Lesson Introduction\n\nSelected instruction: {currentInstruction?.assemblyInstructionText ?? "add t2, t0, t1"}\n\nPress Start Lesson to begin.");
-        SetTextField(m_Feedback, string.Empty);
+            "Welcome to the MIPS Single-Cycle Datapath Virtual Reality Experience.\n\n" +
+            "You are about to trace an instruction through the core stages of a single-cycle CPU and experience how each part of the datapath contributes to its completion.\n\n" +
+            "Please select an instruction of your choice and press Start Lesson to begin.");
+        SetTextFieldActive(m_Feedback, false);
         SetButtonState(m_ActionButton, m_ActionLabel, startButtonLabel, true);
         SetInstructionDropdownInteractable(true);
+        SetInstructionDropdownVisible(true);
         RefreshPanelLayout(m_ActionButton);
     }
 
@@ -104,13 +116,14 @@ public sealed class IntroPanelController : LessonPanelBase
 
         SetVisible(true);
         SetTextField(m_Body, BuildIntroBody(lessonFlow, step));
-        SetTextField(m_Feedback, string.Empty);
+        SetTextFieldActive(m_Feedback, false);
         SetButtonState(
             m_ActionButton,
             m_ActionLabel,
             step.requiredInteraction == InstructionStepInteractionType.Completion ? restartButtonLabel : continueButtonLabel,
             step.requiredInteraction == InstructionStepInteractionType.ContinueButton ||
             step.requiredInteraction == InstructionStepInteractionType.Completion);
+        SetInstructionDropdownVisible(false);
         RefreshPanelLayout(m_ActionButton);
     }
 
@@ -128,7 +141,7 @@ public sealed class IntroPanelController : LessonPanelBase
     /// </summary>
     public void SetFeedback(string message, bool isFailure)
     {
-        SetFeedbackField(m_Feedback, message, isFailure);
+        SetTextFieldActive(m_Feedback, false);
         RefreshPanelLayout(m_ActionButton);
     }
 
@@ -169,25 +182,11 @@ public sealed class IntroPanelController : LessonPanelBase
 
         if (step.stepName.IndexOf("Fetch", StringComparison.OrdinalIgnoreCase) >= 0)
         {
-            if (lessonFlow.UsesInstructionTerminals)
-            {
-                var transportStatus = lessonFlow.IsInstructionReadyForDecode
-                    ? "The module is docked at the decode terminal. Instruction Decode is unlocking now."
-                    : "The selected instruction has been uploaded to the fetch terminal. Pick up the module, carry it to the decode terminal, and dock it there to unlock Instruction Decode.";
-
-                return
-                    $"Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
-                    $"Instruction: {instruction.displayName}\n" +
-                    $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                    $"{transportStatus}";
-            }
-
             return
                 $"Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
                 $"Instruction: {instruction.displayName}\n" +
                 $"Assembly: {instruction.assemblyInstructionText}\n\n" +
-                $"{step.explanation}\n\n" +
-                "When you are ready, continue into instruction decode.";
+                "The selected instruction has been uploaded to the fetch terminal. Pick up the module, carry it to the decode terminal, and dock it there to unlock Instruction Decode.";
         }
 
         return

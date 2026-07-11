@@ -51,6 +51,17 @@ public abstract class LessonPanelBase : MonoBehaviour
     }
 
     /// <summary>
+    /// Shows or hides a authored scene object without changing any child content.
+    /// </summary>
+    protected static void SetObjectActive(GameObject target, bool isActive)
+    {
+        if (target == null)
+            return;
+
+        target.SetActive(isActive);
+    }
+
+    /// <summary>
     /// Applies the shared lesson feedback palette and visibility rules.
     /// </summary>
     protected static void SetFeedbackField(TMP_Text target, string message, bool isFailure)

@@ -29,13 +29,13 @@ public sealed class DecodePanelController : LessonPanelBase
     TMP_Text m_FunctLessonText;
 
     [SerializeField]
-    TMP_Text m_OpcodeBodyText;
+    GameObject m_OpcodeGroupRoot;
+
+    [SerializeField]
+    GameObject m_FunctGroupRoot;
 
     [SerializeField]
     TMP_Text m_RegisterBodyText;
-
-    [SerializeField]
-    TMP_Text m_FunctBodyText;
 
     [SerializeField]
     TMP_Text m_OpcodeSelectionText;
@@ -243,11 +243,9 @@ public sealed class DecodePanelController : LessonPanelBase
         SetTextFieldActive(m_OpcodeLessonText, isOpcodeStep);
         SetTextFieldActive(m_FunctLessonText, isFunctStep);
         SetTextFieldActive(m_RegisterLessonText, isRegisterStep);
-        SetTextFieldActive(m_OpcodeBodyText, isOpcodeStep);
-        SetTextFieldActive(m_FunctBodyText, isFunctStep);
+        SetObjectActive(m_OpcodeGroupRoot, isOpcodeStep);
+        SetObjectActive(m_FunctGroupRoot, isFunctStep);
         SetTextFieldActive(m_RegisterBodyText, isRegisterStep);
-        SetTextFieldActive(m_OpcodeSelectionText, isOpcodeStep);
-        SetTextFieldActive(m_FunctSelectionText, isFunctStep);
         SetTextFieldActive(m_RegisterSelectionText, isRegisterStep);
     }
 
