@@ -47,9 +47,18 @@ public class RegisterBankResetButton : MonoBehaviour
         CacheReferences();
     }
 
-    void OnFirstSelectEntered(SelectEnterEventArgs _)
+    /// <summary>
+    /// Shared reset entry point used by both the authored XR button and any
+    /// future UI button that should snap the register pieces back home.
+    /// </summary>
+    public void TriggerReset()
     {
         m_RegisterBank?.ResetRegisterPositionsOnly();
+    }
+
+    void OnFirstSelectEntered(SelectEnterEventArgs _)
+    {
+        TriggerReset();
     }
 
     void CacheReferences()

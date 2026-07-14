@@ -11,6 +11,9 @@ public sealed class LessonGuidanceController : MonoBehaviour
     CpuLessonFlow m_LessonFlow;
 
     [SerializeField]
+    bool m_GuidanceEnabled = true;
+
+    [SerializeField]
     GuidanceArrow[] m_PreStartArrows;
 
     [SerializeField]
@@ -36,6 +39,8 @@ public sealed class LessonGuidanceController : MonoBehaviour
 
     readonly LessonPhaseRouter m_PhaseRouter = new();
 
+    public bool GuidanceEnabled => m_GuidanceEnabled;
+
     void OnEnable()
     {
         if (m_LessonFlow != null)
@@ -53,6 +58,8 @@ public sealed class LessonGuidanceController : MonoBehaviour
     {
         if (m_LessonFlow != null)
             m_LessonFlow.StepChanged -= HandleStepChanged;
+
+        SetAllGroupsInactive();
     }
 
     void HandleStepChanged(CpuLessonFlow _)
@@ -60,17 +67,25 @@ public sealed class LessonGuidanceController : MonoBehaviour
         RefreshGuidance();
     }
 
+    /// <summary>
+    /// Lets external UI toggle the route guidance on or off without disabling
+    /// the whole component or losing the current lesson-phase subscription.
+    /// </summary>
+    public void SetGuidanceEnabled(bool isEnabled)
+    {
+        if (m_GuidanceEnabled == isEnabled)
+            return;
+
+        m_GuidanceEnabled = isEnabled;
+        RefreshGuidance();
+    }
+
     void RefreshGuidance()
     {
-        // Only one route should read as active at a time, so clear every group
-        // before enabling the one that matches the current lesson phase.
-        SetGroupActive(m_PreStartArrows, false);
-        SetGroupActive(m_FetchArrows, false);
-        SetGroupActive(m_DecodeArrows, false);
-        SetGroupActive(m_ExecuteArrows, false);
-        SetGroupActive(m_MemoryArrows, false);
-        SetGroupActive(m_WriteBackArrows, false);
-        SetGroupActive(m_PcUpdateArrows, false);
+        SetAllGroupsInactive();
+
+        if (!m_GuidanceEnabled)
+            return;
 
         if (m_LessonFlow == null || !m_LessonFlow.HasStarted)
         {
@@ -110,6 +125,19 @@ public sealed class LessonGuidanceController : MonoBehaviour
 
         if (m_PhaseRouter.ShouldShowPcUpdatePanel(m_LessonFlow))
             SetGroupActive(m_PcUpdateArrows, true);
+    }
+
+    void SetAllGroupsInactive()
+    {
+        // Only one route should read as active at a time, so clear every group
+        // before enabling the one that matches the current lesson phase.
+        SetGroupActive(m_PreStartArrows, false);
+        SetGroupActive(m_FetchArrows, false);
+        SetGroupActive(m_DecodeArrows, false);
+        SetGroupActive(m_ExecuteArrows, false);
+        SetGroupActive(m_MemoryArrows, false);
+        SetGroupActive(m_WriteBackArrows, false);
+        SetGroupActive(m_PcUpdateArrows, false);
     }
 
     void SetGroupActive(GuidanceArrow[] arrows, bool isActive)

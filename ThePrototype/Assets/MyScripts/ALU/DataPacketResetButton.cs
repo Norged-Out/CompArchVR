@@ -36,7 +36,11 @@ public class DataPacketResetButton : MonoBehaviour
         m_Interactable.firstSelectEntered.RemoveListener(OnFirstSelectEntered);
     }
 
-    void OnFirstSelectEntered(SelectEnterEventArgs _)
+    /// <summary>
+    /// Shared reset entry point used by both the authored XR button and any
+    /// future UI button that should snap free data packets back home.
+    /// </summary>
+    public void TriggerReset()
     {
         foreach (var dataPacket in DataPacketToken.ActiveTokens)
         {
@@ -45,6 +49,11 @@ public class DataPacketResetButton : MonoBehaviour
 
             dataPacket.ResetToSpawnPose();
         }
+    }
+
+    void OnFirstSelectEntered(SelectEnterEventArgs _)
+    {
+        TriggerReset();
     }
 
     void CacheReferences()
