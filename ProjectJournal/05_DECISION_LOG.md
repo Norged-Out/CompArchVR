@@ -945,3 +945,84 @@ Why:
 Implication:
 - `AuthoredOffsetLerp` should remain safe to leave on objects in a dormant state
 - intro-sequence experimentation can happen object-by-object without committing the whole map to the effect
+
+## 2026-07-14 - Settings Menu Should Extend The Existing XR Hand Menu, Not Replace It
+
+Decision:
+- build the player settings menu on top of Unity's existing wrist/hand-menu system and add only a small helper layer for controller-button access
+
+Why:
+- the existing XR hand-menu prefabs already provide the anchored wrist-menu behavior the project can reuse
+- the user preferred editor-side input-action setup instead of inventing a new input path entirely in code
+- replacing the menu framework wholesale would add risk late in the project for little real teaching value
+
+Implication:
+- future menu work should prefer helper scripts and scene/prefab authoring around the existing `HandMenu` system
+- package code should not be overwritten casually just to add controller-opening convenience
+- if menu comfort/anchoring is revisited later, treat it as refinement of the current wrist-menu base rather than proof that the whole approach was wrong
+
+## 2026-07-14 - Settings Menu Actions Should Reuse Existing World Behaviors
+
+Decision:
+- when a settings-menu action duplicates an existing world interaction, expose a shared script entry point instead of creating a separate UI-only logic path
+
+Why:
+- the project already had physical reset buttons for registers and datapackets
+- the new settings menu needed the same recovery actions without breaking or bypassing the scene-authored interactions
+- one shared behavior path reduces drift between "menu version" and "world version" of the same action
+
+Implication:
+- reset actions should remain conservative and continue preserving the earlier design boundaries:
+  - register reset stays pose-only
+  - datapacket reset stays loose-packet-only
+- future menu additions should similarly reuse validated lesson/runtime actions where practical instead of cloning behavior into parallel scripts
+
+## 2026-07-14 - Tutorial Planning Should Keep Both Video And Coaching-Card Paths Alive For Now
+
+Decision:
+- keep two onboarding/tutorial directions active for now:
+  - a custom recorded tutorial video
+  - a coaching-card style image/text walkthrough based on the sample spatial-panel setup
+
+Why:
+- both options currently look cheap enough to remain plausible without forcing an immediate hard lock-in
+- the video path may be the fastest route to a presentable onboarding pass
+- the coaching-card path is easier to revise late and may be more reusable later for hints or experiment-mode support
+
+Implication:
+- future onboarding work can evaluate either approach first without treating the other as a contradiction
+- combining both remains acceptable only if it still stays small and does not turn onboarding into a side project
+- a pure text-only fallback remains possible, but should not be treated as the preferred presentation target while the other two options are still viable
+
+## 2026-07-14 - The Map Revamp And Settings Menu Now Count As Established Baseline, Not Headline TODOs
+
+Decision:
+- stop framing the route revamp and baseline settings menu as major unfinished phase tasks
+
+Why:
+- the user clarified that the map has already received its proper route revamp in recent work
+- the wrist settings menu is now implemented well enough to count as a baseline system
+- leaving both in the live priority list as if they still need first implementation would make the journals misleading
+
+Implication:
+- future live-priority sections should treat:
+  - map work as touch-up/readability tuning only unless new testing reveals a real problem
+  - settings work as optional refinement only unless a blocker appears
+- the main active remaining presentation tasks should now bias toward:
+  - onboarding
+  - sound
+  - experiment mode
+  - final polish
+
+## 2026-07-14 - No Separate Dedicated Cheatsheet Is Currently Planned
+
+Decision:
+- do not plan a standalone cheatsheet system for the current build unless a later usability issue proves the hint panels are insufficient
+
+Why:
+- the user explicitly clarified that the various hint panels should already provide enough reference text for now
+- another parallel reference surface would add more UI scope during the final polish window
+
+Implication:
+- settings-menu expansion should not assume it must become a full reference encyclopedia
+- future assistants should treat "cheatsheet" as optional/deferred language rather than as a required missing feature

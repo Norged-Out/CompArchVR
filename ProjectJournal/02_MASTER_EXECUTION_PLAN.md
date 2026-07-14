@@ -1,5 +1,11 @@
 # Master Execution Plan
 
+This file should be read as:
+- current strategy first
+- preserved historical reasoning second
+
+If an older milestone note conflicts with the present state of the project, the present-tense sections nearer the top of this file and the top of `01_PROGRESS_LOG.md` win.
+
 ## Overarching Project Direction
 
 This project is not trying to build a giant all-encompassing computer architecture simulator.
@@ -38,19 +44,21 @@ The user and supervisor agreed that the project should:
 
 This principle should override ambitious expansion pressure.
 
-## Current Concrete Milestone
+## Current Delivery Milestone
 
-Near-term deadline:
-- the June 29, 2026 V1 checkpoint has already been completed
-- the next supervisor meeting target is now `2026-07-24`
-- official project/demo deadline remains `2026-07-29`
+Active schedule:
+- next supervisor meeting target: `2026-07-24`
+- official project/demo deadline: `2026-07-29`
 - preferred internal target:
-  - finish the build a few days early
-  - use the final buffer for final polish, participant prep, and presentation safety
+  - finish a stable build a few days early
+  - keep the final buffer for polish, participant prep, and presentation safety
 
-Important clarification:
-- the original V1 instruction target has already been realized
-- the active risk is now readability, navigation, onboarding quality, and final-project fit rather than missing single-cycle datapath coverage
+Current risk:
+- not missing datapath coverage
+- but readability, navigation, onboarding, and overall delivery quality
+
+Historical note:
+- the June 29, 2026 V1 checkpoint is complete and should now be treated as project history, not as the live plan
 
 ## Design Philosophy
 
@@ -99,9 +107,9 @@ Historical rollout:
 2. `addi`
 3. `lw`
 
-That sequence remains useful to explain how complexity was introduced, but it is no longer the current live rollout plan.
+That rollout remains useful for explaining project growth, but it is no longer the current delivery plan.
 
-## Recommended MVP
+## Historical MVP Logic
 
 The minimum viable playable lesson should include:
 - one instruction
@@ -115,8 +123,8 @@ The first instruction does not need to be the most complex one.
 It needs to be the one most likely to produce a clean, working lesson loop.
 
 Note:
-- the original MVP logic still applies architecturally
-- the old V1 target of a stable `add` / `addi` / `lw` prototype by `2026-06-28` has already been achieved and should now be treated as historical context
+- this section explains the original shaping logic of the prototype
+- the old `add` / `addi` / `lw` V1 target has already been achieved and should now be read as historical context
 
 ## Preferred Feature Breakdown
 
@@ -142,7 +150,7 @@ Note:
 - richer audiovisual polish
 - jump-family instruction support
 - experiment mode without guided handholding
-- persistent cheatsheet/settings support
+- expanded cheatsheet/settings support beyond the current baseline menu
 - optional helper NPC / guide presence
 - optional in-world music / ambience interaction if it improves presentation feel without becoming distracting
 
@@ -305,24 +313,35 @@ A strong demo should show that a learner can:
 
 Before the next supervisor meeting on `2026-07-24`, prioritize:
 
-1. door gating plus path-guidance arrows
-2. UI polish across the authored three-panel lesson surfaces
-3. a proper tutorial / onboarding layer
-4. map lighting, path tightening, and presentation-quality environment cleanup
-5. sound pass for spatial guidance and feedback
-6. experiment mode without handholding
-7. jump-family instruction additions only if the above is already safe
+1. tutorial / onboarding
+2. sound pass for spatial guidance and feedback
+3. experiment mode without handholding
+4. optional settings refinement only where it clearly improves usability
+5. jump-family instruction additions only if the above is already safe
+6. final presentation polish
+
+Already partly established and now moving into refinement instead of first implementation:
+- routed map revamp / improved route baseline
+- gated progression
+- physical route guidance
+- multi-panel authored lesson UI
+- baseline wrist settings menu support
+- baseline tutorial asset presence through the imported sample tutorial/video prefab
 
 Reason:
-- the functional lesson loop is now broad enough for the checkpoint
-- the main remaining risk is no longer missing datapath coverage
+- the functional lesson loop is already broad enough
 - the main remaining risk is whether the experience feels readable, guided, polished, and complete
+
+Practical interpretation of this cutoff:
+- do not reopen core datapath architecture unless a blocker appears
+- do not treat instruction-count growth as the main success metric anymore
+- treat the next supervisor meeting as a usability/readability checkpoint, not a "prove the datapath exists" checkpoint
 
 ## Recommended Backlog After The Meeting
 
 Recommended order once the `2026-07-24` checkpoint build is safe:
 
-1. settings menu / cheatsheet panel
+1. expanded settings menu / replay affordances if still useful
 2. cleaner exit / restart / free-roam transitions
 3. immediate-family expansion:
    - `slti`

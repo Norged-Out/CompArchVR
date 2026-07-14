@@ -59,6 +59,18 @@ Current prototype features:
   - gated return toward the end
 - moving gate system for phase progression
 - new lightweight arrow-guidance prototype for route assistance
+- player-facing wrist settings menu with:
+  - current instruction text
+  - current phase text
+  - register reset
+  - datapacket reset
+  - lesson restart
+  - volume slider
+  - route-guidance toggle
+  - FPS / frame-time readout
+  - quit support
+- left-controller menu-button access layered onto the existing XR hand-menu approach
+- imported tutorial/video prefab from `VRTemplateAssets` now present as onboarding groundwork
 - refactored `CpuLesson` folder organized into:
   - `Flow`
   - `Support`
@@ -119,13 +131,11 @@ What is current polish work versus already-solved systems:
   - write-back
   - branch resolution
 - still active polish work:
-  - map readability
-  - gate/readability tuning
-  - route-arrow tuning
   - tutorial/onboarding
-  - settings / cheatsheet support
   - sound pass
   - experiment mode
+  - light route/gate readability tuning only if testing exposes issues
+  - optional settings refinement
 
 ## Most Important Scripts Right Now
 
@@ -182,12 +192,12 @@ Why:
 - next supervisor checkpoint: `2026-07-24`
 - official demo deadline: `2026-07-29`
 - current focus is presentation readiness:
-  - navigation clarity
   - tutorial / onboarding
+  - navigation clarity
   - UI readability
-  - map polish
   - sound cues
   - experiment-mode planning
+  - only small settings-menu refinements if they clearly help
 
 ## If Starting A New Chat
 
@@ -205,7 +215,10 @@ Before stopping:
 ## Current Open Questions
 
 - how strong the door + arrow + audio guidance should be without becoming visually noisy
-- whether a persistent settings / cheatsheet panel should mirror all closed lesson information
+- whether onboarding V1 should ship as:
+  - a recorded custom tutorial video
+  - a coaching-card image/text walkthrough
+  - both, if still cheap enough
 - what the minimum viable experiment mode should hide, skip, or ungate
 - how much of the current UI wording should move entirely into authored scene text versus stay runtime-driven
 - whether instruction choice should remain user-selected, become randomized, or support both
@@ -219,15 +232,15 @@ Before stopping:
 
 Ordered cutoff list before the next supervisor meeting:
 
-1. map retouch and route tightening
-2. tutorial UI
-3. settings / cheatsheet support
-4. sound pass
-5. experiment mode before the checkpoint if feasible
-6. jump-family evaluation / inclusion only if safe
-7. final polish
-8. optional helper NPC / guide if time remains
-9. optional in-world music player / ambience pass if time remains
+1. tutorial UI / onboarding decision and first pass
+2. sound pass
+3. experiment mode before the checkpoint if feasible
+4. optional settings refinement only if it materially helps usability
+5. jump-family evaluation / inclusion only if safe
+6. final polish
+7. optional helper NPC / guide if time remains
+8. optional in-world music player / ambience pass if time remains
+9. optional VFX pass if the unused Unity Asset Store effects pack proves presentation-helpful and cheap to integrate
 
 Everything else should be treated as future work unless a blocking regression appears.
 
@@ -235,11 +248,13 @@ Everything else should be treated as future work unless a blocking regression ap
 
 The cleanest next work item is:
 - continue the polish pass instead of adding another major system
-- refine the current map route and readability
-- finish onboarding / tutorial support
-- add settings / cheatsheet support
-- layer sound on top of the already-working gated route
+- choose and build the first real onboarding path
+- likely keep both tutorial options on the table for now:
+  - recorded custom video
+  - coaching-card walkthrough
+- move into the sound pass next
 - add experiment mode only after the guided version feels presentation-safe
+- keep map changes to touch-up work unless testing exposes a real routing/readability issue
 
 Do not resume from an older assumption that gating or route guidance still needs first implementation; those systems now exist and should be refined, not reinvented.
 
@@ -249,6 +264,8 @@ Do not resume from an older assumption that gating or route guidance still needs
 - a reusable `AuthoredOffsetLerp` helper exists for optional opening-sequence/environment settle-in work
 - that helper is intentionally dormant by default and should only be enabled on specific authored scene pieces when actively testing an intro beat
 - recent Unity headset play-mode delays looked inconsistent and editor-side, so they should not be treated as evidence that the offset helper itself is unsafe
+- the project also now has a baseline wrist settings menu, so player-facing support is no longer limited to the phase-local lesson panels alone
+- no dedicated separate cheatsheet is currently planned, since the hint panels are expected to cover most reference needs
 
 ## Personal Reminder
 

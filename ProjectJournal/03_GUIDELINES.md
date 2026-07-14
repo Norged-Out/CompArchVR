@@ -133,9 +133,15 @@ After meaningful work, update documentation when relevant:
 
 This rule exists because the user explicitly wants persistent project memory inside the repo.
 
-## Current Deadline Rule
+When updating journals:
+- keep old milestone information if it is still useful for the dissertation or presentation
+- but rewrite top-level "current state" sections so they reflect the live project, not an older checkpoint
+- clearly separate:
+  - current authoritative status
+  - historical milestone/archive notes
+- if a system moved from TODO to working baseline, update the active priority lists to reflect that instead of leaving stale TODO wording behind
 
-The old V1 milestone is complete.
+## Current Deadline Rule
 
 The active deadline framing is now:
 - next supervisor meeting target: `2026-07-24`
@@ -145,12 +151,21 @@ The active deadline framing is now:
   - use the remaining time for polish, participant prep, and presentation safety
 
 Current short-term priorities:
-- door gating + path-guidance arrows
-- UI polish across the authored three-panel lesson surfaces
 - tutorial / onboarding flow
-- map lighting and route tightening
 - sound-guided navigation / feedback
 - experiment mode before the meeting if safely possible
+- settings refinement only if it clearly helps usability/presentation
+- jump-family work only if the polish path is already safe
+- optional helper NPC / in-world music only if clearly beneficial and low-risk
+
+Current live-state reminder:
+- a baseline player settings menu now exists
+- future journal updates should describe further menu work as refinement/expansion unless that baseline is intentionally removed or replaced
+- the map revamp / better route baseline should not keep being written up as an unfinished headline task unless new testing exposes a real readability problem
+- a separate cheatsheet is no longer the preferred assumption; current planning expects the hint panels to carry most of that explanatory burden
+- tutorial planning may legitimately discuss both:
+  - a custom recorded video path
+  - a coaching-card / image-and-text path
 
 Do not casually re-scope away from presentation readiness unless the user explicitly changes direction.
 

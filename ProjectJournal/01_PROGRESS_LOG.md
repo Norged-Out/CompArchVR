@@ -50,6 +50,17 @@ Current stable feature set:
 - datapacket reset for loose, non-consumed packets
 - routed map with gate-controlled progression
 - first pass of route arrows / wayfinding now prototyped
+- player-facing wrist settings menu support with:
+  - current instruction readout
+  - current phase readout
+  - register reset
+  - datapacket reset
+  - volume control
+  - route-guidance toggle
+  - FPS + frame-time readout
+  - quit / restart support
+- controller-accessible wrist menu opening through the left controller menu-button path
+- imported baseline tutorial/video prefab from `VRTemplateAssets` now present in-scene as onboarding groundwork
 
 Current interaction systems that are already implemented:
 - permanent 32-register MIPS bank serialized into `Testing Ground`
@@ -101,21 +112,23 @@ Current development priority:
 
 These are the live priorities from the current perspective:
 
-1. map retouch and route tightening
-2. tutorial / onboarding UI
-3. settings / cheatsheet support
-4. sound pass for feedback and navigation
-5. experiment mode without handholding
-6. jump-family evaluation only if the above is already safe
-7. final polish
+1. tutorial / onboarding decision and first proper pass
+2. sound pass for feedback and navigation
+3. experiment mode without handholding
+4. optional settings refinements only where they materially help usability
+5. jump-family evaluation only if the above is already safe
+6. final polish
 
 Optional only if time remains:
 - helper NPC / guide presence
 - in-world music player / ambient interaction
+- VFX pass using the Unity Asset Store pack the user already found but has not yet integrated
 
 Interpretation:
 - the datapath lesson itself is already broad enough for the checkpoint
 - the remaining risk is experience quality, not missing core single-cycle stages
+- a baseline settings menu now exists, so the remaining question is expansion/tuning rather than first implementation
+- the map revamp / better route baseline should now be treated as established work, with only touch-up tuning left if testing reveals a problem
 
 ## Current Working Build Snapshot
 
@@ -125,6 +138,8 @@ What should currently be treated as true:
 - fetch, decode, execute, memory, write-back, and PC update all exist as real authored interactions
 - the routed map is part of the teaching experience, not just scenery
 - door gating and arrow guidance are now presentation-layer systems on top of the working lesson loop
+- a baseline wrist settings menu now exists for player-facing recovery, status, and guidance control
+- the improved routed-map layout should now be treated as the active baseline rather than an unfinished first-pass map task
 - the current build direction is polish-first, not instruction-count-first
 - supported working instructions are:
   - `add`
@@ -1015,10 +1030,11 @@ Recommended next development priorities:
    - lesson rhythm
    - recovery expectations
 
-2. Add settings / cheatsheet support.
+2. Refine the new settings support only if it materially helps usability.
    Focus on:
-   - keeping explanation available after earlier panels are gone
-   - reducing pressure on active interaction panels
+   - keeping wording concise enough to fit the wrist format cleanly
+   - adding only small quality-of-life options if they clearly help testing or presentation
+   - not re-scoping it into a full separate cheatsheet system, since the hint panels are currently expected to cover most reference needs
 
 3. Polish the authored UIs and environment together.
    Focus on:
@@ -1102,3 +1118,69 @@ Next:
 Risks / Notes:
 - Unity XR play-mode startup was inconsistent during this pass, but the issue looked editor/runtime-side rather than caused by the new offset helper
 - keep the offset helper disabled by default unless it is being actively trialed in-scene
+
+### 2026-07-14 - Wrist Settings Menu Baseline Added
+
+Completed:
+- added a real player-facing wrist settings menu into the current prototype flow instead of leaving settings/cheatsheet access as a deferred TODO
+- switched the scene-side menu setup onto the `Button Hand Menu` path and validated the existing XR hand-menu system as a usable base
+- added controller-side menu-button opening support on top of the existing hand-menu behavior without replacing the package system itself
+- added menu readouts for:
+  - current instruction
+  - current routed phase
+- added menu actions for:
+  - register reset
+  - datapacket reset
+  - lesson restart
+  - quit
+- added menu controls for:
+  - master volume
+  - route-guidance enable/disable
+- added lightweight diagnostics output for:
+  - FPS
+  - frame time
+
+Changed:
+- settings/cheatsheet support is no longer a missing feature category; it now exists as a baseline system that can be expanded later
+- the wrist menu now acts as the main in-session quality-of-life hub for:
+  - recovery
+  - status checking
+  - guidance preferences
+  - fast presentation testing
+- existing world interactions were preserved by exposing shared script entry points instead of replacing the original reset-button behavior
+
+Next:
+- decide how much additional lesson-reference content belongs in the wrist menu without overcrowding it
+- decide whether experiment-mode toggles should live here later or elsewhere
+- keep onboarding and route readability ahead of deeper menu expansion unless a presentation blocker appears
+
+Risks / Notes:
+- the base hand-menu anchoring/pose behavior is still fundamentally driven by Unity's existing wrist-menu system, so future comfort tweaks should build on that rather than assuming the helper script owns the whole behavior
+- the new menu solved practical access needs, but its content density should stay controlled so it does not become another overloaded lesson panel
+
+### 2026-07-14 - Tutorial Direction Narrowed To Video And/Or Coaching Cards
+
+Completed:
+- clarified that tutorial/onboarding should now be treated as an active presentation task rather than a vague future polish category
+- established that a baseline tutorial/video prefab from `VRTemplateAssets` is already in the scene as onboarding groundwork
+- narrowed the likely tutorial directions to two serious options:
+  - a recorded custom control/tutorial video
+  - a coaching-card style image-and-text walkthrough based on the sample spatial panel setup
+
+Changed:
+- the map revamp itself should now be considered done enough that it no longer deserves to sit at the top of the task list as if it were unfinished
+- settings should now be treated as baseline-complete, with only optional refinement later
+- a separate dedicated cheatsheet is no longer the preferred plan; the existing hint panels are expected to carry most reference/help text
+
+Next:
+- choose whether tutorial V1 should be:
+  - recorded video
+  - coaching cards
+  - both if it still stays cheap enough
+- move into the sound pass next, since it now looks like the clearest low-risk presentation improvement
+- return to experiment mode after the next few polish tasks rather than forcing it immediately
+
+Risks / Notes:
+- a video is likely the fastest "good enough" onboarding route, but is less flexible to revise late
+- coaching cards are more editable and potentially more reusable later for hints/experiment mode support
+- doing both can still be valid, but should only stay on the table if it does not quietly turn onboarding into its own side project
