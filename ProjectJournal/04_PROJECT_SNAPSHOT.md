@@ -20,106 +20,112 @@ Scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current prototype features:
-- lesson framework re-wired around `Lesson Guide`
-- scene-authored `Lesson Guide` with a real `Intro UI` world-space panel
-- scene-authored `Instruction Decode UI` near the register area
-- lesson UIs now use a three-panel structure:
+- scene-authored lesson flow built around `Lesson Guide`
+- scene-authored world-space UIs for:
+  - `Intro UI`
+  - `Instruction Decode UI`
+  - `ALU UI`
+  - `Mem UI`
+  - `WB UI`
+  - `PC Update UI`
+- three-panel lesson layout is now the standard interaction format outside Intro:
   - lesson panel
   - interaction panel
   - hint / info panel
-- guide panels have now been proven useful, but post-demo feedback suggests separating guide/explanation surfaces from active interaction surfaces more clearly
-- scene-authored `Register Zone` with 32 permanent grabbable MIPS registers
-- register scanners for `Read Register 1`, `Read Register 2`, and `Write Register`
-- register tokens now support persistent logical values in code
-- reusable custom register prefab and register materials under `Assets/MyPrefabs` and `Assets/MyMaterials`
-- local register-bank reset button path separate from lesson reset
-- local register-bank reset now restores only register poses and does not clear lesson progress, scanner success state, or emitted packets
-- dedicated datapacket reset path now exists for loose, non-consumed packets
-- authored register placement validation in the register zone
-- authored lesson panels are now expected to be wired through serialized scene references, not found dynamically at runtime
-- working MVP path:
-  - start from `Intro UI`
-  - present instruction / fetch framing
-  - hand off to `Instruction Decode UI`
-  - show instruction breakdown during decode
-  - validate source-register placement through the authored scanners
-  - spawn data packets from decode for later execution
-- authored `ALU` execution pass now exists:
-  - physical `ALUOp` and `ALUSrc` buttons on the ALU prefab
-  - authored `ALU UI` for execution validation
-  - ALU input trigger zones that accept datapackets
-  - input 2 role switching based on `ALUSrc`
-  - result packet spawning with role `ALU Result`
-  - one extra continue click after success before write-back
-- authored memory/write-back path now exists:
-  - a dedicated `Mem UI`
-  - a dedicated `Memory Unit` prefab
-  - a dedicated `Data Memory` bank prefab with 24 authored words
-  - a dedicated `WB` prefab
-  - a dedicated `WB UI`
-  - a bonus loose register scanner for value inspection / confirmation
-  - lesson-flow wiring for a real write-back phase instead of only a temporary intro-panel explanation
-- authored lesson panel layout is now stabilized around edit-mode content plus code-triggered layout rebuilds
-- `Instruction Decode`, `EX`, `Mem`, `WB`, and `PC Update` now follow the authored multi-panel direction, with code updated to support more scene-authored static/toggle text
-- physical instruction fetch now exists through:
+- physical instruction fetch through:
   - `Instruction Module`
-  - `Instruction Terminal` in uploader mode
-  - `Instruction Terminal` in downloader mode
-  - decode staying locked until the uploaded module is delivered
-- authored `PC Update UI` now exists as the final control-flow / lesson-conclusion surface
-- first-pass `PC Update Station` support now exists for branch-resolution teaching
-- the routed environment/map is now largely authored and validated by the supervisor:
-  - elevated intro/fetch start space
+  - uploader `Instruction Terminal`
+  - downloader `Instruction Terminal`
+- scene-authored `Register Zone` with:
+  - 32 permanent grabbable MIPS registers
+  - decode-stage scanners
+  - local register reset
+- datapacket flow for:
+  - read data
+  - immediate
+  - ALU result
+  - memory data
+  - zero result for branch resolution
+- physical `Immediate Extender`
+- authored `ALU`, `Memory Unit`, `Data Memory`, `WB`, and `PC Update Station`
+- dedicated datapacket reset for loose packets
+- routed map with:
+  - intro/fetch start space
   - decode room
   - ALU platform
   - memory hall
   - write-back area
   - PC-update conclusion platform
-  - return path toward the ending gate
-- first-pass value pipeline groundwork now exists in code:
-  - register scanners can emit data packets
-  - decode can now emit immediate packets from the second scanner spawn point for immediate-based instructions
-  - immediate packets can now pass through a physical `Immediate Extender` before ALU use
-  - ALU input scanners can accept those packets
-  - ALU execution can compute `add` and the currently tested `addi` path in code
-- authored ALU funct selection now exists through the UI dropdown used for the secondary instruction path
-- instruction definitions now explicitly support:
-  - initial register values
-  - expected immediate values
-  - write-back target resolution (`rd` vs `rt`)
-  - immediate packets carrying a simple sign-extension boolean for now
-- the full guided zone set is now present for:
-  - `Instruction Fetch`
-  - `Instruction Decode`
-  - `EX`
-  - `Mem`
-  - `WB`
-  - `PC Update`
-- instruction assets now exist for:
-  - `add`
-  - `addi`
-  - `lw`
-  - `sw`
-  - `sub`
-  - `and`
-  - `or`
-  - `slt`
-- `beq`
-- `bne`
-- `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, and `bne` have now all been tested successfully through the current loop
-- datapackets can now be manually recovered to their authored spawn points without disturbing active latched interactions
-- `lw` now uses a real MIPS-style memory address path:
-  - base register contains a data-segment address
-  - immediate acts as offset
-  - ALU result maps into the authored data-memory bank
-- the `CpuLesson` area has now been fully refactored into:
+  - gated return toward the end
+- moving gate system for phase progression
+- new lightweight arrow-guidance prototype for route assistance
+- refactored `CpuLesson` folder organized into:
   - `Flow`
   - `Support`
   - `UI`
   - shared UI helpers under `Assets/MyScripts/Shared/UI`
-- the lesson system no longer depends on the older oversized `CpuLessonFlow.*` / `LessonGuideController.*` structure
-- current lesson code is now explicitly organized around scene-authored bindings and smaller focused classes
-- `Assets/MyScripts` has now had an additional pre-demo cleanup pass to remove obvious leftovers and improve code comments without changing the validated MVP flow
+
+Current supported instructions:
+- `add`
+- `addi`
+- `lw`
+- `sw`
+- `sub`
+- `and`
+- `or`
+- `slt`
+- `beq`
+- `bne`
+
+Current build truth:
+- these instructions work through the current guided loop
+- the project is now in polish/presentation mode more than raw datapath expansion mode
+
+More detailed current-state notes:
+- fetch is no longer just UI framing; it uses a physical instruction upload/download handoff
+- decode is no longer just register placement; it now includes:
+  - instruction field framing
+  - opcode selection
+  - funct handling where applicable
+  - source-operand scanning
+  - immediate generation for immediate-bearing instructions
+- execute is currently responsible for:
+  - ALU signal interaction
+  - operand acceptance
+  - operation selection
+  - result spawning
+- memory is currently responsible for:
+  - address validation
+  - read vs write behavior
+  - memory bank communication
+  - output packet spawning for loads
+- write-back is currently responsible for:
+  - destination validation
+  - value-source validation
+  - final register update
+- PC update is currently responsible for:
+  - branch resolution framing
+  - next-PC confirmation
+  - lesson conclusion
+
+What is current polish work versus already-solved systems:
+- already solved enough to build on:
+  - core lesson flow
+  - instruction fetch embodiment
+  - register interaction
+  - immediate extension
+  - ALU execution
+  - memory access for `lw` / `sw`
+  - write-back
+  - branch resolution
+- still active polish work:
+  - map readability
+  - gate/readability tuning
+  - route-arrow tuning
+  - tutorial/onboarding
+  - settings / cheatsheet support
+  - sound pass
+  - experiment mode
 
 ## Most Important Scripts Right Now
 
@@ -171,21 +177,17 @@ Why:
 - `addi` adds immediate handling without memory complexity
 - `lw` adds address calculation and memory read/write-back behavior
 
-## Current Non-Negotiable Milestone
+## Current Milestone
 
-- the June 29, 2026 supervisor demo has been completed
-- the post-map / post-branch supervisor checkpoint is now `2026-07-24`
-- the official demo deadline is `2026-07-29`
-- the current focus is no longer instruction coverage, but:
+- next supervisor checkpoint: `2026-07-24`
+- official demo deadline: `2026-07-29`
+- current focus is presentation readiness:
   - navigation clarity
-  - door / gate progression
-  - path guidance
-  - tutorial/onboarding
+  - tutorial / onboarding
   - UI readability
-  - map lighting / route polish
+  - map polish
   - sound cues
   - experiment-mode planning
-  - overall presentation readiness
 
 ## If Starting A New Chat
 
@@ -217,43 +219,36 @@ Before stopping:
 
 Ordered cutoff list before the next supervisor meeting:
 
-1. door gating + arrow system
-2. jump-family evaluation / inclusion only if safe
-3. UI polish
-4. map lighting and path tightening
-5. proper tutorial UI, and possibly settings/cheatsheet support
-6. sound pass
+1. map retouch and route tightening
+2. tutorial UI
+3. settings / cheatsheet support
+4. sound pass
+5. experiment mode before the checkpoint if feasible
+6. jump-family evaluation / inclusion only if safe
 7. final polish
-8. experiment mode before the checkpoint if feasible
-9. optional helper NPC / guide if time remains
-10. optional in-world music player / ambience pass if time remains
+8. optional helper NPC / guide if time remains
+9. optional in-world music player / ambience pass if time remains
 
 Everything else should be treated as future work unless a blocking regression appears.
 
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- finish the presentation/polish pass on top of the now-working instruction set
-- start with map retouch, UI cleanup, and gate + arrow introduction before reopening broader design questions
-- resume from the now-working gated route / arrow prototype rather than rebuilding navigation logic again
-- keep the flow order fixed as:
-  - fetch
-  - decode
-  - execute
-  - memory when needed
-  - write-back when needed
-  - PC update when needed
-- keep the branch / PC-update finish stable as the current lesson conclusion
-- keep the current lesson UI layout approach:
-  - authored in scene
-  - updated by code
-  - not generated at runtime
-- add navigation clarity through:
-  - physical doors/gates
-  - arrow guidance
-  - audio cues
-- improve the environment without sacrificing lesson readability
-- add experiment mode before the checkpoint if it can be done safely
+- continue the polish pass instead of adding another major system
+- refine the current map route and readability
+- finish onboarding / tutorial support
+- add settings / cheatsheet support
+- layer sound on top of the already-working gated route
+- add experiment mode only after the guided version feels presentation-safe
+
+Do not resume from an older assumption that gating or route guidance still needs first implementation; those systems now exist and should be refined, not reinvented.
+
+## Latest Visual Polish Note
+
+- the route-arrow guidance layer is now in a usable refinement state rather than first-pass prototype state
+- a reusable `AuthoredOffsetLerp` helper exists for optional opening-sequence/environment settle-in work
+- that helper is intentionally dormant by default and should only be enabled on specific authored scene pieces when actively testing an intro beat
+- recent Unity headset play-mode delays looked inconsistent and editor-side, so they should not be treated as evidence that the offset helper itself is unsafe
 
 ## Personal Reminder
 

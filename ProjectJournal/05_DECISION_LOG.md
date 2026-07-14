@@ -2,6 +2,16 @@
 
 This file captures decisions that should survive across sessions, even when the detailed chat context is gone.
 
+Everything in this file is historical by design.
+Do not read an older decision as the live project state without checking:
+- `ProjectJournal/01_PROGRESS_LOG.md`
+- `ProjectJournal/04_PROJECT_SNAPSHOT.md`
+
+Use this file for:
+- preserved rationale
+- design tradeoffs
+- scope decisions that still matter later in the dissertation or presentation
+
 ## 2026-06-16 - Scope Should Be Narrow, Not Grandiose
 
 Decision:
@@ -921,3 +931,17 @@ Implication:
 - how explicit ALU/control-signal manipulation should be in the first prototype
 - whether instruction selection is user-driven, random, or both
 - how closely the prototype should model exact datapath semantics vs pedagogically simplified interactions
+
+## 2026-07-14 - Opening Sequence Polish Should Stay Opt-In And Scene-Led
+
+Decision:
+- keep the new opening/environment offset helper disabled by default and treat it as an authored polish utility rather than a globally active scene effect
+
+Why:
+- the user wanted a tiny visual polish pass, not a system that quietly changes the whole scene
+- pre-attaching a dormant helper keeps iteration easy while preserving authored placement until a specific object is intentionally opted in
+- this fits the broader project preference for scene-authored control over runtime scene-wide behavior
+
+Implication:
+- `AuthoredOffsetLerp` should remain safe to leave on objects in a dormant state
+- intro-sequence experimentation can happen object-by-object without committing the whole map to the effect

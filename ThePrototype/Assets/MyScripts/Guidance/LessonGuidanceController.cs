@@ -1,56 +1,41 @@
 using UnityEngine;
 
 /// <summary>
-/// Toggles authored guidance arrow groups based on the lesson's current phase.
-/// This v1 controller is intentionally route-focused: each phase can enable one
-/// or more pre-placed arrow sets without introducing any object lookups.
+/// Turns phase arrow groups on and off based on the current lesson phase.
+/// Each active group is pulsed in sequence so the route reads like a path.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class LessonGuidanceController : MonoBehaviour
 {
-    [Header("Lesson Flow")]
     [SerializeField]
     CpuLessonFlow m_LessonFlow;
 
-    [Header("Route Arrows")]
     [SerializeField]
     GuidanceArrow[] m_PreStartArrows;
 
     [SerializeField]
-    GuidanceArrow[] m_FetchRouteArrows;
+    GuidanceArrow[] m_FetchArrows;
 
     [SerializeField]
-    GuidanceArrow[] m_DecodeRouteArrows;
+    GuidanceArrow[] m_DecodeArrows;
 
     [SerializeField]
-    GuidanceArrow[] m_ExecuteRouteArrows;
+    GuidanceArrow[] m_ExecuteArrows;
 
     [SerializeField]
-    GuidanceArrow[] m_MemoryRouteArrows;
+    GuidanceArrow[] m_MemoryArrows;
 
     [SerializeField]
-    GuidanceArrow[] m_WriteBackRouteArrows;
+    GuidanceArrow[] m_WriteBackArrows;
 
     [SerializeField]
-    GuidanceArrow[] m_PcUpdateRouteArrows;
+    GuidanceArrow[] m_PcUpdateArrows;
 
-    [Header("Pulse Sequencing")]
     [SerializeField]
-    float m_GroupSequenceStepSeconds = 0.18f;
+    float m_SequenceStepSeconds = 0.5f;
 
     readonly LessonPhaseRouter m_PhaseRouter = new();
 
-    /// <summary>
-    /// Applies the correct route set before play begins.
-    /// </summary>
-    void Awake()
-    {
-        RefreshGuidance();
-    }
-
-    /// <summary>
-    /// Subscribes to lesson changes whenever the controller becomes active.
-    /// </summary>
     void OnEnable()
     {
         if (m_LessonFlow != null)
@@ -59,35 +44,33 @@ public sealed class LessonGuidanceController : MonoBehaviour
         RefreshGuidance();
     }
 
-    /// <summary>
-    /// Removes subscriptions to avoid duplicate callbacks after re-enable.
-    /// </summary>
+    void Start()
+    {
+        RefreshGuidance();
+    }
+
     void OnDisable()
     {
         if (m_LessonFlow != null)
             m_LessonFlow.StepChanged -= HandleStepChanged;
     }
 
-    /// <summary>
-    /// Re-evaluates which route arrows should be visible for the current phase.
-    /// </summary>
     void HandleStepChanged(CpuLessonFlow _)
     {
         RefreshGuidance();
     }
 
-    /// <summary>
-    /// Computes the active phase and toggles the matching authored arrow group.
-    /// </summary>
     void RefreshGuidance()
     {
+        // Only one route should read as active at a time, so clear every group
+        // before enabling the one that matches the current lesson phase.
         SetGroupActive(m_PreStartArrows, false);
-        SetGroupActive(m_FetchRouteArrows, false);
-        SetGroupActive(m_DecodeRouteArrows, false);
-        SetGroupActive(m_ExecuteRouteArrows, false);
-        SetGroupActive(m_MemoryRouteArrows, false);
-        SetGroupActive(m_WriteBackRouteArrows, false);
-        SetGroupActive(m_PcUpdateRouteArrows, false);
+        SetGroupActive(m_FetchArrows, false);
+        SetGroupActive(m_DecodeArrows, false);
+        SetGroupActive(m_ExecuteArrows, false);
+        SetGroupActive(m_MemoryArrows, false);
+        SetGroupActive(m_WriteBackArrows, false);
+        SetGroupActive(m_PcUpdateArrows, false);
 
         if (m_LessonFlow == null || !m_LessonFlow.HasStarted)
         {
@@ -97,45 +80,38 @@ public sealed class LessonGuidanceController : MonoBehaviour
 
         if (m_PhaseRouter.ShouldShowIntroPanel(m_LessonFlow))
         {
-            SetGroupActive(m_FetchRouteArrows, true);
+            SetGroupActive(m_FetchArrows, true);
             return;
         }
 
         if (m_PhaseRouter.ShouldShowDecodePanel(m_LessonFlow))
         {
-            SetGroupActive(m_DecodeRouteArrows, true);
+            SetGroupActive(m_DecodeArrows, true);
             return;
         }
 
         if (m_PhaseRouter.ShouldShowExecutionPanel(m_LessonFlow))
         {
-            SetGroupActive(m_ExecuteRouteArrows, true);
+            SetGroupActive(m_ExecuteArrows, true);
             return;
         }
 
         if (m_PhaseRouter.ShouldShowMemoryPanel(m_LessonFlow))
         {
-            SetGroupActive(m_MemoryRouteArrows, true);
+            SetGroupActive(m_MemoryArrows, true);
             return;
         }
 
         if (m_PhaseRouter.ShouldShowWriteBackPanel(m_LessonFlow))
         {
-            SetGroupActive(m_WriteBackRouteArrows, true);
+            SetGroupActive(m_WriteBackArrows, true);
             return;
         }
 
         if (m_PhaseRouter.ShouldShowPcUpdatePanel(m_LessonFlow))
-        {
-            SetGroupActive(m_PcUpdateRouteArrows, true);
-            return;
-        }
+            SetGroupActive(m_PcUpdateArrows, true);
     }
 
-    /// <summary>
-    /// Applies the active state to every arrow in the authored group and, when
-    /// enabled, staggers the pulse start so the route reads like a moving path.
-    /// </summary>
     void SetGroupActive(GuidanceArrow[] arrows, bool isActive)
     {
         if (arrows == null)
@@ -147,8 +123,10 @@ public sealed class LessonGuidanceController : MonoBehaviour
             if (arrow == null)
                 continue;
 
-            var timeOffsetSeconds = isActive ? (i * m_GroupSequenceStepSeconds) : 0f;
-            arrow.SetGuidanceActive(isActive, timeOffsetSeconds);
+            // Offset each arrow in the group so long routes feel like they are
+            // guiding the learner forward instead of blinking in perfect sync.
+            var offset = isActive ? i * m_SequenceStepSeconds : 0f;
+            arrow.SetGuidanceActive(isActive, offset);
         }
     }
 }

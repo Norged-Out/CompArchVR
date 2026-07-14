@@ -1,99 +1,66 @@
 using UnityEngine;
 
 /// <summary>
-/// Drives a single authored guidance arrow.
-/// The arrow can pulse its emission and optionally breathe in scale so it reads
-/// clearly from a distance without needing any lesson-flow hookup.
+/// Simple pulsing arrow.
+/// Attach this to either a single arrow mesh or a parent that contains several arrow meshes.
 /// </summary>
 [DisallowMultipleComponent]
 public sealed class GuidanceArrow : MonoBehaviour
 {
-    static readonly int k_EmissionColorId = Shader.PropertyToID("_EmissionColor");
+    const string k_EmissionColorProperty = "_EmissionColor";
 
-    [Header("Targets")]
     [SerializeField]
     Renderer[] m_Renderers;
 
-    [Header("Activation")]
-    [SerializeField]
-    bool m_StartActive = true;
-
-    [SerializeField]
-    bool m_HideWhenInactive = true;
-
-    [Header("Emission Pulse")]
     [SerializeField]
     Color m_PulseColor = new(0.15f, 0.95f, 1f, 1f);
 
     [SerializeField]
-    float m_MinEmission = 0.1f;
+    float m_MinEmission = 0.04f;
 
     [SerializeField]
-    float m_MaxEmission = 2.2f;
+    float m_MaxEmission = 0.9f;
 
     [SerializeField]
-    float m_PulseFrequency = 2f;
-
-    [Header("Optional Scale Breath")]
-    [SerializeField]
-    bool m_UseScalePulse = true;
+    float m_PulseSeconds = 2.4f;
 
     [SerializeField]
-    float m_ScalePulseAmount = 0.08f;
+    bool m_HideWhenInactive = true;
 
-    [SerializeField]
-    float m_ScalePulseFrequency = 2f;
-
-    Vector3 m_BaseLocalScale;
     MaterialPropertyBlock m_PropertyBlock;
-    bool m_IsGuidanceActive;
+
+    bool m_IsActive;
     float m_TimeOffsetSeconds;
 
-    /// <summary>
-    /// Initializes authored targets and restores the requested startup state.
-    /// </summary>
     void Awake()
     {
-        CacheTargets();
-        m_BaseLocalScale = transform.localScale;
-        m_PropertyBlock ??= new MaterialPropertyBlock();
-        SetGuidanceActive(m_StartActive);
+        m_PropertyBlock = new MaterialPropertyBlock();
+        CacheRenderers();
+        SetGuidanceActive(false);
     }
 
-    /// <summary>
-    /// Restores authored visuals whenever Unity re-enables the arrow object.
-    /// </summary>
-    void OnEnable()
-    {
-        CacheTargets();
-        m_BaseLocalScale = transform.localScale;
-        m_PropertyBlock ??= new MaterialPropertyBlock();
-        ApplyVisualState(0f);
-    }
-
-    /// <summary>
-    /// Keeps the pulse animation running while this arrow is marked active.
-    /// </summary>
     void Update()
     {
-        if (!m_IsGuidanceActive)
+        if (!m_IsActive)
             return;
 
-        ApplyVisualState(Time.time + m_TimeOffsetSeconds);
+        ApplyPulse(Time.time + m_TimeOffsetSeconds);
     }
 
     /// <summary>
-    /// Lets a lesson-level controller show or hide the arrow without destroying
-    /// its authored placement.
+    /// Enables or disables this arrow group.
+    /// The optional offset lets a parent controller stagger several arrows into a route sequence.
     /// </summary>
     public void SetGuidanceActive(bool isActive, float timeOffsetSeconds = 0f)
     {
+        m_IsActive = isActive;
         m_TimeOffsetSeconds = timeOffsetSeconds;
-        m_IsGuidanceActive = isActive;
 
         if (!isActive)
         {
-            ApplyInactiveVisuals();
+            // Keep a faint resting glow so hidden arrows do not flash from black
+            // the next time a group is enabled.
+            ApplyRestingEmission();
             if (m_HideWhenInactive)
                 gameObject.SetActive(false);
 
@@ -103,13 +70,10 @@ public sealed class GuidanceArrow : MonoBehaviour
         if (m_HideWhenInactive && !gameObject.activeSelf)
             gameObject.SetActive(true);
 
-        ApplyVisualState(Time.time + m_TimeOffsetSeconds);
+        ApplyPulse(Time.time + m_TimeOffsetSeconds);
     }
 
-    /// <summary>
-    /// Auto-fills the renderer list when none were authored manually.
-    /// </summary>
-    void CacheTargets()
+    void CacheRenderers()
     {
         if (m_Renderers != null && m_Renderers.Length > 0)
             return;
@@ -117,54 +81,36 @@ public sealed class GuidanceArrow : MonoBehaviour
         m_Renderers = GetComponentsInChildren<Renderer>(true);
     }
 
-    /// <summary>
-    /// Applies the animated pulse at the provided sample time.
-    /// </summary>
-    void ApplyVisualState(float sampleTime)
+    void ApplyPulse(float sampleTime)
     {
-        var emissionLerp = 0.5f + (0.5f * Mathf.Sin(sampleTime * m_PulseFrequency * Mathf.PI * 2f));
-        var emissionStrength = Mathf.Lerp(m_MinEmission, m_MaxEmission, emissionLerp);
-        var emissionColor = m_PulseColor * emissionStrength;
+        var cycleSeconds = Mathf.Max(0.01f, m_PulseSeconds);
+        // Use a simple sine wave so staggered arrows read like a moving route
+        // without needing animation clips or authored timelines.
+        var t = 0.5f + 0.5f * Mathf.Sin((sampleTime / cycleSeconds) * Mathf.PI * 2f);
+        var emission = Mathf.Lerp(m_MinEmission, m_MaxEmission, t);
+        var color = m_PulseColor * emission;
 
-        if (m_Renderers != null)
-        {
-            foreach (var targetRenderer in m_Renderers)
-            {
-                if (targetRenderer == null)
-                    continue;
-
-                targetRenderer.GetPropertyBlock(m_PropertyBlock);
-                m_PropertyBlock.SetColor(k_EmissionColorId, emissionColor);
-                targetRenderer.SetPropertyBlock(m_PropertyBlock);
-            }
-        }
-
-        if (!m_UseScalePulse)
-            return;
-
-        var scaleLerp = 0.5f + (0.5f * Mathf.Sin(sampleTime * m_ScalePulseFrequency * Mathf.PI * 2f));
-        var scaleMultiplier = 1f + (m_ScalePulseAmount * scaleLerp);
-        transform.localScale = m_BaseLocalScale * scaleMultiplier;
+        ApplyEmission(color);
     }
 
-    /// <summary>
-    /// Clears the active pulse and restores the authored resting scale.
-    /// </summary>
-    void ApplyInactiveVisuals()
+    void ApplyRestingEmission()
     {
-        if (m_Renderers != null)
+        ApplyEmission(m_PulseColor * m_MinEmission);
+    }
+
+    void ApplyEmission(Color color)
+    {
+        if (m_Renderers == null)
+            return;
+
+        foreach (var targetRenderer in m_Renderers)
         {
-            foreach (var targetRenderer in m_Renderers)
-            {
-                if (targetRenderer == null)
-                    continue;
+            if (targetRenderer == null)
+                continue;
 
-                targetRenderer.GetPropertyBlock(m_PropertyBlock);
-                m_PropertyBlock.SetColor(k_EmissionColorId, m_PulseColor * m_MinEmission);
-                targetRenderer.SetPropertyBlock(m_PropertyBlock);
-            }
+            targetRenderer.GetPropertyBlock(m_PropertyBlock);
+            m_PropertyBlock.SetColor(k_EmissionColorProperty, color);
+            targetRenderer.SetPropertyBlock(m_PropertyBlock);
         }
-
-        transform.localScale = m_BaseLocalScale;
     }
 }
