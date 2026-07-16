@@ -30,6 +30,10 @@ public sealed class AluController : MonoBehaviour
     [SerializeField]
     DataPacketToken m_ResultPacketPrefab;
 
+    [Header("Audio")]
+    [SerializeField]
+    LessonUiAudioCueSet m_LessonAudioCues = new();
+
     [Header("Physical Buttons")]
     [SerializeField]
     Transform m_AluOpButtonRoot;
@@ -263,6 +267,7 @@ public sealed class AluController : MonoBehaviour
         }
 
         SetFeedback($"Executing {AluPresentation.GetOperationDisplayName(this, m_ExecutionService)}...", false);
+        PlayPhaseCompletedCue();
         RefreshPresentation();
         m_ComputeRoutine = StartCoroutine(m_ExecutionService.RunExecutionRoutine(this));
     }
@@ -346,6 +351,9 @@ public sealed class AluController : MonoBehaviour
     public void SetFeedback(string message, bool isFailure)
     {
         AluPresentation.SetFeedback(m_FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
+
+        if (isFailure && !string.IsNullOrWhiteSpace(message))
+            PlayIncorrectCue();
     }
 
     public void SetCurrentInstruction(InstructionDefinition instruction) => m_CurrentInstruction = instruction;
@@ -486,5 +494,25 @@ public sealed class AluController : MonoBehaviour
     {
         var childTransform = transform.Find(childPath);
         return childTransform != null ? childTransform.GetComponent<TMP_Text>() : null;
+    }
+
+    public void PlayPhaseActivatedCue()
+    {
+        m_LessonAudioCues.PlayPhaseActivatedCue();
+    }
+
+    public void PlayPhaseCompletedCue()
+    {
+        m_LessonAudioCues.PlayPhaseCompletedCue();
+    }
+
+    public void PlayIncorrectCue()
+    {
+        m_LessonAudioCues.PlayIncorrectCue();
+    }
+
+    public void PlayLessonCompletedCue()
+    {
+        m_LessonAudioCues.PlayLessonCompletedCue();
     }
 }

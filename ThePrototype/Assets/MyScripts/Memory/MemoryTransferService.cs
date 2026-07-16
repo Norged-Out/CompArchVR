@@ -198,6 +198,7 @@ public sealed class MemoryTransferService
             }
         }
 
+        controller.NotifyMemoryTransferCompleted();
         controller.SetAwaitingContinueState(true, true);
         controller.SetExecutionRoutine(null);
         controller.AddressScanner?.ConsumeAcceptedPacket();

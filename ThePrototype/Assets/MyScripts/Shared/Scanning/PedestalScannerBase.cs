@@ -14,6 +14,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public abstract class PedestalScannerBase : MonoBehaviour
 {
+    const float SuccessClipVolumeScale = 0.5f;
+
     protected enum ScannerVisualState
     {
         Inactive,
@@ -56,6 +58,22 @@ public abstract class PedestalScannerBase : MonoBehaviour
     [SerializeField]
     float m_PressedOffsetY = -0.03f;
 
+    [SerializeField]
+    float m_FailureDisplaySeconds = 1.25f;
+
+    [Header("Audio")]
+    [SerializeField]
+    AudioSource m_AudioSource;
+
+    [SerializeField]
+    AudioClip m_OccupiedClip;
+
+    [SerializeField]
+    AudioClip m_SuccessClip;
+
+    [SerializeField]
+    AudioClip m_FailureClip;
+
     Vector3 m_BodyRestLocalPosition;
     Component m_CurrentCandidate;
     Component m_CurrentMismatchCandidate;
@@ -63,6 +81,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
     float m_CurrentScanTime;
     bool m_IsStepActive;
     bool m_IsAwaitingValidation;
+    bool m_IsEvaluatingMismatch;
     bool m_IsLatchedSuccessful;
     ScannerVisualState m_VisualState = ScannerVisualState.Inactive;
 
@@ -113,6 +132,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
             m_CurrentCandidate = null;
             m_CurrentMismatchCandidate = null;
             m_CurrentScanTime = 0f;
+            m_IsEvaluatingMismatch = false;
             SetVisualState(ScannerVisualState.Idle);
             OnCandidateLost();
             return;
@@ -120,15 +140,36 @@ public abstract class PedestalScannerBase : MonoBehaviour
 
         if (IsImmediateMismatch(candidate))
         {
-            m_CurrentCandidate = null;
-            m_CurrentScanTime = 0f;
-
-            if (candidate != m_CurrentMismatchCandidate)
+            // Immediate mismatches now borrow the same "occupied first" scan
+            // rhythm as successful candidates so the authored feedback feels
+            // consistent before the scanner flashes failure.
+            if (!m_IsEvaluatingMismatch || candidate != m_CurrentMismatchCandidate)
+            {
                 m_CurrentMismatchCandidate = candidate;
+                m_CurrentCandidate = null;
+                m_CurrentScanTime = 0f;
+                m_IsEvaluatingMismatch = true;
+                PlayClip(m_OccupiedClip);
+            }
 
-            SetVisualState(ScannerVisualState.Failure);
+            m_CurrentScanTime += Time.deltaTime;
+            SetVisualState(ScannerVisualState.Occupied);
+
+            if (m_CurrentScanTime < RequiredStableSeconds)
+                return;
+
+            m_IsAwaitingValidation = true;
+            m_CurrentScanTime = 0f;
             OnImmediateMismatch(candidate);
+            FlashFailure();
             return;
+        }
+
+        if (m_IsEvaluatingMismatch)
+        {
+            m_IsEvaluatingMismatch = false;
+            m_CurrentScanTime = 0f;
+            m_CurrentCandidate = null;
         }
 
         m_CurrentMismatchCandidate = null;
@@ -137,6 +178,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
         {
             m_CurrentCandidate = candidate;
             m_CurrentScanTime = 0f;
+            PlayClip(m_OccupiedClip);
         }
 
         m_CurrentScanTime += Time.deltaTime;
@@ -161,6 +203,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
         m_CurrentCandidate = null;
         m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
+        m_IsEvaluatingMismatch = false;
 
         if (m_FailureRoutine != null)
         {
@@ -178,6 +221,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
         m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
         m_IsAwaitingValidation = false;
+        m_IsEvaluatingMismatch = false;
         m_IsLatchedSuccessful = false;
 
         if (m_FailureRoutine != null)
@@ -196,6 +240,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
         m_IsLatchedSuccessful = true;
         HandleSuccessLatched();
         SetVisualState(ScannerVisualState.Success);
+        PlayClip(m_SuccessClip, SuccessClipVolumeScale);
     }
 
     public void FlashFailure()
@@ -265,6 +310,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
         m_CurrentScanTime = 0f;
         m_IsStepActive = false;
         m_IsAwaitingValidation = false;
+        m_IsEvaluatingMismatch = false;
         m_IsLatchedSuccessful = false;
         m_FailureRoutine = null;
         m_VisualState = ScannerVisualState.Inactive;
@@ -319,12 +365,15 @@ public abstract class PedestalScannerBase : MonoBehaviour
     {
         m_IsAwaitingValidation = true;
         SetVisualState(ScannerVisualState.Failure);
-        yield return new WaitForSeconds(0.35f);
+        PlayClip(m_FailureClip);
+        yield return new WaitForSeconds(m_FailureDisplaySeconds);
 
         m_IsAwaitingValidation = false;
         m_FailureRoutine = null;
         m_CurrentCandidate = null;
+        m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
+        m_IsEvaluatingMismatch = false;
 
         AfterFailureReset();
 
@@ -344,6 +393,16 @@ public abstract class PedestalScannerBase : MonoBehaviour
     protected virtual void HandleSuccessLatched() { }
     protected virtual void AfterFailureReset() { }
     protected virtual bool IsImmediateMismatch(Component candidate) => false;
+
+    void PlayClip(AudioClip clip, float volumeScale = 1f)
+    {
+        if (m_AudioSource == null || clip == null)
+            return;
+
+        // The authored scanner source stays scene-local, while clips opt into
+        // smaller balance tweaks such as the quieter success cue.
+        m_AudioSource.PlayOneShot(clip, volumeScale);
+    }
 
     protected abstract Component GetStableCandidate();
     protected abstract void HandleStableCandidate(Component candidate);

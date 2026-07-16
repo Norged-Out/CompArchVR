@@ -10,6 +10,8 @@ using UnityEngine;
 [DisallowMultipleComponent]
 public abstract class MemoryPillarScannerBase : MonoBehaviour
 {
+    const float SuccessClipVolumeScale = 0.5f;
+
     protected enum ScannerVisualState
     {
         Inactive,
@@ -46,12 +48,29 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
     [SerializeField]
     float m_RequiredStableSeconds = 1f;
 
+    [SerializeField]
+    float m_FailureDisplaySeconds = 1.25f;
+
+    [Header("Audio")]
+    [SerializeField]
+    AudioSource m_AudioSource;
+
+    [SerializeField]
+    AudioClip m_OccupiedClip;
+
+    [SerializeField]
+    AudioClip m_SuccessClip;
+
+    [SerializeField]
+    AudioClip m_FailureClip;
+
     Component m_CurrentCandidate;
     Component m_CurrentMismatchCandidate;
     Coroutine m_FailureRoutine;
     float m_CurrentScanTime;
     bool m_IsActive;
     bool m_IsAwaitingValidation;
+    bool m_IsEvaluatingMismatch;
     bool m_IsLatchedSuccessful;
     ScannerVisualState m_VisualState = ScannerVisualState.Inactive;
 
@@ -84,6 +103,7 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
         m_CurrentScanTime = 0f;
         m_IsActive = false;
         m_IsAwaitingValidation = false;
+        m_IsEvaluatingMismatch = false;
         m_IsLatchedSuccessful = false;
         m_VisualState = ScannerVisualState.Inactive;
         ApplyCurrentVisualState();
@@ -100,6 +120,7 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
             m_CurrentCandidate = null;
             m_CurrentMismatchCandidate = null;
             m_CurrentScanTime = 0f;
+            m_IsEvaluatingMismatch = false;
             SetVisualState(ScannerVisualState.Idle);
             OnCandidateLost();
             return;
@@ -107,15 +128,35 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
 
         if (IsImmediateMismatch(candidate))
         {
-            m_CurrentCandidate = null;
-            m_CurrentScanTime = 0f;
-
-            if (candidate != m_CurrentMismatchCandidate)
+            // Mirror the successful scan cadence so invalid packets still read
+            // as "being checked" before the pillar settles on failure.
+            if (!m_IsEvaluatingMismatch || candidate != m_CurrentMismatchCandidate)
+            {
                 m_CurrentMismatchCandidate = candidate;
+                m_CurrentCandidate = null;
+                m_CurrentScanTime = 0f;
+                m_IsEvaluatingMismatch = true;
+                PlayClip(m_OccupiedClip);
+            }
 
-            SetVisualState(ScannerVisualState.Failure);
+            m_CurrentScanTime += Time.deltaTime;
+            SetVisualState(ScannerVisualState.Occupied);
+
+            if (m_CurrentScanTime < m_RequiredStableSeconds)
+                return;
+
+            m_IsAwaitingValidation = true;
+            m_CurrentScanTime = 0f;
             OnImmediateMismatch(candidate);
+            FlashFailure();
             return;
+        }
+
+        if (m_IsEvaluatingMismatch)
+        {
+            m_IsEvaluatingMismatch = false;
+            m_CurrentScanTime = 0f;
+            m_CurrentCandidate = null;
         }
 
         m_CurrentMismatchCandidate = null;
@@ -124,6 +165,7 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
         {
             m_CurrentCandidate = candidate;
             m_CurrentScanTime = 0f;
+            PlayClip(m_OccupiedClip);
         }
 
         m_CurrentScanTime += Time.deltaTime;
@@ -148,6 +190,7 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
         m_CurrentCandidate = null;
         m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
+        m_IsEvaluatingMismatch = false;
 
         if (m_FailureRoutine != null)
         {
@@ -165,6 +208,7 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
         m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
         m_IsAwaitingValidation = false;
+        m_IsEvaluatingMismatch = false;
         m_IsLatchedSuccessful = false;
 
         if (m_FailureRoutine != null)
@@ -183,6 +227,7 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
         m_IsLatchedSuccessful = true;
         HandleSuccessLatched();
         SetVisualState(ScannerVisualState.Success);
+        PlayClip(m_SuccessClip, SuccessClipVolumeScale);
     }
 
     public void FlashFailure()
@@ -250,13 +295,15 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
     {
         m_IsAwaitingValidation = true;
         SetVisualState(ScannerVisualState.Failure);
-        yield return new WaitForSeconds(0.35f);
+        PlayClip(m_FailureClip);
+        yield return new WaitForSeconds(m_FailureDisplaySeconds);
 
         m_IsAwaitingValidation = false;
         m_FailureRoutine = null;
         m_CurrentCandidate = null;
         m_CurrentMismatchCandidate = null;
         m_CurrentScanTime = 0f;
+        m_IsEvaluatingMismatch = false;
 
         AfterFailureReset();
         SetVisualState(m_IsActive ? ScannerVisualState.Idle : ScannerVisualState.Inactive);
@@ -270,6 +317,16 @@ public abstract class MemoryPillarScannerBase : MonoBehaviour
     protected virtual void HandleSuccessLatched() { }
     protected virtual void AfterFailureReset() { }
     protected virtual bool IsImmediateMismatch(Component candidate) => false;
+
+    void PlayClip(AudioClip clip, float volumeScale = 1f)
+    {
+        if (m_AudioSource == null || clip == null)
+            return;
+
+        // Keep scanner audio authored per-object while still allowing a small
+        // baked-in volume trim for the success cue.
+        m_AudioSource.PlayOneShot(clip, volumeScale);
+    }
 
     protected abstract Component GetStableCandidate();
     protected abstract void HandleStableCandidate(Component candidate);

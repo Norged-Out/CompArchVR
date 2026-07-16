@@ -27,6 +27,13 @@ public sealed class MemoryController : MonoBehaviour
     [SerializeField]
     DataMemoryBank m_MemoryBank;
 
+    [Header("Audio")]
+    [SerializeField]
+    AudioSource m_TransferAudioSource;
+
+    [SerializeField]
+    LessonUiAudioCueSet m_LessonAudioCues = new();
+
     [Header("Physical Buttons")]
     [SerializeField]
     Transform m_MemReadButtonRoot;
@@ -107,6 +114,7 @@ public sealed class MemoryController : MonoBehaviour
     string m_MemWriteValue = "0";
 
     public event Action ContinueRequested;
+    public event Action MemoryTransferCompleted;
 
     /// <summary>The instruction currently driving the Mem phase.</summary>
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
@@ -282,6 +290,7 @@ public sealed class MemoryController : MonoBehaviour
         }
 
         SetFeedback("Memory access confirmed. Performing the transfer...", false);
+        PlayTransferAudio();
         RefreshPresentation();
         m_ExecutionRoutine = StartCoroutine(m_TransferService.RunTransferRoutine(this));
     }
@@ -349,6 +358,9 @@ public sealed class MemoryController : MonoBehaviour
     public void SetFeedback(string message, bool isFailure)
     {
         MemoryPresentation.SetFeedback(m_FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
+
+        if (isFailure && !string.IsNullOrWhiteSpace(message))
+            PlayIncorrectCue();
     }
 
     /// <summary>Allows helper services to replace the active instruction context.</summary>
@@ -379,6 +391,23 @@ public sealed class MemoryController : MonoBehaviour
 
     /// <summary>Tracks the spawned Memory Data packet so later phases can preserve or clear it intentionally.</summary>
     public void SetSpawnedMemoryPacket(DataPacketToken packet) => m_SpawnedMemoryPacket = packet;
+
+    /// <summary>
+    /// Exposes a single completion signal once the memory transfer itself has finished.
+    /// </summary>
+    public void NotifyMemoryTransferCompleted() => MemoryTransferCompleted?.Invoke();
+
+    /// <summary>
+    /// Replays the authored memory-transfer cue from the beginning.
+    /// </summary>
+    public void PlayTransferAudio()
+    {
+        if (m_TransferAudioSource == null)
+            return;
+
+        m_TransferAudioSource.Stop();
+        m_TransferAudioSource.Play();
+    }
 
     void HookBindings(bool subscribe)
     {
@@ -442,6 +471,26 @@ public sealed class MemoryController : MonoBehaviour
     void HandleHintDropdownChanged(int _)
     {
         RefreshPresentation();
+    }
+
+    public void PlayPhaseActivatedCue()
+    {
+        m_LessonAudioCues.PlayPhaseActivatedCue();
+    }
+
+    public void PlayPhaseCompletedCue()
+    {
+        m_LessonAudioCues.PlayPhaseCompletedCue();
+    }
+
+    public void PlayIncorrectCue()
+    {
+        m_LessonAudioCues.PlayIncorrectCue();
+    }
+
+    public void PlayLessonCompletedCue()
+    {
+        m_LessonAudioCues.PlayLessonCompletedCue();
     }
 
 }

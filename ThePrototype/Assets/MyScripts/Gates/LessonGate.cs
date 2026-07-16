@@ -20,10 +20,16 @@ public sealed class LessonGate : MonoBehaviour
     [SerializeField]
     float m_MoveDurationSeconds = 0.5f;
 
+    [Header("Audio")]
+    [SerializeField]
+    AudioSource m_TransitionAudioSource;
+
     Vector3 m_ClosedLocalPosition;
     Vector3 m_OpenLocalPosition;
     Coroutine m_MoveRoutine;
     bool m_IsInitialized;
+    bool m_HasResolvedOpenState;
+    bool m_IsOpen;
 
     /// <summary>
      /// Stable identifier used by the lesson-level gate controller.
@@ -39,17 +45,25 @@ public sealed class LessonGate : MonoBehaviour
         EnsureInitialized();
 
         var targetPosition = isOpen ? m_OpenLocalPosition : m_ClosedLocalPosition;
+        var shouldPlayAudio = ShouldPlayTransitionAudio(isOpen, targetPosition);
 
         if (!Application.isPlaying)
         {
             m_MovableRoot.localPosition = targetPosition;
+            m_IsOpen = isOpen;
+            m_HasResolvedOpenState = true;
             return;
         }
+
+        if (shouldPlayAudio)
+            PlayTransitionAudio();
 
         if (m_MoveRoutine != null)
             StopCoroutine(m_MoveRoutine);
 
         m_MoveRoutine = StartCoroutine(MoveTo(targetPosition));
+        m_IsOpen = isOpen;
+        m_HasResolvedOpenState = true;
     }
 
     /// <summary>
@@ -66,6 +80,29 @@ public sealed class LessonGate : MonoBehaviour
         m_ClosedLocalPosition = m_MovableRoot.localPosition;
         m_OpenLocalPosition = m_ClosedLocalPosition + (Vector3.up * m_OpenYOffset);
         m_IsInitialized = true;
+    }
+
+    /// <summary>
+    /// Suppresses no-op audio when the gate is already at the requested pose.
+    /// </summary>
+    bool ShouldPlayTransitionAudio(bool isOpen, Vector3 targetPosition)
+    {
+        if (m_HasResolvedOpenState)
+            return m_IsOpen != isOpen;
+
+        return (m_MovableRoot.localPosition - targetPosition).sqrMagnitude > 0.0001f;
+    }
+
+    /// <summary>
+    /// Replays the authored gate cue from the beginning each time the state flips.
+    /// </summary>
+    void PlayTransitionAudio()
+    {
+        if (m_TransitionAudioSource == null)
+            return;
+
+        m_TransitionAudioSource.Stop();
+        m_TransitionAudioSource.Play();
     }
 
     /// <summary>

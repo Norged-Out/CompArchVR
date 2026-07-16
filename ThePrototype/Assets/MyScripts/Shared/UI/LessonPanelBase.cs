@@ -12,6 +12,10 @@ public abstract class LessonPanelBase : MonoBehaviour
 {
     const float k_ActionButtonHeight = 56f;
 
+    [Header("Audio")]
+    [SerializeField]
+    LessonUiAudioCueSet m_LessonAudioCues = new();
+
     [Header("Shared Layout")]
     [SerializeField]
     ScrollRect[] m_ScrollRects;
@@ -107,6 +111,38 @@ public abstract class LessonPanelBase : MonoBehaviour
         RefreshRootLayouts();
 
         Canvas.ForceUpdateCanvases();
+    }
+
+    /// <summary>
+    /// Plays the authored phase-entered cue from this panel's local audio source.
+    /// </summary>
+    public void PlayPhaseActivatedCue()
+    {
+        m_LessonAudioCues.PlayPhaseActivatedCue();
+    }
+
+    /// <summary>
+    /// Plays the authored phase-cleared cue from this panel's local audio source.
+    /// </summary>
+    public void PlayPhaseCompletedCue()
+    {
+        m_LessonAudioCues.PlayPhaseCompletedCue();
+    }
+
+    /// <summary>
+    /// Plays the authored incorrect-action cue from this panel's local audio source.
+    /// </summary>
+    public void PlayIncorrectCue()
+    {
+        m_LessonAudioCues.PlayIncorrectCue();
+    }
+
+    /// <summary>
+    /// Plays the authored lesson-finished cue from this panel's local audio source.
+    /// </summary>
+    public void PlayLessonCompletedCue()
+    {
+        m_LessonAudioCues.PlayLessonCompletedCue();
     }
 
     /// <summary>

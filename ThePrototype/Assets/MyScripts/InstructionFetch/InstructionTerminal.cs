@@ -49,6 +49,10 @@ public class InstructionTerminal : MonoBehaviour
     [SerializeField]
     float m_StateChangeDelaySeconds = 0.35f;
 
+    [Header("Audio")]
+    [SerializeField]
+    AudioSource m_ActionAudioSource;
+
     [Header("Uploader Tuning")]
     [SerializeField]
     bool m_SpawnEmptyModuleOnEnable = true;
@@ -263,6 +267,7 @@ public class InstructionTerminal : MonoBehaviour
         if (m_LockModuleOnDownload && m_SpawnPoint != null)
             module.SnapToAnchor(m_SpawnPoint, true);
 
+        PlayActionAudio();
         PlayParticles();
         StartStateChangeRoutine(FinalizeDownloadedModuleAfterDelay(module));
     }
@@ -351,8 +356,21 @@ public class InstructionTerminal : MonoBehaviour
         // but the module itself waits a beat before changing state so the short
         // VFX burst reads like the instruction is being written into it.
         m_LessonFlow?.NotifyInstructionUploaded(instruction);
+        PlayActionAudio();
         PlayParticles();
         StartStateChangeRoutine(ApplyUploadedInstructionAfterDelay(module, instruction));
+    }
+
+    /// <summary>
+    /// Optional scene-authored sound cue used by both upload and download terminals.
+    /// </summary>
+    void PlayActionAudio()
+    {
+        if (m_ActionAudioSource == null)
+            return;
+
+        m_ActionAudioSource.Stop();
+        m_ActionAudioSource.Play();
     }
 
     Transform FindChildTransform(string childName)

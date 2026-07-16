@@ -24,6 +24,10 @@ public class PcUpdateController : MonoBehaviour
     [SerializeField]
     Transform m_JumpButtonRoot;
 
+    [Header("Audio")]
+    [SerializeField]
+    LessonUiAudioCueSet m_LessonAudioCues = new();
+
     [Header("PC Update UI")]
     [SerializeField]
     GameObject m_PcUpdateUiRoot;
@@ -519,6 +523,9 @@ public class PcUpdateController : MonoBehaviour
     void SetFeedback(string message, bool isFailure)
     {
         PcUpdatePresentation.SetFeedback(m_FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
+
+        if (isFailure && !string.IsNullOrWhiteSpace(message))
+            PlayIncorrectCue();
     }
 
     /// <summary>
@@ -573,4 +580,24 @@ public class PcUpdateController : MonoBehaviour
     public TMP_Text HintZeroText => m_HintZeroText;
     public string ConfirmButtonText => m_ConfirmButtonText;
     public string ContinueButtonText => m_ContinueButtonText;
+
+    public void PlayPhaseActivatedCue()
+    {
+        m_LessonAudioCues.PlayPhaseActivatedCue();
+    }
+
+    public void PlayPhaseCompletedCue()
+    {
+        m_LessonAudioCues.PlayPhaseCompletedCue();
+    }
+
+    public void PlayIncorrectCue()
+    {
+        m_LessonAudioCues.PlayIncorrectCue();
+    }
+
+    public void PlayLessonCompletedCue()
+    {
+        m_LessonAudioCues.PlayLessonCompletedCue();
+    }
 }

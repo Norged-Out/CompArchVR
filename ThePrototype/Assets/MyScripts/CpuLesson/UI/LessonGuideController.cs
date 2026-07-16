@@ -68,6 +68,7 @@ public sealed class LessonGuideController : MonoBehaviour
     LessonGuideView m_View;
     bool m_IsRefreshingInstructionDropdown;
     bool m_IsRefreshingDecodeDropdowns;
+    LessonCuePhase m_LastCuePhase = LessonCuePhase.None;
 
     /// <summary>
     /// Prepares authored dropdown data and UI event hooks before the scene starts.
@@ -77,6 +78,7 @@ public sealed class LessonGuideController : MonoBehaviour
         EnsureView();
         RefreshInstructionLibrary();
         BindPanelInputs();
+        SyncLessonCueState();
         RefreshView();
     }
 
@@ -90,6 +92,7 @@ public sealed class LessonGuideController : MonoBehaviour
         BindPanelInputs();
         SubscribePhaseEvents();
         SubscribeLessonFlowEvents();
+        SyncLessonCueState();
         RefreshView();
     }
 
@@ -144,10 +147,16 @@ public sealed class LessonGuideController : MonoBehaviour
         }
 
         if (m_MemoryController != null)
+        {
             m_MemoryController.ContinueRequested += HandleMemoryContinueRequested;
+            m_MemoryController.MemoryTransferCompleted += HandleMemoryTransferCompleted;
+        }
 
         if (m_PcUpdateController != null)
+        {
             m_PcUpdateController.ContinueRequested += HandlePcUpdateContinueRequested;
+            m_PcUpdateController.PcUpdateConfirmed += HandlePcUpdateConfirmed;
+        }
     }
 
     /// <summary>
@@ -165,10 +174,16 @@ public sealed class LessonGuideController : MonoBehaviour
         }
 
         if (m_MemoryController != null)
+        {
             m_MemoryController.ContinueRequested -= HandleMemoryContinueRequested;
+            m_MemoryController.MemoryTransferCompleted -= HandleMemoryTransferCompleted;
+        }
 
         if (m_PcUpdateController != null)
+        {
             m_PcUpdateController.ContinueRequested -= HandlePcUpdateContinueRequested;
+            m_PcUpdateController.PcUpdateConfirmed -= HandlePcUpdateConfirmed;
+        }
     }
 
     /// <summary>
@@ -275,7 +290,7 @@ public sealed class LessonGuideController : MonoBehaviour
     void HandleStepChanged(CpuLessonFlow _)
     {
         Debug.Log($"{k_LogPrefix} StepChanged | step={m_LessonFlow?.CurrentStep?.stepName} frame={Time.frameCount}", this);
-        RefreshView();
+        HandlePhaseCueTransition();
     }
 
     /// <summary>
@@ -287,10 +302,29 @@ public sealed class LessonGuideController : MonoBehaviour
     }
 
     /// <summary>
+    /// Plays the shared phase-clear cue when Memory Access finishes its transfer.
+    /// </summary>
+    void HandleMemoryTransferCompleted()
+    {
+        m_MemoryController?.PlayPhaseCompletedCue();
+    }
+
+    /// <summary>
     /// Forwards a successful write-back result into the lesson flow state machine.
     /// </summary>
     void HandleWriteBackApplied(string destinationRegister, int resultValue)
     {
+        if (m_LessonFlow != null &&
+            m_LessonFlow.CurrentInstruction != null &&
+            !m_LessonFlow.CurrentInstruction.UsesPcUpdatePhase())
+        {
+            m_WriteBackController?.PlayLessonCompletedCue();
+        }
+        else
+        {
+            m_WriteBackController?.PlayPhaseCompletedCue();
+        }
+
         m_LessonFlow?.CompleteWriteBackExecution(destinationRegister, resultValue);
     }
 
@@ -319,10 +353,21 @@ public sealed class LessonGuideController : MonoBehaviour
     }
 
     /// <summary>
+    /// Treats a confirmed Program Counter update as the end of the current walkthrough.
+    /// </summary>
+    void HandlePcUpdateConfirmed()
+    {
+        m_PcUpdateController?.PlayLessonCompletedCue();
+    }
+
+    /// <summary>
     /// Routes shared lesson feedback to whichever authored panel is currently active.
     /// </summary>
     void HandleFeedbackChanged(string message, bool isFailure)
     {
+        if (isFailure && !string.IsNullOrWhiteSpace(message))
+            PlayIncorrectCueForCurrentOwner();
+
         EnsureView();
         m_View?.RouteFeedback(m_LessonFlow, message, isFailure, m_AvailableInstructions);
     }
@@ -371,5 +416,145 @@ public sealed class LessonGuideController : MonoBehaviour
             m_WriteBackController,
             m_PcUpdatePanelRoot,
             m_PcUpdateController);
+    }
+
+    void SyncLessonCueState()
+    {
+        m_LastCuePhase = ResolveCuePhase();
+    }
+
+    void HandlePhaseCueTransition()
+    {
+        var currentPhase = ResolveCuePhase();
+        var previousPhase = m_LastCuePhase;
+
+        if (currentPhase == previousPhase)
+        {
+            RefreshView();
+            return;
+        }
+
+        PlayPhaseCompletedCue(previousPhase, currentPhase);
+        RefreshView();
+        PlayPhaseActivatedCue(currentPhase);
+
+        m_LastCuePhase = currentPhase;
+    }
+
+    LessonCuePhase ResolveCuePhase()
+    {
+        if (m_LessonFlow == null)
+            return LessonCuePhase.None;
+
+        if (!m_LessonFlow.HasStarted)
+            return LessonCuePhase.BeforeStart;
+
+        var currentStep = m_LessonFlow.CurrentStep;
+        if (currentStep == null)
+            return LessonCuePhase.None;
+
+        if (currentStep.requiredInteraction == InstructionStepInteractionType.Completion)
+            return LessonCuePhase.Completion;
+
+        if (m_PhaseRouter.ShouldShowPcUpdatePanel(m_LessonFlow))
+            return LessonCuePhase.PcUpdate;
+
+        if (m_PhaseRouter.ShouldShowWriteBackPanel(m_LessonFlow))
+            return LessonCuePhase.WriteBack;
+
+        if (m_PhaseRouter.ShouldShowMemoryPanel(m_LessonFlow))
+            return LessonCuePhase.Memory;
+
+        if (m_PhaseRouter.ShouldShowExecutionPanel(m_LessonFlow))
+            return LessonCuePhase.Execute;
+
+        if (m_PhaseRouter.ShouldShowDecodePanel(m_LessonFlow))
+            return LessonCuePhase.Decode;
+
+        if (m_PhaseRouter.ShouldShowIntroPanel(m_LessonFlow))
+            return LessonCuePhase.Fetch;
+
+        return LessonCuePhase.None;
+    }
+
+    void PlayPhaseCompletedCue(LessonCuePhase previousPhase, LessonCuePhase currentPhase)
+    {
+        // Fetch transitions straight into Decode at the terminal, so it needs
+        // an explicit completion cue before the shared intro panel is hidden.
+        if (previousPhase == LessonCuePhase.Fetch && currentPhase == LessonCuePhase.Decode)
+            m_IntroPanel?.PlayPhaseCompletedCue();
+    }
+
+    void PlayPhaseActivatedCue(LessonCuePhase phase)
+    {
+        switch (phase)
+        {
+            case LessonCuePhase.Fetch:
+                m_IntroPanel?.PlayPhaseActivatedCue();
+                break;
+
+            case LessonCuePhase.Decode:
+                m_DecodePanel?.PlayPhaseActivatedCue();
+                break;
+
+            case LessonCuePhase.Execute:
+                m_ExecuteController?.PlayPhaseActivatedCue();
+                break;
+
+            case LessonCuePhase.Memory:
+                m_MemoryController?.PlayPhaseActivatedCue();
+                break;
+
+            case LessonCuePhase.WriteBack:
+                m_WriteBackController?.PlayPhaseActivatedCue();
+                break;
+
+            case LessonCuePhase.PcUpdate:
+                m_PcUpdateController?.PlayPhaseActivatedCue();
+                break;
+        }
+    }
+
+    void PlayIncorrectCueForCurrentOwner()
+    {
+        switch (ResolveCuePhase())
+        {
+            case LessonCuePhase.Fetch:
+                m_IntroPanel?.PlayIncorrectCue();
+                break;
+
+            case LessonCuePhase.Decode:
+                m_DecodePanel?.PlayIncorrectCue();
+                break;
+
+            case LessonCuePhase.Execute:
+                m_ExecuteController?.PlayIncorrectCue();
+                break;
+
+            case LessonCuePhase.Memory:
+                m_MemoryController?.PlayIncorrectCue();
+                break;
+
+            case LessonCuePhase.WriteBack:
+                m_WriteBackController?.PlayIncorrectCue();
+                break;
+
+            case LessonCuePhase.PcUpdate:
+                m_PcUpdateController?.PlayIncorrectCue();
+                break;
+        }
+    }
+
+    enum LessonCuePhase
+    {
+        None,
+        BeforeStart,
+        Fetch,
+        Decode,
+        Execute,
+        Memory,
+        WriteBack,
+        PcUpdate,
+        Completion,
     }
 }

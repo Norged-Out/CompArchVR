@@ -35,6 +35,13 @@ public class WriteBackController : MonoBehaviour
     [SerializeField]
     Transform m_MemToRegButtonRoot;
 
+    [Header("Audio")]
+    [SerializeField]
+    AudioSource m_TransferAudioSource;
+
+    [SerializeField]
+    LessonUiAudioCueSet m_LessonAudioCues = new();
+
     [Header("Write-Back UI")]
     [SerializeField]
     GameObject m_WbUiRoot;
@@ -302,6 +309,7 @@ public class WriteBackController : MonoBehaviour
         }
 
         SetFeedback("Write-back confirmed. Transferring value into the destination register...", false);
+        PlayTransferAudio();
         RefreshPresentation();
         m_TransferRoutine = StartCoroutine(ApplyWriteBackRoutine());
     }
@@ -336,6 +344,9 @@ public class WriteBackController : MonoBehaviour
     public void SetFeedback(string message, bool isFailure)
     {
         WriteBackPresentation.SetFeedback(m_FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
+
+        if (isFailure && !string.IsNullOrWhiteSpace(message))
+            PlayIncorrectCue();
     }
 
     void PrepareForWriteBackStep()
@@ -526,6 +537,35 @@ public class WriteBackController : MonoBehaviour
     void HandleHintDropdownChanged(int _)
     {
         RefreshPresentation();
+    }
+
+    void PlayTransferAudio()
+    {
+        if (m_TransferAudioSource == null)
+            return;
+
+        m_TransferAudioSource.Stop();
+        m_TransferAudioSource.Play();
+    }
+
+    public void PlayPhaseActivatedCue()
+    {
+        m_LessonAudioCues.PlayPhaseActivatedCue();
+    }
+
+    public void PlayPhaseCompletedCue()
+    {
+        m_LessonAudioCues.PlayPhaseCompletedCue();
+    }
+
+    public void PlayIncorrectCue()
+    {
+        m_LessonAudioCues.PlayIncorrectCue();
+    }
+
+    public void PlayLessonCompletedCue()
+    {
+        m_LessonAudioCues.PlayLessonCompletedCue();
     }
 
     void RefreshExpectedTargets()
