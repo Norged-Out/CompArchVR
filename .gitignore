@@ -155,3 +155,7 @@ ThePrototype/Assets/CompositionLayers.meta
 ThePrototype/Assets/CompositionLayers/UserSettings/
 ThePrototype/Assets/CompositionLayers/UserSettings.meta
 ThePrototype/.vsconfig
+
+# Local-only journal files
+ProjectJournal/00_README.md
+ProjectJournal/03_GUIDELINES.md

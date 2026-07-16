@@ -1,6 +1,6 @@
 # Project Snapshot
 
-This file is meant to help the project owner quickly resume work after breaks, chat resets, or low-credit days.
+This file is meant to help me quickly resume work after breaks, session resets, or interrupted work periods.
 
 ## What This Project Is Trying To Be
 
@@ -58,7 +58,7 @@ Current prototype features:
   - PC-update conclusion platform
   - gated return toward the end
 - moving gate system for phase progression
-- new lightweight arrow-guidance prototype for route assistance
+- route guidance baseline with authored arrows and gate-controlled progression
 - player-facing wrist settings menu with:
   - current instruction text
   - current phase text
@@ -70,7 +70,17 @@ Current prototype features:
   - FPS / frame-time readout
   - quit support
 - left-controller menu-button access layered onto the existing XR hand-menu approach
-- imported tutorial/video prefab from `VRTemplateAssets` now present as onboarding groundwork
+- onboarding groundwork through:
+  - the imported tutorial/video prefab from `VRTemplateAssets`
+  - simple image-based tutorial surfaces
+- broad local gameplay-audio layer for:
+  - gates
+  - instruction terminals
+  - lesson phases
+  - transfer events
+  - buttons
+  - datapacket spawn feedback
+  - scanner feedback
 - refactored `CpuLesson` folder organized into:
   - `Flow`
   - `Support`
@@ -132,8 +142,8 @@ What is current polish work versus already-solved systems:
   - branch resolution
 - still active polish work:
   - tutorial/onboarding
-  - sound pass
   - experiment mode
+  - optional background music / ambient tone
   - light route/gate readability tuning only if testing exposes issues
   - optional settings refinement
 
@@ -195,22 +205,23 @@ Why:
   - tutorial / onboarding
   - navigation clarity
   - UI readability
-  - sound cues
   - experiment-mode planning
+  - optional ambience / background music
   - only small settings-menu refinements if they clearly help
 
-## If Starting A New Chat
+## If I Resume After A Break
 
-Useful prompt:
+Key files to reread:
+- `ProjectJournal/02_MASTER_EXECUTION_PLAN.md`
+- `ProjectJournal/01_PROGRESS_LOG.md`
+- `ProjectJournal/04_DECISION_LOG.md`
+- `ProjectJournal/03_PROJECT_SNAPSHOT.md`
 
-`Please read ProjectJournal/00_README.md, 02_MASTER_EXECUTION_PLAN.md, 03_GUIDELINES.md, 01_PROGRESS_LOG.md, and 05_DECISION_LOG.md before suggesting or making changes.`
-
-## If Credits Are Running Low
+## If I Need To Stop Mid-Session
 
 Before stopping:
-- ask for the relevant journal files to be updated
 - make sure `01_PROGRESS_LOG.md` reflects the current state
-- make sure any major scope shift is written into `05_DECISION_LOG.md`
+- make sure any major scope shift is written into `04_DECISION_LOG.md`
 
 ## Current Open Questions
 
@@ -221,7 +232,7 @@ Before stopping:
   - both, if still cheap enough
 - what the minimum viable experiment mode should hide, skip, or ungate
 - how much of the current UI wording should move entirely into authored scene text versus stay runtime-driven
-- whether instruction choice should remain user-selected, become randomized, or support both
+- whether instruction choice should remain manually selected, become randomized, or support both
 - whether jump-family instructions are worth fitting in before the July 24 checkpoint
 - how much onboarding belongs in a dedicated tutorial versus just-in-time prompts in the map
 - how much post-meeting time should be reserved for participant prep instead of feature work
@@ -233,14 +244,13 @@ Before stopping:
 Ordered cutoff list before the next supervisor meeting:
 
 1. tutorial UI / onboarding decision and first pass
-2. sound pass
-3. experiment mode before the checkpoint if feasible
-4. optional settings refinement only if it materially helps usability
-5. jump-family evaluation / inclusion only if safe
-6. final polish
-7. optional helper NPC / guide if time remains
-8. optional in-world music player / ambience pass if time remains
-9. optional VFX pass if the unused Unity Asset Store effects pack proves presentation-helpful and cheap to integrate
+2. experiment mode before the checkpoint if feasible
+3. optional settings refinement only if it materially helps usability
+4. jump-family evaluation / inclusion only if safe
+5. final polish
+6. optional helper NPC / guide if time remains
+7. optional in-world music player / ambience pass if time remains
+8. optional VFX pass if the unused Unity Asset Store effects pack proves presentation-helpful and cheap to integrate
 
 Everything else should be treated as future work unless a blocking regression appears.
 
@@ -252,7 +262,6 @@ The cleanest next work item is:
 - likely keep both tutorial options on the table for now:
   - recorded custom video
   - coaching-card walkthrough
-- move into the sound pass next
 - add experiment mode only after the guided version feels presentation-safe
 - keep map changes to touch-up work unless testing exposes a real routing/readability issue
 
@@ -265,6 +274,7 @@ Do not resume from an older assumption that gating or route guidance still needs
 - that helper is intentionally dormant by default and should only be enabled on specific authored scene pieces when actively testing an intro beat
 - recent Unity headset play-mode delays looked inconsistent and editor-side, so they should not be treated as evidence that the offset helper itself is unsafe
 - the project also now has a baseline wrist settings menu, so player-facing support is no longer limited to the phase-local lesson panels alone
+- the project now also has a broad gameplay-audio feedback layer, so any remaining sound work should be treated as balancing or ambience rather than missing core interaction support
 - no dedicated separate cheatsheet is currently planned, since the hint panels are expected to cover most reference needs
 
 ## Personal Reminder

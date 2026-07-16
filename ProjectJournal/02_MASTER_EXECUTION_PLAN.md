@@ -38,7 +38,7 @@ Examples:
 
 ## Scope Principle
 
-The user and supervisor agreed that the project should:
+I agreed with my supervisor that the project should:
 - achieve one learning objective cleanly first
 - only expand if the first objective is already working
 
@@ -55,7 +55,7 @@ Active schedule:
 
 Current risk:
 - not missing datapath coverage
-- but readability, navigation, onboarding, and overall delivery quality
+- but onboarding clarity, experiment-mode readiness, and overall delivery quality
 
 Historical note:
 - the June 29, 2026 V1 checkpoint is complete and should now be treated as project history, not as the live plan
@@ -313,12 +313,11 @@ A strong demo should show that a learner can:
 
 Before the next supervisor meeting on `2026-07-24`, prioritize:
 
-1. tutorial / onboarding
-2. sound pass for spatial guidance and feedback
-3. experiment mode without handholding
-4. optional settings refinement only where it clearly improves usability
-5. jump-family instruction additions only if the above is already safe
-6. final presentation polish
+1. tutorial / onboarding refinement
+2. experiment mode without handholding
+3. optional settings refinement only where it clearly improves usability
+4. jump-family instruction additions only if the above is already safe
+5. final presentation polish
 
 Already partly established and now moving into refinement instead of first implementation:
 - routed map revamp / improved route baseline
@@ -326,7 +325,8 @@ Already partly established and now moving into refinement instead of first imple
 - physical route guidance
 - multi-panel authored lesson UI
 - baseline wrist settings menu support
-- baseline tutorial asset presence through the imported sample tutorial/video prefab
+- baseline tutorial/onboarding setup through the imported sample tutorial/video prefab and lightweight in-scene image surfaces
+- broad gameplay audio feedback across the main lesson loop
 
 Reason:
 - the functional lesson loop is already broad enough
@@ -343,16 +343,17 @@ Recommended order once the `2026-07-24` checkpoint build is safe:
 
 1. expanded settings menu / replay affordances if still useful
 2. cleaner exit / restart / free-roam transitions
-3. immediate-family expansion:
+3. deeper audio balancing / ambience if still useful
+4. immediate-family expansion:
    - `slti`
    - `andi`
    - `ori`
-4. jump instructions:
+5. jump instructions:
    - `j`
    - `jal`
    - `jr`
-5. `lui`
-6. deeper audio / VFX polish
+6. `lui`
+7. deeper VFX polish
 
 Rationale:
 - the learner experience should be presentation-ready first
