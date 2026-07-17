@@ -79,7 +79,9 @@ sealed class LessonGuideView
     public void Refresh(
         CpuLessonFlow lessonFlow,
         IReadOnlyList<InstructionDefinition> availableInstructions,
+        PracticeInstructionDefinition currentPracticeInstruction,
         DecodeGuideFlow decodeGuideFlow,
+        PracticeDecodeFlow practiceDecodeFlow,
         string startButtonLabel,
         string continueButtonLabel,
         string goBackButtonLabel,
@@ -107,10 +109,11 @@ sealed class LessonGuideView
         {
             ResetPhasePanels();
             decodeGuideFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
+            practiceDecodeFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
             m_IntroPanel.ShowBeforeStart(
                 lessonFlow.CurrentInstruction,
                 startButtonLabel,
-                lessonFlow.UsesLearningInstructionSelection,
+                lessonFlow.UsesInstructionSelection,
                 lessonFlow.CanStartSelectedMode);
             return;
         }
@@ -138,7 +141,9 @@ sealed class LessonGuideView
             lessonFlow,
             step,
             availableInstructions,
+            currentPracticeInstruction,
             decodeGuideFlow.GetSelectionMode(lessonFlow),
+            practiceDecodeFlow,
             continueButtonLabel,
             restartButtonLabel);
     }

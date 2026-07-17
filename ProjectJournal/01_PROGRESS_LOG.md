@@ -27,6 +27,9 @@ Current stable feature set:
   - memory access
   - write-back
   - PC update / lesson conclusion
+- lesson-mode groundwork for:
+  - `Learning`
+  - `Practice`
 - physical instruction fetch through:
   - `Instruction Module`
   - uploader `Instruction Terminal`
@@ -34,7 +37,9 @@ Current stable feature set:
 - authored three-panel lesson UIs for the active phase stations
 - authored 32-register MIPS bank with:
   - logical register values
-  - local reset
+  - authored sample values across all 32 registers
+  - local pose-only reset
+  - authored-value restore on lesson-mode change
   - scanner-driven decode interaction
 - working datapacket flow for:
   - register reads
@@ -77,7 +82,9 @@ Current stable feature set:
 Current interaction systems that are already implemented:
 - permanent 32-register MIPS bank serialized into `Testing Ground`
 - grabbable labeled register tokens with persistent logical values
-- register scanners for decode-stage source-operand validation
+- register scanners for:
+  - decode-stage source-operand validation
+  - idle preview/reference use when no lesson is active
 - local register reset that restores pose only
 - datapacket reset that restores loose packet transforms only
 - immediate packet generation and physical sign-extension through the `Immediate Extender`
@@ -107,8 +114,10 @@ Current architecture truths:
 - lesson UI is scene-authored and code-driven
 - core lesson objects are expected to be wired through serialized scene references
 - runtime scene lookup glue has been reduced and should not be reintroduced casually
+- Unity UI event hookups are now expected to be Inspector-bound instead of wired in code at runtime
 - the routed map is part of the lesson design, not just environment decoration
 - the current build direction is polish-first, not instruction-count-first
+- practice mode is now an active extension path and should be built by safely extending the existing lesson architecture, not replacing it
 
 Current delivery target:
 - next supervisor checkpoint: `2026-07-24`
@@ -118,6 +127,7 @@ Current delivery target:
   - leave the buffer for polish, participant prep, and presentation safety
 
 Current development priority:
+- stabilize the practice-mode groundwork without regressing the guided baseline
 - improve readability, onboarding, experiment-mode readiness, and overall presentation quality
 - avoid major architecture churn unless it fixes a real blocker
 - preserve the now-working lesson loop while polishing around it
@@ -127,10 +137,11 @@ Current development priority:
 These are the live priorities from the current perspective:
 
 1. tutorial / onboarding decision and first proper pass
-2. experiment mode without handholding
-3. optional settings refinements only where they materially help usability
-4. jump-family evaluation only if the above is already safe
-5. final polish
+2. practice mode implementation
+3. experiment mode without handholding
+4. optional settings refinements only where they materially help usability
+5. jump-family evaluation only if the above is already safe
+6. final polish
 
 Optional only if time remains:
 - helper NPC / guide presence
@@ -158,6 +169,7 @@ What should currently be treated as true:
 - tutorial/onboarding now has real in-scene groundwork rather than being a purely abstract future task
 - the improved routed-map layout should now be treated as the active baseline rather than an unfinished first-pass map task
 - the current build direction is polish-first, not instruction-count-first
+- the next major build change in flight is practice-mode support layered onto the same lesson foundation
 - supported working instructions are:
   - `add`
   - `addi`
@@ -1142,6 +1154,51 @@ Next:
 Risks / Notes:
 - no background music has been locked in yet, so ambience should still be treated as optional flavor work
 - the current audio pass intentionally prioritizes local interaction clarity over theatrical presentation
+
+
+### 2026-07-17 - Practice-Mode Groundwork And Register-Bank Overhaul
+
+Completed:
+- created a real practice-mode groundwork path on the dedicated `practice-mode` branch instead of trying to layer the mode in as an unsafe one-off hack
+- extended the lesson architecture so mode selection can sit above instruction selection without replacing the existing guided lesson flow
+- updated the intro flow so it can support:
+  - lesson mode selection
+  - instruction selection scoped by the active mode
+  - a cleaner return-to-idle path once `IF` has started
+- refactored Unity UI event handling so main menu/dropdown/button events are now intended to be bound through the Inspector instead of added in code at runtime
+- kept dropdown population in code while moving event ownership out to scene bindings
+- formalized the register bank into a proper reusable `Register Zone` prefab with authored sample values across all 32 MIPS registers
+- assigned real data-memory-backed address values to the saved-register range so memory-related lessons can use believable address-bearing registers instead of placeholder repetition
+- changed the register-value lifecycle so ordinary lesson starts/resets no longer wipe the whole bank back to fresh values every time
+- added a safer authored-value restore path that happens when the lesson mode changes, so moving between `Learning` and `Practice` can re-baseline the bank cleanly
+- broadened the current instruction-definition assets so they no longer overuse only the same small handful of registers
+- polished multiple phase readouts so accepted values are displayed more cleanly:
+  - `ALU` accepted input text now shows just the relevant value
+  - `Mem` text no longer repeats redundant packet-role suffixes
+  - `WB` now exposes the target register's current stored value for better context
+- updated lesson decode scanners so, when no lesson is active, they can act like ordinary preview scanners instead of sitting uselessly inactive
+- kept the lesson-only scanner behavior intact once a lesson actually starts
+
+Changed:
+- the project is no longer assuming that register values should be freshly scripted per lesson run as the main baseline
+- the register bank now behaves more like the data-memory bank in spirit:
+  - authored defaults exist
+  - local interaction can change runtime state
+  - mode changes can safely restore the authored baseline
+- practice mode is now a real architecture concern, not just an idea in the backlog
+- the intro panel has started shifting from "single guided lesson picker" toward "mode-first lesson entry point"
+- scene bindings are now the preferred source of truth for UI event hookup, while code remains responsible for supplying dropdown content and runtime state
+
+Next:
+- test the current practice-mode groundwork in-scene and verify the guided mode still behaves exactly as expected after the refactor
+- continue the practice-mode implementation through decode-specific behavior rather than mixing it loosely into the learning flow
+- keep updating learning-mode instruction assets so the broader register bank is used more intentionally across instruction families
+- decide the exact first playable slice of practice mode before widening its decode/input burden too aggressively
+
+Risks / Notes:
+- the current practice-mode work is still foundation work, not the finished mode itself
+- the biggest near-term risk is accidental regression of the stable guided flow while practice-mode pieces are being added
+- the new register-value persistence direction is intentionally more realistic/useful for replay, but it increases the importance of keeping authored reset boundaries explicit
 
 
 ## Current Working Baseline

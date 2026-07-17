@@ -192,6 +192,14 @@ public sealed class IntroPanelController : LessonPanelBase
 
         if (IsFetchStep(step))
         {
+            if (lessonFlow.CurrentMode == LessonMode.Practice && lessonFlow.CurrentPracticeInstruction != null)
+            {
+                return
+                    "Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
+                    $"Encoded Instruction: {lessonFlow.CurrentPracticeInstruction.GetHexInstructionText()}\n\n" +
+                    "The selected encoded instruction has been uploaded to the fetch terminal. Pick up the module, carry it to the decode terminal, and dock it there to unlock Instruction Decode.";
+            }
+
             return
                 $"Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
                 $"Instruction: {instruction.displayName}\n" +

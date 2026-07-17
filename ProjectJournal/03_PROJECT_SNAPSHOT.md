@@ -21,6 +21,9 @@ Scene:
 
 Current prototype features:
 - scene-authored lesson flow built around `Lesson Guide`
+- lesson-mode groundwork for:
+  - `Learning`
+  - `Practice`
 - scene-authored world-space UIs for:
   - `Intro UI`
   - `Instruction Decode UI`
@@ -38,8 +41,10 @@ Current prototype features:
   - downloader `Instruction Terminal`
 - scene-authored `Register Zone` with:
   - 32 permanent grabbable MIPS registers
+  - authored sample values across all 32 registers
   - decode-stage scanners
-  - local register reset
+  - local pose-only reset
+  - authored-value restore on mode change
 - datapacket flow for:
   - read data
   - immediate
@@ -102,15 +107,18 @@ Current supported instructions:
 Current build truth:
 - these instructions work through the current guided loop
 - the project is now in polish/presentation mode more than raw datapath expansion mode
+- the next serious system extension in flight is practice mode, built on top of the same lesson foundation
 
 More detailed current-state notes:
 - fetch is no longer just UI framing; it uses a physical instruction upload/download handoff
+- intro flow is no longer only a single instruction picker; it is now being reshaped into a mode-first entry point
 - decode is no longer just register placement; it now includes:
   - instruction field framing
   - opcode selection
   - funct handling where applicable
   - source-operand scanning
   - immediate generation for immediate-bearing instructions
+- when no lesson is active, the two decode-stage lesson scanners can now act as simple preview scanners instead of staying uselessly inactive
 - execute is currently responsible for:
   - ALU signal interaction
   - operand acceptance
@@ -141,6 +149,7 @@ What is current polish work versus already-solved systems:
   - write-back
   - branch resolution
 - still active polish work:
+  - practice mode
   - tutorial/onboarding
   - experiment mode
   - optional background music / ambient tone
@@ -163,6 +172,7 @@ What is current polish work versus already-solved systems:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeHintBuilder.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeGuideFlow.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeDropdownView.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\PracticeInstructionDefinition.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideView.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\IntroPanelController.cs`
@@ -202,6 +212,7 @@ Why:
 - next supervisor checkpoint: `2026-07-24`
 - official demo deadline: `2026-07-29`
 - current focus is presentation readiness:
+  - practice-mode foundation
   - tutorial / onboarding
   - navigation clarity
   - UI readability
@@ -225,6 +236,7 @@ Before stopping:
 
 ## Current Open Questions
 
+- what the safest first playable slice of practice mode should be before deeper decode complexity is added
 - how strong the door + arrow + audio guidance should be without becoming visually noisy
 - whether onboarding V1 should ship as:
   - a recorded custom tutorial video
@@ -244,20 +256,21 @@ Before stopping:
 Ordered cutoff list before the next supervisor meeting:
 
 1. tutorial UI / onboarding decision and first pass
-2. experiment mode before the checkpoint if feasible
-3. optional settings refinement only if it materially helps usability
-4. jump-family evaluation / inclusion only if safe
-5. final polish
-6. optional helper NPC / guide if time remains
-7. optional in-world music player / ambience pass if time remains
-8. optional VFX pass if the unused Unity Asset Store effects pack proves presentation-helpful and cheap to integrate
+2. practice mode before the checkpoint if feasible
+3. experiment mode before the checkpoint if feasible
+4. optional settings refinement only if it materially helps usability
+5. jump-family evaluation / inclusion only if safe
+6. final polish
+7. optional helper NPC / guide if time remains
+8. optional in-world music player / ambience pass if time remains
+9. optional VFX pass if the unused Unity Asset Store effects pack proves presentation-helpful and cheap to integrate
 
 Everything else should be treated as future work unless a blocking regression appears.
 
 ## Best Resume Point For The Next Development Session
 
 The cleanest next work item is:
-- continue the polish pass instead of adding another major system
+- continue the practice-mode foundation while preserving the current guided flow
 - choose and build the first real onboarding path
 - likely keep both tutorial options on the table for now:
   - recorded custom video

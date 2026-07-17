@@ -977,6 +977,74 @@ Implication:
 - hint panels remain the main reference surface unless later testing proves otherwise
 
 
+## 2026-07-17 - Practice Mode Should Extend The Existing Lesson Architecture, Not Fork It
+
+Decision:
+- build practice mode on top of the same lesson foundation as learning mode
+- do not create a second unrelated runtime flow just because the mode has different decode expectations
+
+Why:
+- the guided lesson flow already works and is too valuable to destabilize casually
+- a shared architecture makes it easier to preserve existing scene wiring, progression, and phase ownership
+- this keeps future maintenance saner than trying to support two separate systems that happen to touch the same authored scene
+
+Implication:
+- mode selection should happen as part of the existing intro/lesson entry flow
+- shared systems should only split where behavior truly differs by mode
+- future practice-mode work should prefer safe extensions and focused refactors over parallel controller stacks
+
+
+## 2026-07-17 - Unity UI Events Should Be Inspector-Bound, While Option Population Stays In Code
+
+Decision:
+- stop relying on runtime listener wiring for the main lesson UI events
+- keep dropdown content population in code, but bind UI event callbacks through the Inspector
+
+Why:
+- scene-bound UI behavior is easier to inspect, reason about, and correct in Unity
+- this aligns better with the broader authored-scene direction of the project
+- it also avoids quietly scattering UI behavior setup across code in ways that are harder to verify at a glance
+
+Implication:
+- buttons and dropdowns should expose clear public handlers for scene binding
+- future UI refactors should preserve authored event wiring unless there is a strong reason to change it
+- code should still own dynamic option generation where hand-authoring all entries would be wasteful
+
+
+## 2026-07-17 - Register Values Should Persist During Ordinary Lesson Use, But Rebaseline On Mode Change
+
+Decision:
+- stop resetting the entire register bank back to fresh scripted values on every ordinary lesson start/reset
+- preserve register values during ordinary interaction
+- restore the authored baseline when the active lesson mode changes
+
+Why:
+- this matches the earlier preference for letting stateful systems feel more like real authored parts of the environment instead of disposable per-lesson props
+- it also makes the register bank behave more coherently alongside the already-stateful data-memory behavior
+- mode changes are the cleaner boundary for a deliberate authored reset than every single lesson restart
+
+Implication:
+- local register reset remains pose-only
+- lesson flow should not casually wipe the whole register bank during ordinary retries
+- future practice-mode work can rely on authored register defaults still existing as a safe reset boundary when changing modes
+
+
+## 2026-07-17 - Idle Lesson Decode Scanners May Revert To Utility Preview Scanners
+
+Decision:
+- when no lesson is active, the two decode-stage lesson scanners may behave like ordinary preview scanners instead of remaining inactive
+
+Why:
+- there was already a third utility scanner in the scene proving that simple preview behavior is useful outside the structured lesson flow
+- letting the lesson scanners fall back to preview use makes the register zone feel more useful between lesson runs
+- this adds convenience without meaningfully changing the actual in-lesson decode validation rules
+
+Implication:
+- while idle, lesson decode scanners may preview register values and show simple success-style feedback
+- once a lesson starts, they should return to their stricter lesson-owned validation behavior
+- this fallback should be treated as a utility behavior, not as a second lesson-mode path
+
+
 ## Open Questions
 
 - how much instruction decoding should be interactive in V1

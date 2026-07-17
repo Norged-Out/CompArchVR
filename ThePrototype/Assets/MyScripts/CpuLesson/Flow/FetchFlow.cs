@@ -83,7 +83,7 @@ sealed class FetchFlow
 
         m_Flow.DecodeDownloadTerminal.ResetTerminal(false);
         m_Flow.FetchUploadTerminal.ResetTerminal(true);
-        m_Flow.FetchUploadTerminal.UploadInstruction(m_Flow.ActiveInstruction);
+        m_Flow.FetchUploadTerminal.UploadCurrentInstruction();
     }
 
     /// <summary>

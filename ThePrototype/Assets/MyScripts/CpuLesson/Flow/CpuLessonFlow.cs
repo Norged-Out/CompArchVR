@@ -27,6 +27,9 @@ public sealed class CpuLessonFlow : MonoBehaviour
     PracticeInstructionDefinition m_CurrentPracticeInstruction;
 
     [SerializeField]
+    string m_DefaultPracticeInstructionResourcePath = "PracticeInstructionDefinitions/PracticeAddInstructionDefinition";
+
+    [SerializeField]
     RegisterBank m_RegisterBank;
 
     [SerializeField]
@@ -63,8 +66,13 @@ public sealed class CpuLessonFlow : MonoBehaviour
     public bool UsesInstructionTerminals => m_Fetch.UsesTerminals;
     public bool IsInstructionReadyForDecode => !UsesInstructionTerminals || m_Fetch.HasDownloadedInstructionModule();
     public bool UsesLearningInstructionSelection => m_CurrentMode == LessonMode.Learning;
-    public bool CanStartSelectedMode => m_CurrentMode == LessonMode.Learning;
+    public bool UsesInstructionSelection => LessonInstrResolver.UsesInstructionSelection(m_CurrentMode);
+    public bool CanStartSelectedMode => LessonInstrResolver.CanStart(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction);
     public bool IsFetchStepActive => m_Fetch.IsFetchStep(CurrentStep);
+    public string CurrentFetchDisplayText => LessonInstrResolver.GetFetchDisplayText(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction);
+    public string CurrentPracticeBinaryText => m_CurrentPracticeInstruction != null
+        ? m_CurrentPracticeInstruction.GetNormalizedBinaryInstruction()
+        : string.Empty;
 
     public InstructionFlowStep CurrentStep => GetStepAt(m_State.CurrentStepIndex);
 
@@ -117,6 +125,9 @@ public sealed class CpuLessonFlow : MonoBehaviour
 
         if (m_CurrentMode == LessonMode.Learning && m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
+
+        if (m_CurrentMode == LessonMode.Practice && m_CurrentPracticeInstruction == null)
+            m_CurrentPracticeInstruction = LoadDefaultPracticeInstruction();
 
         m_RegisterBank?.RestoreAuthoredRegisterValues();
 
@@ -292,8 +303,25 @@ public sealed class CpuLessonFlow : MonoBehaviour
     /// </summary>
     internal InstructionDefinition LoadDefaultInstruction()
     {
-        var loadedInstruction = Resources.Load<InstructionDefinition>(m_DefaultInstructionResourcePath);
-        return loadedInstruction != null ? loadedInstruction : InstructionDefaults.CreateFallbackAdd();
+        return LessonInstrResolver.LoadDefaultLearning(m_DefaultInstructionResourcePath);
+    }
+
+    /// <summary>
+    /// Loads the fallback Practice instruction used when the scene has not yet
+    /// been assigned one explicitly.
+    /// </summary>
+    internal PracticeInstructionDefinition LoadDefaultPracticeInstruction()
+    {
+        return LessonInstrResolver.LoadDefaultPractice(m_DefaultPracticeInstructionResourcePath);
+    }
+
+    /// <summary>
+    /// Resolves which Learning instruction should drive the shared lesson runtime
+    /// for the currently selected top-level mode.
+    /// </summary>
+    internal InstructionDefinition ResolveLessonInstructionForCurrentMode()
+    {
+        return LessonInstrResolver.ResolveRuntimeInstruction(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction);
     }
 
     /// <summary>
@@ -318,6 +346,9 @@ public sealed class CpuLessonFlow : MonoBehaviour
 
         if (m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
+
+        if (m_CurrentPracticeInstruction == null)
+            m_CurrentPracticeInstruction = LoadDefaultPracticeInstruction();
 
         m_State = new LessonState(m_RuntimeSelection);
         m_Fetch = new FetchFlow(this, m_State);

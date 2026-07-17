@@ -55,7 +55,8 @@ Active schedule:
 
 Current risk:
 - not missing datapath coverage
-- but onboarding clarity, experiment-mode readiness, and overall delivery quality
+- but safely extending the build into practice mode without breaking the guided baseline
+- plus onboarding clarity, experiment-mode readiness, and overall delivery quality
 
 Historical note:
 - the June 29, 2026 V1 checkpoint is complete and should now be treated as project history, not as the live plan
@@ -155,6 +156,9 @@ Note:
 - optional in-world music / ambience interaction if it improves presentation feel without becoming distracting
 
 The project has already moved beyond the old three-instruction V1 boundary, so future prioritization should now favor clarity and presentation over raw instruction count.
+
+Current extension note:
+- practice mode is now the main near-term systems extension, and it should be built by extending the existing lesson architecture rather than forking an unrelated second flow
 
 ## Non-Goals
 
@@ -313,11 +317,12 @@ A strong demo should show that a learner can:
 
 Before the next supervisor meeting on `2026-07-24`, prioritize:
 
-1. tutorial / onboarding refinement
-2. experiment mode without handholding
-3. optional settings refinement only where it clearly improves usability
-4. jump-family instruction additions only if the above is already safe
-5. final presentation polish
+1. practice mode foundation and first safe playable slice
+2. tutorial / onboarding refinement
+3. experiment mode without handholding
+4. optional settings refinement only where it clearly improves usability
+5. jump-family instruction additions only if the above is already safe
+6. final presentation polish
 
 Already partly established and now moving into refinement instead of first implementation:
 - routed map revamp / improved route baseline
@@ -333,6 +338,7 @@ Reason:
 - the main remaining risk is whether the experience feels readable, guided, polished, and complete
 
 Practical interpretation of this cutoff:
+- do not let practice-mode work silently regress the stable guided lesson loop
 - do not reopen core datapath architecture unless a blocker appears
 - do not treat instruction-count growth as the main success metric anymore
 - treat the next supervisor meeting as a usability/readability checkpoint, not a "prove the datapath exists" checkpoint

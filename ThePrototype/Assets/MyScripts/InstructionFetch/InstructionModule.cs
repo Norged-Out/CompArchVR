@@ -52,6 +52,7 @@ public class InstructionModule : MonoBehaviour
     Material m_GrabbedMaterial;
 
     InstructionDefinition m_CurrentInstruction;
+    string m_DisplayOverrideText;
     Material m_InitialBodyMaterial;
     bool m_IsDownloaded;
     bool m_IsGrabbed;
@@ -61,7 +62,9 @@ public class InstructionModule : MonoBehaviour
     public bool IsDownloaded => m_IsDownloaded;
     public bool IsGrabbed => m_IsGrabbed;
     public string CurrentDisplayText => HasInstruction && !string.IsNullOrWhiteSpace(m_CurrentInstruction.assemblyInstructionText)
-        ? m_CurrentInstruction.assemblyInstructionText
+        ? !string.IsNullOrWhiteSpace(m_DisplayOverrideText)
+            ? m_DisplayOverrideText
+            : m_CurrentInstruction.assemblyInstructionText
         : m_DefaultLabel;
 
     void Awake()
@@ -91,13 +94,15 @@ public class InstructionModule : MonoBehaviour
     public void ClearInstruction()
     {
         m_CurrentInstruction = null;
+        m_DisplayOverrideText = string.Empty;
         m_IsDownloaded = false;
         RefreshPresentation();
     }
 
-    public void UploadInstruction(InstructionDefinition instruction)
+    public void UploadInstruction(InstructionDefinition instruction, string displayOverrideText = null)
     {
         m_CurrentInstruction = instruction;
+        m_DisplayOverrideText = displayOverrideText;
         m_IsDownloaded = false;
         RefreshPresentation();
     }

@@ -164,10 +164,15 @@ public class InstructionTerminal : MonoBehaviour
 
     public bool UploadCurrentInstruction()
     {
-        return UploadInstruction(ResolveInstructionToUpload());
+        return UploadInstruction(ResolveInstructionToUpload(), ResolveDisplayTextToUpload());
     }
 
     public bool UploadInstruction(InstructionDefinition instruction)
+    {
+        return UploadInstruction(instruction, ResolveDisplayTextToUpload());
+    }
+
+    public bool UploadInstruction(InstructionDefinition instruction, string displayOverrideText)
     {
         if (m_Mode != TerminalMode.Uploader || instruction == null)
             return false;
@@ -176,7 +181,7 @@ public class InstructionTerminal : MonoBehaviour
         if (module == null)
             return false;
 
-        BeginUploadSequence(module, instruction);
+        BeginUploadSequence(module, instruction, displayOverrideText);
         return true;
     }
 
@@ -280,6 +285,11 @@ public class InstructionTerminal : MonoBehaviour
         return m_LessonFlow != null ? m_LessonFlow.CurrentInstruction : null;
     }
 
+    string ResolveDisplayTextToUpload()
+    {
+        return m_LessonFlow != null ? m_LessonFlow.CurrentFetchDisplayText : null;
+    }
+
     void CacheReferences()
     {
         if (m_SpawnPoint == null)
@@ -321,14 +331,14 @@ public class InstructionTerminal : MonoBehaviour
         m_StateChangeRoutine = StartCoroutine(routine);
     }
 
-    IEnumerator ApplyUploadedInstructionAfterDelay(InstructionModule module, InstructionDefinition instruction)
+    IEnumerator ApplyUploadedInstructionAfterDelay(InstructionModule module, InstructionDefinition instruction, string displayOverrideText)
     {
         yield return new WaitForSeconds(m_StateChangeDelaySeconds);
 
         if (module != null)
         {
             module.ReleaseFromAnchor();
-            module.UploadInstruction(instruction);
+            module.UploadInstruction(instruction, displayOverrideText);
         }
 
         m_OnInstructionUploaded.Invoke(instruction);
@@ -347,7 +357,7 @@ public class InstructionTerminal : MonoBehaviour
         m_StateChangeRoutine = null;
     }
 
-    void BeginUploadSequence(InstructionModule module, InstructionDefinition instruction)
+    void BeginUploadSequence(InstructionModule module, InstructionDefinition instruction, string displayOverrideText)
     {
         if (module == null || instruction == null)
             return;
@@ -358,7 +368,7 @@ public class InstructionTerminal : MonoBehaviour
         m_LessonFlow?.NotifyInstructionUploaded(instruction);
         PlayActionAudio();
         PlayParticles();
-        StartStateChangeRoutine(ApplyUploadedInstructionAfterDelay(module, instruction));
+        StartStateChangeRoutine(ApplyUploadedInstructionAfterDelay(module, instruction, displayOverrideText));
     }
 
     /// <summary>

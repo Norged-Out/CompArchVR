@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc7213dfb6e305741b63e9fe4d81ce56, type: 3}
+  m_Name: PracticeAddInstructionDefinition
+  m_EditorClassIdentifier: 
+  displayName: 0x01095020
+  expectedMnemonic: 0
+  expectedFormat: 0
+  expectedCategory: 0
+  rawInstructionBits: 00000001000010010101000000100000
+  expectedOpcodeBits: 000000
+  expectedFunctBits: 100000
+  expectedRsBits: 01000
+  expectedRtBits: 01001
+  expectedRdBits: 01010
+  expectedImmediateBits: 
+  learningModeInstruction: {fileID: 11400000, guid: 483a28480b15499cac7ae613f703d453, type: 2}

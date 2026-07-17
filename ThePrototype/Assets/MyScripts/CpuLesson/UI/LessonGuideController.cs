@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -63,12 +62,10 @@ public sealed class LessonGuideController : MonoBehaviour
     [SerializeField]
     PcUpdateController m_PcUpdateController;
 
-    readonly InstructionCatalog m_InstructionCatalog = new();
+    readonly GuideSelState m_SelectionState = new();
     readonly LessonPhaseRouter m_PhaseRouter = new();
     readonly DecodeGuideFlow m_DecodeGuideFlow = new();
-    readonly List<InstructionDefinition> m_AvailableInstructions = new();
-    readonly List<PracticeInstructionDefinition> m_AvailablePracticeInstructions = new();
-    readonly List<string> m_IntroSelectionLabels = new();
+    readonly PracticeDecodeFlow m_PracticeDecodeFlow = new();
 
     LessonGuideView m_View;
     bool m_IsRefreshingModeDropdown;
@@ -119,52 +116,20 @@ public sealed class LessonGuideController : MonoBehaviour
             return;
 
         m_IntroPanel?.PopulateModeDropdown(m_LessonFlow.CurrentMode, ref m_IsRefreshingModeDropdown);
+        m_SelectionState.Refresh(m_LessonFlow);
 
-        m_AvailableInstructions.Clear();
-        m_AvailableInstructions.AddRange(m_InstructionCatalog.LoadAvailable(LessonMode.Learning, m_LessonFlow.CurrentInstruction));
-
-        m_AvailablePracticeInstructions.Clear();
-        m_AvailablePracticeInstructions.AddRange(m_InstructionCatalog.LoadPracticeAvailable(m_LessonFlow.CurrentPracticeInstruction));
-
-        BuildIntroSelectionLabels(out var currentSelectionIndex);
-
-        m_IntroPanel?.PopulateSelectionDropdown(m_IntroSelectionLabels, currentSelectionIndex, ref m_IsRefreshingInstructionDropdown);
-        m_DecodePanel?.PopulateDropdowns(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingDecodeDropdowns);
-    }
-
-    /// <summary>
-    /// Rebuilds the intro dropdown labels for the currently selected lesson mode.
-    /// </summary>
-    void BuildIntroSelectionLabels(out int currentSelectionIndex)
-    {
-        m_IntroSelectionLabels.Clear();
-        currentSelectionIndex = 0;
-
-        if (m_LessonFlow == null)
-            return;
-
-        if (m_LessonFlow.CurrentMode == LessonMode.Learning)
-        {
-            for (var index = 0; index < m_AvailableInstructions.Count; index++)
-            {
-                var instruction = m_AvailableInstructions[index];
-                m_IntroSelectionLabels.Add(instruction != null ? instruction.displayName : "Instruction");
-
-                if (instruction == m_LessonFlow.CurrentInstruction)
-                    currentSelectionIndex = index;
-            }
-
-            return;
-        }
-
-        for (var index = 0; index < m_AvailablePracticeInstructions.Count; index++)
-        {
-            var instruction = m_AvailablePracticeInstructions[index];
-            m_IntroSelectionLabels.Add(instruction != null ? instruction.displayName : "Practice Instruction");
-
-            if (instruction == m_LessonFlow.CurrentPracticeInstruction)
-                currentSelectionIndex = index;
-        }
+        m_IntroPanel?.PopulateSelectionDropdown(
+            m_SelectionState.IntroLabels,
+            m_SelectionState.CurrentIntroSelectionIndex,
+            ref m_IsRefreshingInstructionDropdown);
+        m_DecodePanel?.PopulateDropdowns(
+            m_SelectionState.LearningInstructions,
+            m_LessonFlow.CurrentInstruction,
+            ref m_IsRefreshingDecodeDropdowns);
+        m_DecodePanel?.PopulatePracticeControls(
+            m_LessonFlow.CurrentPracticeInstruction,
+            m_PracticeDecodeFlow.IsOpcodeConfirmed,
+            ref m_IsRefreshingDecodeDropdowns);
     }
 
     /// <summary>
@@ -294,6 +259,15 @@ public sealed class LessonGuideController : MonoBehaviour
             return;
         }
 
+        if (m_LessonFlow.CurrentMode == LessonMode.Practice &&
+            m_LessonFlow.CurrentStep != null &&
+            m_LessonFlow.CurrentStep.highlightedNode == DatapathNodeId.InstructionMemory)
+        {
+            m_PracticeDecodeFlow.HandleContinue(m_LessonFlow, m_DecodePanel, HandleFeedbackChanged);
+            RefreshView();
+            return;
+        }
+
         m_DecodeGuideFlow.HandleContinue(m_LessonFlow, m_DecodePanel, HandleFeedbackChanged, ref m_IsRefreshingDecodeDropdowns);
         RefreshView();
     }
@@ -306,24 +280,16 @@ public sealed class LessonGuideController : MonoBehaviour
         if (m_IsRefreshingInstructionDropdown || m_LessonFlow == null)
             return;
 
-        switch (m_LessonFlow.CurrentMode)
-        {
-            case LessonMode.Learning:
-                if (selectedIndex < 0 || selectedIndex >= m_AvailableInstructions.Count)
-                    return;
+        if (!m_SelectionState.TryApplySelection(m_LessonFlow, selectedIndex))
+            return;
 
-                m_LessonFlow.SetCurrentInstruction(m_AvailableInstructions[selectedIndex]);
-                m_DecodePanel?.PopulateDropdowns(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingDecodeDropdowns);
-                break;
+        if (m_LessonFlow.CurrentMode == LessonMode.Practice || m_LessonFlow.CurrentMode == LessonMode.Test)
+            m_PracticeDecodeFlow.Reset(m_DecodePanel, ref m_IsRefreshingDecodeDropdowns);
 
-            case LessonMode.Practice:
-            case LessonMode.Test:
-                if (selectedIndex < 0 || selectedIndex >= m_AvailablePracticeInstructions.Count)
-                    return;
-
-                m_LessonFlow.SetCurrentPracticeInstruction(m_AvailablePracticeInstructions[selectedIndex]);
-                break;
-        }
+        m_DecodePanel?.PopulateDropdowns(
+            m_SelectionState.LearningInstructions,
+            m_LessonFlow.CurrentInstruction,
+            ref m_IsRefreshingDecodeDropdowns);
 
         RefreshView();
     }
@@ -347,7 +313,31 @@ public sealed class LessonGuideController : MonoBehaviour
         if (m_IsRefreshingDecodeDropdowns)
             return;
 
-        m_DecodePanel?.RefreshHintText(m_AvailableInstructions);
+        m_DecodePanel?.RefreshHintText(m_SelectionState.LearningInstructions);
+    }
+
+    /// <summary>
+    /// Reveals the next staged Practice-mode hint without disturbing the guided
+    /// learning-mode hint dropdown flow.
+    /// </summary>
+    public void HandlePracticeHintPressed()
+    {
+        if (m_LessonFlow == null || m_LessonFlow.CurrentMode != LessonMode.Practice)
+            return;
+
+        m_PracticeDecodeFlow.RevealNextHint(m_LessonFlow, m_DecodePanel);
+    }
+
+    /// <summary>
+    /// Refreshes Practice decode presentation when any of its dropdowns or
+    /// toggles change in the scene.
+    /// </summary>
+    public void HandlePracticeDecodeChanged()
+    {
+        if (m_IsRefreshingDecodeDropdowns)
+            return;
+
+        RefreshView();
     }
 
     /// <summary>
@@ -435,7 +425,7 @@ public sealed class LessonGuideController : MonoBehaviour
             PlayIncorrectCueForCurrentOwner();
 
         EnsureView();
-        m_View?.RouteFeedback(m_LessonFlow, message, isFailure, m_AvailableInstructions);
+        m_View?.RouteFeedback(m_LessonFlow, message, isFailure, m_SelectionState.LearningInstructions);
     }
 
     /// <summary>
@@ -454,8 +444,10 @@ public sealed class LessonGuideController : MonoBehaviour
 
         m_View.Refresh(
             m_LessonFlow,
-            m_AvailableInstructions,
+            m_SelectionState.LearningInstructions,
+            m_LessonFlow.CurrentPracticeInstruction,
             m_DecodeGuideFlow,
+            m_PracticeDecodeFlow,
             m_StartButtonLabel,
             m_ContinueButtonLabel,
             m_GoBackButtonLabel,

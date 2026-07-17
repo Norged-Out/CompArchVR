@@ -28,8 +28,12 @@ sealed class LessonLifecycle
     /// </summary>
     public void StartLesson()
     {
-        if (m_Flow.ActiveInstruction == null)
-            m_Flow.SetActiveInstructionInternal(m_Flow.LoadDefaultInstruction());
+        var lessonInstruction = m_Flow.ResolveLessonInstructionForCurrentMode();
+        if (lessonInstruction == null)
+            lessonInstruction = m_Flow.LoadDefaultInstruction();
+
+        if (lessonInstruction != m_Flow.ActiveInstruction)
+            m_Flow.SetActiveInstructionInternal(lessonInstruction);
 
         if (m_Flow.ActiveInstruction == null ||
             m_Flow.ActiveInstruction.flowSteps == null ||
@@ -57,6 +61,10 @@ sealed class LessonLifecycle
     public void ResetLesson()
     {
         Debug.Log($"{m_Flow.LogPrefix} ResetLesson | frame={Time.frameCount}", m_Flow);
+
+        var lessonInstruction = m_Flow.ResolveLessonInstructionForCurrentMode();
+        if (lessonInstruction != null && lessonInstruction != m_Flow.ActiveInstruction)
+            m_Flow.SetActiveInstructionInternal(lessonInstruction);
 
         m_Decode.PrepareRegisterBankForLesson();
         m_State.ResetLesson(m_Flow.ActiveInstruction);
