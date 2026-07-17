@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.Events;
 
 /// <summary>
 /// Presentation owner for the instruction-decode lesson panel.
@@ -184,37 +183,6 @@ public sealed class DecodePanelController : LessonPanelBase
     {
         EnsureDropdowns();
         return m_Dropdowns.GetSelectedFunct();
-    }
-
-    /// <summary>
-    /// Rebinds the authored decode action button to the supplied lesson callback.
-    /// </summary>
-    public void BindAction(UnityAction listener)
-    {
-        if (m_ActionButton == null)
-            return;
-
-        m_ActionButton.onClick.RemoveAllListeners();
-        if (listener != null)
-            m_ActionButton.onClick.AddListener(listener);
-    }
-
-    /// <summary>
-    /// Rebinds both decode bit-selection dropdowns to the shared refresh callback.
-    /// </summary>
-    public void BindSelectionDropdowns(UnityAction<int> listener)
-    {
-        EnsureDropdowns();
-        m_Dropdowns.BindSelectionDropdowns(listener);
-    }
-
-    /// <summary>
-    /// Rebinds the decode hint dropdown to the supplied refresh callback.
-    /// </summary>
-    public void BindHintDropdown(UnityAction<int> listener)
-    {
-        EnsureDropdowns();
-        m_Dropdowns.BindHintDropdown(listener);
     }
 
     /// <summary>

@@ -57,8 +57,6 @@ public sealed class SettingsMenuController : MonoBehaviour
     TMP_Text m_VolumeValueText;
 
     readonly LessonPhaseRouter m_PhaseRouter = new();
-    bool m_HasBoundGuidanceToggle;
-    bool m_HasBoundVolumeSlider;
     float m_FpsElapsedSeconds;
     int m_FpsFrameCount;
 
@@ -71,11 +69,8 @@ public sealed class SettingsMenuController : MonoBehaviour
 
     void OnEnable()
     {
-        // Bind here instead of Awake so the menu can be disabled/re-enabled
-        // without leaking listeners or desynchronizing UI state.
         BindLessonEvents();
-        BindGuidanceToggle();
-        BindVolumeSlider();
+        ConfigureVolumeSlider();
         RefreshLessonStateText();
         RefreshGuidanceToggleUi();
         RefreshVolumeUiFromCurrentValue();
@@ -84,8 +79,6 @@ public sealed class SettingsMenuController : MonoBehaviour
     void OnDisable()
     {
         UnbindLessonEvents();
-        UnbindGuidanceToggle();
-        UnbindVolumeSlider();
     }
 
     void Update()
@@ -175,43 +168,14 @@ public sealed class SettingsMenuController : MonoBehaviour
         m_LessonFlow.StepChanged -= HandleStepChanged;
     }
 
-    void BindVolumeSlider()
+    void ConfigureVolumeSlider()
     {
-        if (m_VolumeSlider == null || m_HasBoundVolumeSlider)
+        if (m_VolumeSlider == null)
             return;
 
         m_VolumeSlider.wholeNumbers = true;
         m_VolumeSlider.minValue = 0f;
         m_VolumeSlider.maxValue = 100f;
-        m_VolumeSlider.onValueChanged.AddListener(SetVolumeFromSlider);
-        m_HasBoundVolumeSlider = true;
-    }
-
-    void UnbindVolumeSlider()
-    {
-        if (m_VolumeSlider == null || !m_HasBoundVolumeSlider)
-            return;
-
-        m_VolumeSlider.onValueChanged.RemoveListener(SetVolumeFromSlider);
-        m_HasBoundVolumeSlider = false;
-    }
-
-    void BindGuidanceToggle()
-    {
-        if (m_GuidanceToggle == null || m_HasBoundGuidanceToggle)
-            return;
-
-        m_GuidanceToggle.onValueChanged.AddListener(SetGuidanceEnabled);
-        m_HasBoundGuidanceToggle = true;
-    }
-
-    void UnbindGuidanceToggle()
-    {
-        if (m_GuidanceToggle == null || !m_HasBoundGuidanceToggle)
-            return;
-
-        m_GuidanceToggle.onValueChanged.RemoveListener(SetGuidanceEnabled);
-        m_HasBoundGuidanceToggle = false;
     }
 
     void RefreshLessonStateText()

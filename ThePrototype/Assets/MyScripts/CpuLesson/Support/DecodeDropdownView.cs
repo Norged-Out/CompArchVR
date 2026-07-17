@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using TMPro;
-using UnityEngine.Events;
 
 /// <summary>
 /// Owns opcode, funct, and hint dropdown behavior for the decode panel.
@@ -95,23 +94,6 @@ sealed class DecodeDropdownView
         isRefreshing = true;
         m_FunctDropdown.SetValueWithoutNotify(0);
         isRefreshing = false;
-    }
-
-    /// <summary>
-    /// Rebinds opcode and funct dropdowns to the shared decode-selection callback.
-    /// </summary>
-    public void BindSelectionDropdowns(UnityAction<int> listener)
-    {
-        BindDropdown(m_OpcodeDropdown, listener);
-        BindDropdown(m_FunctDropdown, listener);
-    }
-
-    /// <summary>
-    /// Rebinds the decode hint dropdown to the supplied callback.
-    /// </summary>
-    public void BindHintDropdown(UnityAction<int> listener)
-    {
-        BindDropdown(m_HintDropdown, listener);
     }
 
     /// <summary>
@@ -264,19 +246,6 @@ sealed class DecodeDropdownView
         }
 
         return dropdown.options[dropdown.value].text.Trim();
-    }
-
-    /// <summary>
-    /// Applies the same rebinding behavior to any authored decode dropdown.
-    /// </summary>
-    static void BindDropdown(TMP_Dropdown dropdown, UnityAction<int> listener)
-    {
-        if (dropdown == null)
-            return;
-
-        dropdown.onValueChanged.RemoveAllListeners();
-        if (listener != null)
-            dropdown.onValueChanged.AddListener(listener);
     }
 
     /// <summary>

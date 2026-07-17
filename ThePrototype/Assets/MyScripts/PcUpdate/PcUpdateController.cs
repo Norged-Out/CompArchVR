@@ -147,9 +147,7 @@ public class PcUpdateController : MonoBehaviour
         m_BranchService = new PcBranchService();
         PcUpdatePresentation.PopulateBranchConditionDropdown(m_BranchConditionDropdown);
         PcUpdatePresentation.PopulateHintDropdown(m_HintDropdown);
-        HookButtons(true);
-        HookDropdown(true);
-        HookSlider(true);
+        HookPhysicalBindings(true);
         HookScannerEvents(true);
         RefreshPresentation();
     }
@@ -163,9 +161,7 @@ public class PcUpdateController : MonoBehaviour
         m_BranchService ??= new PcBranchService();
         PcUpdatePresentation.PopulateBranchConditionDropdown(m_BranchConditionDropdown);
         PcUpdatePresentation.PopulateHintDropdown(m_HintDropdown);
-        HookButtons(true);
-        HookDropdown(true);
-        HookSlider(true);
+        HookPhysicalBindings(true);
         HookScannerEvents(true);
         RefreshPresentation();
     }
@@ -176,9 +172,7 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     void OnDisable()
     {
-        HookButtons(false);
-        HookDropdown(false);
-        HookSlider(false);
+        HookPhysicalBindings(false);
         HookScannerEvents(false);
     }
 
@@ -310,7 +304,7 @@ public class PcUpdateController : MonoBehaviour
     /// The packet itself is not mutated; the controller simply records that the
     /// learner performed the required transformation step.
     /// </summary>
-    void HandleShiftPressed()
+    public void HandleShiftPressed()
     {
         if (!m_IsPhaseActive || m_BranchValue != "1" || m_ImmediateScanner == null)
             return;
@@ -375,7 +369,7 @@ public class PcUpdateController : MonoBehaviour
     /// Any dropdown change invalidates stale feedback and rebuilds the panel so
     /// the learner sees the latest authored hint / condition state.
     /// </summary>
-    void HandleDropdownChanged(int _)
+    public void HandleDropdownChanged(int _)
     {
         SetFeedback(string.Empty, false);
         RefreshPresentation();
@@ -385,7 +379,7 @@ public class PcUpdateController : MonoBehaviour
     /// Keeps the PC status text in sync while the learner drags the PC+4
     /// slider, rather than waiting for a later confirm press.
     /// </summary>
-    void HandleSliderChanged(float _)
+    public void HandleSliderChanged(float _)
     {
         if (!m_IsPhaseActive)
             return;
@@ -417,10 +411,10 @@ public class PcUpdateController : MonoBehaviour
     }
 
     /// <summary>
-    /// Centralizes binding for the authored physical controls and UI buttons so
-    /// every enable / disable path uses the same hookup rules.
+    /// Keeps only the XR-side branch and jump controls code-bound. Standard UI
+    /// widgets now use Inspector event hookups instead.
     /// </summary>
-    void HookButtons(bool subscribe)
+    void HookPhysicalBindings(bool subscribe)
     {
         if (subscribe)
         {
@@ -432,53 +426,6 @@ public class PcUpdateController : MonoBehaviour
             BinarySignalButtonBinder.Unbind(m_BranchButtonRoot, HandleBranchPressed);
             BinarySignalButtonBinder.Unbind(m_JumpButtonRoot, HandleJumpPressed);
         }
-
-        if (m_ShiftButton != null)
-        {
-            m_ShiftButton.onClick.RemoveListener(HandleShiftPressed);
-            if (subscribe)
-                m_ShiftButton.onClick.AddListener(HandleShiftPressed);
-        }
-
-        if (m_ActionButton != null)
-        {
-            m_ActionButton.onClick.RemoveListener(HandleActionPressed);
-            if (subscribe)
-                m_ActionButton.onClick.AddListener(HandleActionPressed);
-        }
-    }
-
-    /// <summary>
-    /// Wires both authored dropdowns that affect live presentation state.
-    /// </summary>
-    void HookDropdown(bool subscribe)
-    {
-        if (m_BranchConditionDropdown != null)
-        {
-            m_BranchConditionDropdown.onValueChanged.RemoveListener(HandleDropdownChanged);
-            if (subscribe)
-                m_BranchConditionDropdown.onValueChanged.AddListener(HandleDropdownChanged);
-        }
-
-        if (m_HintDropdown != null)
-        {
-            m_HintDropdown.onValueChanged.RemoveListener(HandleDropdownChanged);
-            if (subscribe)
-                m_HintDropdown.onValueChanged.AddListener(HandleDropdownChanged);
-        }
-    }
-
-    /// <summary>
-    /// Wires the authored PC slider used for the PC + 4 update.
-    /// </summary>
-    void HookSlider(bool subscribe)
-    {
-        if (m_PcIncrementSlider == null)
-            return;
-
-        m_PcIncrementSlider.onValueChanged.RemoveListener(HandleSliderChanged);
-        if (subscribe)
-            m_PcIncrementSlider.onValueChanged.AddListener(HandleSliderChanged);
     }
 
     /// <summary>

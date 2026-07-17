@@ -185,7 +185,7 @@ public sealed class MemoryController : MonoBehaviour
     void Awake()
     {
         m_TransferService = new MemoryTransferService();
-        HookBindings(true);
+        HookRuntimeBindings(true);
         MemoryPresentation.PopulateHintDropdown(m_HintDropdown);
         RefreshPresentation();
         SetFeedback(string.Empty, false);
@@ -194,14 +194,14 @@ public sealed class MemoryController : MonoBehaviour
     void OnEnable()
     {
         m_TransferService ??= new MemoryTransferService();
-        HookBindings(true);
+        HookRuntimeBindings(true);
         MemoryPresentation.PopulateHintDropdown(m_HintDropdown);
         RefreshPresentation();
     }
 
     void OnDisable()
     {
-        HookBindings(false);
+        HookRuntimeBindings(false);
     }
 
     /// <summary>
@@ -409,11 +409,9 @@ public sealed class MemoryController : MonoBehaviour
         m_TransferAudioSource.Play();
     }
 
-    void HookBindings(bool subscribe)
+    void HookRuntimeBindings(bool subscribe)
     {
         HookPhysicalButtons(subscribe);
-        HookActionButton(subscribe);
-        HookHintDropdown(subscribe);
         HookScannerEvents(subscribe);
     }
 
@@ -429,26 +427,6 @@ public sealed class MemoryController : MonoBehaviour
             BinarySignalButtonBinder.Unbind(m_MemReadButtonRoot, HandleMemReadPressed);
             BinarySignalButtonBinder.Unbind(m_MemWriteButtonRoot, HandleMemWritePressed);
         }
-    }
-
-    void HookActionButton(bool subscribe)
-    {
-        if (m_ActionButton == null)
-            return;
-
-        m_ActionButton.onClick.RemoveListener(HandleActionPressed);
-        if (subscribe)
-            m_ActionButton.onClick.AddListener(HandleActionPressed);
-    }
-
-    void HookHintDropdown(bool subscribe)
-    {
-        if (m_HintDropdown == null)
-            return;
-
-        m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
-        if (subscribe)
-            m_HintDropdown.onValueChanged.AddListener(HandleHintDropdownChanged);
     }
 
     void HookScannerEvents(bool subscribe)
@@ -468,7 +446,7 @@ public sealed class MemoryController : MonoBehaviour
         }
     }
 
-    void HandleHintDropdownChanged(int _)
+    public void HandleHintDropdownChanged(int _)
     {
         RefreshPresentation();
     }

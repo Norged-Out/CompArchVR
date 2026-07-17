@@ -21,6 +21,12 @@ public sealed class CpuLessonFlow : MonoBehaviour
     string m_DefaultInstructionResourcePath = "InstructionDefinitions/AddInstructionDefinition";
 
     [SerializeField]
+    LessonMode m_CurrentMode = LessonMode.Learning;
+
+    [SerializeField]
+    PracticeInstructionDefinition m_CurrentPracticeInstruction;
+
+    [SerializeField]
     RegisterBank m_RegisterBank;
 
     [SerializeField]
@@ -46,6 +52,8 @@ public sealed class CpuLessonFlow : MonoBehaviour
     public event Action<string, bool> FeedbackChanged;
 
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
+    public PracticeInstructionDefinition CurrentPracticeInstruction => m_CurrentPracticeInstruction;
+    public LessonMode CurrentMode => m_CurrentMode;
     public InstructionRuntimeSelection RuntimeSelection => m_State.RuntimeSelection;
     public int CurrentStepIndex => m_State.CurrentStepIndex;
     public int CurrentRegisterSelectionIndex => m_State.CurrentRegisterSelectionIndex;
@@ -54,6 +62,9 @@ public sealed class CpuLessonFlow : MonoBehaviour
     public bool RegisterSelectionReadyToContinue => m_State.RegisterSelectionReadyToContinue;
     public bool UsesInstructionTerminals => m_Fetch.UsesTerminals;
     public bool IsInstructionReadyForDecode => !UsesInstructionTerminals || m_Fetch.HasDownloadedInstructionModule();
+    public bool UsesLearningInstructionSelection => m_CurrentMode == LessonMode.Learning;
+    public bool CanStartSelectedMode => m_CurrentMode == LessonMode.Learning;
+    public bool IsFetchStepActive => m_Fetch.IsFetchStep(CurrentStep);
 
     public InstructionFlowStep CurrentStep => GetStepAt(m_State.CurrentStepIndex);
 
@@ -91,6 +102,43 @@ public sealed class CpuLessonFlow : MonoBehaviour
     }
 
     /// <summary>
+    /// Stores the selected top-level lesson mode.
+    /// For now only Learning is executable; Practice/Test stay disabled until
+    /// their dedicated startup and decode flows are implemented.
+    /// </summary>
+    public void SetLessonMode(LessonMode mode)
+    {
+        EnsureServices();
+
+        if (mode == m_CurrentMode)
+            return;
+
+        m_CurrentMode = mode;
+
+        if (m_CurrentMode == LessonMode.Learning && m_CurrentInstruction == null)
+            m_CurrentInstruction = LoadDefaultInstruction();
+
+        if (HasStarted)
+            ResetLesson();
+
+        RaiseStepChanged();
+    }
+
+    /// <summary>
+    /// Inspector-friendly wrapper for binding a TMP dropdown directly to the flow.
+    /// Invalid values fall back to Learning so accidental scene wiring cannot trap
+    /// the lesson in an undefined state.
+    /// </summary>
+    public void SetLessonModeFromDropdown(int dropdownValue)
+    {
+        var requestedMode = Enum.IsDefined(typeof(LessonMode), dropdownValue)
+            ? (LessonMode)dropdownValue
+            : LessonMode.Learning;
+
+        SetLessonMode(requestedMode);
+    }
+
+    /// <summary>
     /// Lets the authored intro UI decide which instruction asset should drive
     /// the next walkthrough.
     /// </summary>
@@ -98,7 +146,11 @@ public sealed class CpuLessonFlow : MonoBehaviour
     {
         EnsureServices();
 
-        if (instruction == null || instruction == m_CurrentInstruction)
+        // Named instruction selection belongs only to Learning mode. Practice
+        // will use its own encoded-instruction asset path instead.
+        if (m_CurrentMode != LessonMode.Learning ||
+            instruction == null ||
+            instruction == m_CurrentInstruction)
             return;
 
         SetActiveInstructionInternal(instruction);
@@ -111,9 +163,37 @@ public sealed class CpuLessonFlow : MonoBehaviour
         RaiseStepChanged();
     }
 
+    /// <summary>
+    /// Stores the currently selected Practice instruction without disturbing the
+    /// existing Learning instruction asset pipeline.
+    /// </summary>
+    public void SetCurrentPracticeInstruction(PracticeInstructionDefinition instruction)
+    {
+        EnsureServices();
+
+        if (instruction == null || instruction == m_CurrentPracticeInstruction)
+            return;
+
+        m_CurrentPracticeInstruction = instruction;
+
+        if (HasStarted && m_CurrentMode == LessonMode.Practice)
+            ResetLesson();
+
+        RaiseStepChanged();
+    }
+
     public void StartLesson()
     {
         EnsureServices();
+
+        if (!CanStartSelectedMode)
+        {
+            Debug.LogWarning(
+                $"{k_LogPrefix} {m_CurrentMode} mode has not been wired yet. Staying on the pre-start screen.",
+                this);
+            return;
+        }
+
         m_Lifecycle.StartLesson();
     }
 

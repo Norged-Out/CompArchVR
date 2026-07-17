@@ -7,6 +7,17 @@ using UnityEngine;
 /// </summary>
 
 /// <summary>
+/// Top-level runtime mode used to protect the existing guided lesson flow while
+/// Practice and Test are introduced incrementally.
+/// </summary>
+public enum LessonMode
+{
+    Learning = 0,
+    Practice = 1,
+    Test = 2,
+}
+
+/// <summary>
 /// The high-level instruction encoding family.
 /// For now we only truly need R-type and I-type, but J-type is included so the
 /// data model does not have to change later when jumps are added.

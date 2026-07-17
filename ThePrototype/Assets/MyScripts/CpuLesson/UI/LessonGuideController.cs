@@ -25,6 +25,9 @@ public sealed class LessonGuideController : MonoBehaviour
     [SerializeField]
     string m_RestartButtonLabel = "Restart";
 
+    [SerializeField]
+    string m_GoBackButtonLabel = "Go Back";
+
     [Header("Shared Lesson Panels")]
     [SerializeField]
     IntroPanelController m_IntroPanel;
@@ -64,8 +67,11 @@ public sealed class LessonGuideController : MonoBehaviour
     readonly LessonPhaseRouter m_PhaseRouter = new();
     readonly DecodeGuideFlow m_DecodeGuideFlow = new();
     readonly List<InstructionDefinition> m_AvailableInstructions = new();
+    readonly List<PracticeInstructionDefinition> m_AvailablePracticeInstructions = new();
+    readonly List<string> m_IntroSelectionLabels = new();
 
     LessonGuideView m_View;
+    bool m_IsRefreshingModeDropdown;
     bool m_IsRefreshingInstructionDropdown;
     bool m_IsRefreshingDecodeDropdowns;
     LessonCuePhase m_LastCuePhase = LessonCuePhase.None;
@@ -77,7 +83,6 @@ public sealed class LessonGuideController : MonoBehaviour
     {
         EnsureView();
         RefreshInstructionLibrary();
-        BindPanelInputs();
         SyncLessonCueState();
         RefreshView();
     }
@@ -89,7 +94,6 @@ public sealed class LessonGuideController : MonoBehaviour
     {
         EnsureView();
         RefreshInstructionLibrary();
-        BindPanelInputs();
         SubscribePhaseEvents();
         SubscribeLessonFlowEvents();
         SyncLessonCueState();
@@ -106,30 +110,76 @@ public sealed class LessonGuideController : MonoBehaviour
     }
 
     /// <summary>
-    /// Rebuilds the authored instruction list used by the intro and decode panels.
+    /// Rebuilds the authored intro selections and keeps the decode panel synced to
+    /// the Learning instruction bank that still powers the current runtime flow.
     /// </summary>
     void RefreshInstructionLibrary()
     {
         if (m_LessonFlow == null)
             return;
 
-        m_AvailableInstructions.Clear();
-        m_AvailableInstructions.AddRange(m_InstructionCatalog.LoadAvailable(m_LessonFlow.CurrentInstruction));
+        m_IntroPanel?.PopulateModeDropdown(m_LessonFlow.CurrentMode, ref m_IsRefreshingModeDropdown);
 
-        m_IntroPanel?.PopulateInstructionDropdown(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingInstructionDropdown);
+        m_AvailableInstructions.Clear();
+        m_AvailableInstructions.AddRange(m_InstructionCatalog.LoadAvailable(LessonMode.Learning, m_LessonFlow.CurrentInstruction));
+
+        m_AvailablePracticeInstructions.Clear();
+        m_AvailablePracticeInstructions.AddRange(m_InstructionCatalog.LoadPracticeAvailable(m_LessonFlow.CurrentPracticeInstruction));
+
+        BuildIntroSelectionLabels(out var currentSelectionIndex);
+
+        m_IntroPanel?.PopulateSelectionDropdown(m_IntroSelectionLabels, currentSelectionIndex, ref m_IsRefreshingInstructionDropdown);
         m_DecodePanel?.PopulateDropdowns(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingDecodeDropdowns);
     }
 
     /// <summary>
-    /// Hooks the authored panel buttons to the lesson controller entry points.
+    /// Rebuilds the intro dropdown labels for the currently selected lesson mode.
     /// </summary>
-    void BindPanelInputs()
+    void BuildIntroSelectionLabels(out int currentSelectionIndex)
     {
-        m_IntroPanel?.BindAction(HandleIntroActionPressed);
-        m_IntroPanel?.BindInstructionSelection(HandleInstructionChanged);
-        m_DecodePanel?.BindAction(HandleDecodeActionPressed);
-        m_DecodePanel?.BindSelectionDropdowns(HandleDecodeSelectionChanged);
-        m_DecodePanel?.BindHintDropdown(HandleDecodeHintChanged);
+        m_IntroSelectionLabels.Clear();
+        currentSelectionIndex = 0;
+
+        if (m_LessonFlow == null)
+            return;
+
+        if (m_LessonFlow.CurrentMode == LessonMode.Learning)
+        {
+            for (var index = 0; index < m_AvailableInstructions.Count; index++)
+            {
+                var instruction = m_AvailableInstructions[index];
+                m_IntroSelectionLabels.Add(instruction != null ? instruction.displayName : "Instruction");
+
+                if (instruction == m_LessonFlow.CurrentInstruction)
+                    currentSelectionIndex = index;
+            }
+
+            return;
+        }
+
+        for (var index = 0; index < m_AvailablePracticeInstructions.Count; index++)
+        {
+            var instruction = m_AvailablePracticeInstructions[index];
+            m_IntroSelectionLabels.Add(instruction != null ? instruction.displayName : "Practice Instruction");
+
+            if (instruction == m_LessonFlow.CurrentPracticeInstruction)
+                currentSelectionIndex = index;
+        }
+    }
+
+    /// <summary>
+    /// Updates the active lesson mode and refreshes the second intro dropdown so it
+    /// shows the correct content bank for that mode.
+    /// </summary>
+    public void HandleModeChanged(int selectedMode)
+    {
+        if (m_IsRefreshingModeDropdown || m_LessonFlow == null)
+            return;
+
+        m_LessonFlow.SetLessonModeFromDropdown(selectedMode);
+        RefreshInstructionLibrary();
+        SyncLessonCueState();
+        RefreshView();
     }
 
     /// <summary>
@@ -213,7 +263,7 @@ public sealed class LessonGuideController : MonoBehaviour
     /// <summary>
     /// Starts the lesson or advances the intro/fetch panel when its action button is pressed.
     /// </summary>
-    void HandleIntroActionPressed()
+    public void HandleIntroActionPressed()
     {
         if (m_LessonFlow == null)
             return;
@@ -222,6 +272,8 @@ public sealed class LessonGuideController : MonoBehaviour
 
         if (!m_LessonFlow.HasStarted)
             m_LessonFlow.StartLesson();
+        else if (m_LessonFlow.IsFetchStepActive)
+            m_LessonFlow.ResetLesson();
         else
             m_LessonFlow.Advance();
     }
@@ -229,7 +281,7 @@ public sealed class LessonGuideController : MonoBehaviour
     /// <summary>
     /// Routes the decode button to either opcode/funct validation or normal lesson advancement.
     /// </summary>
-    void HandleDecodeActionPressed()
+    public void HandleDecodeActionPressed()
     {
         if (m_LessonFlow == null)
             return;
@@ -249,23 +301,37 @@ public sealed class LessonGuideController : MonoBehaviour
     /// <summary>
     /// Updates the selected instruction from the intro dropdown and keeps decode choices in sync.
     /// </summary>
-    void HandleInstructionChanged(int selectedIndex)
+    public void HandleInstructionChanged(int selectedIndex)
     {
         if (m_IsRefreshingInstructionDropdown || m_LessonFlow == null)
             return;
 
-        if (selectedIndex < 0 || selectedIndex >= m_AvailableInstructions.Count)
-            return;
+        switch (m_LessonFlow.CurrentMode)
+        {
+            case LessonMode.Learning:
+                if (selectedIndex < 0 || selectedIndex >= m_AvailableInstructions.Count)
+                    return;
 
-        m_LessonFlow.SetCurrentInstruction(m_AvailableInstructions[selectedIndex]);
-        m_DecodePanel?.PopulateDropdowns(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingDecodeDropdowns);
+                m_LessonFlow.SetCurrentInstruction(m_AvailableInstructions[selectedIndex]);
+                m_DecodePanel?.PopulateDropdowns(m_AvailableInstructions, m_LessonFlow.CurrentInstruction, ref m_IsRefreshingDecodeDropdowns);
+                break;
+
+            case LessonMode.Practice:
+            case LessonMode.Test:
+                if (selectedIndex < 0 || selectedIndex >= m_AvailablePracticeInstructions.Count)
+                    return;
+
+                m_LessonFlow.SetCurrentPracticeInstruction(m_AvailablePracticeInstructions[selectedIndex]);
+                break;
+        }
+
         RefreshView();
     }
 
     /// <summary>
     /// Rebuilds decode text whenever the learner changes opcode or funct selections.
     /// </summary>
-    void HandleDecodeSelectionChanged(int _)
+    public void HandleDecodeSelectionChanged(int _)
     {
         if (m_IsRefreshingDecodeDropdowns)
             return;
@@ -276,7 +342,7 @@ public sealed class LessonGuideController : MonoBehaviour
     /// <summary>
     /// Refreshes the decode hint panel whenever the learner chooses a different help topic.
     /// </summary>
-    void HandleDecodeHintChanged(int _)
+    public void HandleDecodeHintChanged(int _)
     {
         if (m_IsRefreshingDecodeDropdowns)
             return;
@@ -392,6 +458,7 @@ public sealed class LessonGuideController : MonoBehaviour
             m_DecodeGuideFlow,
             m_StartButtonLabel,
             m_ContinueButtonLabel,
+            m_GoBackButtonLabel,
             m_RestartButtonLabel,
             ref m_IsRefreshingDecodeDropdowns);
     }

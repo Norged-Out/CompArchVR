@@ -185,8 +185,7 @@ public class WriteBackController : MonoBehaviour
         // Keep the behavioral service stateless so the controller remains the
         // single runtime owner of authored scene state.
         m_TransferService = new WriteBackTransferService();
-        HookButtons();
-        HookHintDropdown(true);
+        HookRuntimeBindings(true);
         HookScannerEvents(true);
         WriteBackPresentation.PopulateHintDropdown(m_HintDropdown);
         ResetPipeVisuals();
@@ -199,8 +198,7 @@ public class WriteBackController : MonoBehaviour
     {
         // Rebind authored events whenever Unity re-enables this station so play
         // mode toggles do not accumulate duplicate listeners.
-        HookButtons();
-        HookHintDropdown(true);
+        HookRuntimeBindings(true);
         HookScannerEvents(true);
         WriteBackPresentation.PopulateHintDropdown(m_HintDropdown);
         RefreshExpectedTargets();
@@ -210,8 +208,7 @@ public class WriteBackController : MonoBehaviour
     void OnDisable()
     {
         HookScannerEvents(false);
-        HookHintDropdown(false);
-        UnhookButtons();
+        HookRuntimeBindings(false);
     }
 
     /// <summary>
@@ -476,42 +473,19 @@ public class WriteBackController : MonoBehaviour
         RefreshPresentation();
     }
 
-    void HookButtons()
+    void HookRuntimeBindings(bool subscribe)
     {
-        BinarySignalButtonBinder.Bind(m_RegDstButtonRoot, HandleRegDstPressed);
-        BinarySignalButtonBinder.Bind(m_RegWriteButtonRoot, HandleRegWritePressed);
-        BinarySignalButtonBinder.Bind(m_MemToRegButtonRoot, HandleMemToRegPressed);
-
-        if (m_ActionButton != null)
-        {
-            m_ActionButton.onClick.RemoveListener(HandleActionPressed);
-            m_ActionButton.onClick.AddListener(HandleActionPressed);
-        }
-    }
-
-    void UnhookButtons()
-    {
-        BinarySignalButtonBinder.Unbind(m_RegDstButtonRoot, HandleRegDstPressed);
-        BinarySignalButtonBinder.Unbind(m_RegWriteButtonRoot, HandleRegWritePressed);
-        BinarySignalButtonBinder.Unbind(m_MemToRegButtonRoot, HandleMemToRegPressed);
-
-        if (m_ActionButton != null)
-            m_ActionButton.onClick.RemoveListener(HandleActionPressed);
-    }
-
-    void HookHintDropdown(bool subscribe)
-    {
-        if (m_HintDropdown == null)
-            return;
-
         if (subscribe)
         {
-            m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
-            m_HintDropdown.onValueChanged.AddListener(HandleHintDropdownChanged);
+            BinarySignalButtonBinder.Bind(m_RegDstButtonRoot, HandleRegDstPressed);
+            BinarySignalButtonBinder.Bind(m_RegWriteButtonRoot, HandleRegWritePressed);
+            BinarySignalButtonBinder.Bind(m_MemToRegButtonRoot, HandleMemToRegPressed);
         }
         else
         {
-            m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
+            BinarySignalButtonBinder.Unbind(m_RegDstButtonRoot, HandleRegDstPressed);
+            BinarySignalButtonBinder.Unbind(m_RegWriteButtonRoot, HandleRegWritePressed);
+            BinarySignalButtonBinder.Unbind(m_MemToRegButtonRoot, HandleMemToRegPressed);
         }
     }
 
@@ -534,7 +508,7 @@ public class WriteBackController : MonoBehaviour
         }
     }
 
-    void HandleHintDropdownChanged(int _)
+    public void HandleHintDropdownChanged(int _)
     {
         RefreshPresentation();
     }

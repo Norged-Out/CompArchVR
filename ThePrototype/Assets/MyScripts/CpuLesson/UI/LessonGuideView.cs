@@ -71,8 +71,6 @@ sealed class LessonGuideView
         {
             return;
         }
-
-        m_IntroPanel?.SetFeedback(message, isFailure);
     }
 
     /// <summary>
@@ -84,6 +82,7 @@ sealed class LessonGuideView
         DecodeGuideFlow decodeGuideFlow,
         string startButtonLabel,
         string continueButtonLabel,
+        string goBackButtonLabel,
         string restartButtonLabel,
         ref bool isRefreshingDecodeDropdowns)
     {
@@ -108,7 +107,11 @@ sealed class LessonGuideView
         {
             ResetPhasePanels();
             decodeGuideFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
-            m_IntroPanel.ShowBeforeStart(lessonFlow.CurrentInstruction, startButtonLabel);
+            m_IntroPanel.ShowBeforeStart(
+                lessonFlow.CurrentInstruction,
+                startButtonLabel,
+                lessonFlow.UsesLearningInstructionSelection,
+                lessonFlow.CanStartSelectedMode);
             return;
         }
 
@@ -127,7 +130,7 @@ sealed class LessonGuideView
 
         if (!showDecodePanel)
         {
-            m_IntroPanel.ShowStep(lessonFlow, step, continueButtonLabel, restartButtonLabel);
+            m_IntroPanel.ShowStep(lessonFlow, step, continueButtonLabel, goBackButtonLabel, restartButtonLabel);
             return;
         }
 

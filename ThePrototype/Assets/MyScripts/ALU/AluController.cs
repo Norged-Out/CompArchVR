@@ -154,7 +154,7 @@ public sealed class AluController : MonoBehaviour
     {
         m_ExecutionService = new AluExecutionService();
         CacheLocalReferences();
-        HookBindings(true);
+        HookRuntimeBindings(true);
         AluPresentation.PopulateHintDropdown(m_HintDropdown);
         RefreshPresentation();
         SetFeedback(string.Empty, false);
@@ -164,14 +164,14 @@ public sealed class AluController : MonoBehaviour
     {
         m_ExecutionService ??= new AluExecutionService();
         CacheLocalReferences();
-        HookBindings(true);
+        HookRuntimeBindings(true);
         AluPresentation.PopulateHintDropdown(m_HintDropdown);
         RefreshPresentation();
     }
 
     void OnDisable()
     {
-        HookBindings(false);
+        HookRuntimeBindings(false);
     }
 
     /// <summary>
@@ -378,11 +378,9 @@ public sealed class AluController : MonoBehaviour
     /// Centralizes all ALU-side event wiring so enable/disable paths stay
     /// symmetrical.
     /// </summary>
-    void HookBindings(bool subscribe)
+    void HookRuntimeBindings(bool subscribe)
     {
         HookPhysicalButtons(subscribe);
-        HookUiButtons(subscribe);
-        HookDropdowns(subscribe);
         HookInputEvents(subscribe);
     }
 
@@ -400,39 +398,6 @@ public sealed class AluController : MonoBehaviour
         {
             BinarySignalButtonBinder.Unbind(m_AluOpButtonRoot, HandleAluOpPressed);
             BinarySignalButtonBinder.Unbind(m_AluSrcButtonRoot, HandleAluSrcPressed);
-        }
-    }
-
-    /// <summary>
-    /// Wires the authored execute / continue UI button.
-    /// </summary>
-    void HookUiButtons(bool subscribe)
-    {
-        if (m_ExecuteButton == null)
-            return;
-
-        m_ExecuteButton.onClick.RemoveListener(HandleExecutePressed);
-        if (subscribe)
-            m_ExecuteButton.onClick.AddListener(HandleExecutePressed);
-    }
-
-    /// <summary>
-    /// Wires the authored funct and hint dropdowns.
-    /// </summary>
-    void HookDropdowns(bool subscribe)
-    {
-        if (m_FunctDropdown != null)
-        {
-            m_FunctDropdown.onValueChanged.RemoveListener(HandleFunctDropdownChanged);
-            if (subscribe)
-                m_FunctDropdown.onValueChanged.AddListener(HandleFunctDropdownChanged);
-        }
-
-        if (m_HintDropdown != null)
-        {
-            m_HintDropdown.onValueChanged.RemoveListener(HandleHintDropdownChanged);
-            if (subscribe)
-                m_HintDropdown.onValueChanged.AddListener(HandleHintDropdownChanged);
         }
     }
 
