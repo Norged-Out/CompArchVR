@@ -118,6 +118,8 @@ public sealed class CpuLessonFlow : MonoBehaviour
         if (m_CurrentMode == LessonMode.Learning && m_CurrentInstruction == null)
             m_CurrentInstruction = LoadDefaultInstruction();
 
+        m_RegisterBank?.RestoreAuthoredRegisterValues();
+
         if (HasStarted)
             ResetLesson();
 
@@ -323,5 +325,6 @@ public sealed class CpuLessonFlow : MonoBehaviour
         m_Progress = new FlowProgress(this, m_State, m_Decode, m_Fetch);
         m_Lifecycle = new LessonLifecycle(this, m_State, m_Decode, m_Fetch);
         m_Actions = new LessonStepActions(this, m_State, m_Decode, m_Fetch, m_Progress, m_Lifecycle);
+        m_RegisterBank?.SetLessonInactivePreviewMode(true);
     }
 }

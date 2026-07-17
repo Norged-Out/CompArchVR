@@ -100,7 +100,7 @@ public static class MemoryPresentation
         if (controller.AddressScanner == null || controller.AddressScanner.AcceptedPacket == null)
             return "Address: waiting for ALU Result";
 
-        return $"Address: {MemoryTransferService.FormatAddress(controller.AddressScanner.AcceptedPacket.Value)} (ALU Result)";
+        return $"Address: {MemoryTransferService.FormatAddress(controller.AddressScanner.AcceptedPacket.Value)}";
     }
 
     static string BuildDataStatusText(MemoryController controller, MemoryTransferService transferService)
@@ -111,7 +111,7 @@ public static class MemoryPresentation
         if (transferService.IsLoadInstruction(controller.CurrentInstruction))
         {
             if (controller.HasCompletedMemoryAccess)
-                return $"Value: Memory Data = {controller.LastLoadedValue}";
+                return $"Value: {controller.LastLoadedValue}";
 
             return "Value: waiting for Execute Memory";
         }
@@ -119,7 +119,7 @@ public static class MemoryPresentation
         if (controller.DataScanner == null || controller.DataScanner.AcceptedPacket == null)
             return "Value: waiting for store packet";
 
-        return $"Value: {controller.DataScanner.AcceptedPacket.Value} ({MemoryTransferService.GetPacketRoleLabel(controller.DataScanner.AcceptedPacket.PacketRole)})";
+        return $"Value: {controller.DataScanner.AcceptedPacket.Value}";
     }
 
     static void RefreshHintBlocks(TMP_Dropdown hintDropdown, TMP_Text memReadText, TMP_Text memWriteText)

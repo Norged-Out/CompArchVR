@@ -55,17 +55,6 @@ public class RegisterBank : MonoBehaviour
             registerToken.SetRegisterValue(registerValue);
     }
 
-    /// <summary>
-    /// Resets only register values back to zero.
-    /// Kept separate from pose reset so the bank reset button does not wipe
-    /// lesson-authored runtime values unless asked to explicitly.
-    /// </summary>
-    public void ResetAllRegisterValues()
-    {
-        foreach (var registerToken in m_RegisterTokens.Values)
-            registerToken.ResetRegisterValue();
-    }
-
     void Awake()
     {
         RefreshRegisterCache();
@@ -91,9 +80,22 @@ public class RegisterBank : MonoBehaviour
             if (registerToken == null || string.IsNullOrWhiteSpace(registerToken.RegisterId))
                 continue;
 
+            registerToken.CaptureAuthoredRegisterValue();
             registerToken.SetOwningBank(this);
             m_RegisterTokens[registerToken.RegisterId] = registerToken;
         }
+    }
+
+    /// <summary>
+    /// Restores all logical register values to the ones authored on the prefab.
+    /// This deliberately leaves token positions alone.
+    /// </summary>
+    public void RestoreAuthoredRegisterValues()
+    {
+        RefreshRegisterCache();
+
+        foreach (var registerToken in m_RegisterTokens.Values)
+            registerToken.RestoreAuthoredRegisterValue();
     }
 
     /// <summary>
@@ -247,6 +249,18 @@ public class RegisterBank : MonoBehaviour
 
         registerScanner.SetOutputPacketRole(packetRole);
         registerScanner.SpawnConfiguredPacket(sourceId, sourceDisplayLabel, value);
+    }
+
+    /// <summary>
+    /// Makes lesson-flow scanners behave like utility preview scanners while
+    /// the lesson is inactive.
+    /// </summary>
+    public void SetLessonInactivePreviewMode(bool isEnabled)
+    {
+        RefreshScannerCache();
+
+        foreach (var registerScanner in m_RegisterScanners.Values)
+            registerScanner.SetLessonInactivePreviewMode(isEnabled);
     }
 
     /// <summary>

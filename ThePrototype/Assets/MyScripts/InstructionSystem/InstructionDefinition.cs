@@ -113,8 +113,9 @@ public class InstructionDefinition : ScriptableObject
 
     [Header("Initial Register Values")]
 
-    // Optional runtime seed values for lesson play.
-    // Any register not listed here implicitly stays at zero.
+    // Optional per-instruction seed values kept for explicit reseed flows.
+    // Ordinary lesson restarts now preserve the live register bank instead of
+    // wiping values back to these entries every time.
     public InstructionRegisterValue[] initialRegisterValues = Array.Empty<InstructionRegisterValue>();
 
     [Header("Guided Flow")]

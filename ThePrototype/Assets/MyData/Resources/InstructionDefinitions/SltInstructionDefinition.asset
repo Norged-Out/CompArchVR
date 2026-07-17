@@ -17,24 +17,24 @@ MonoBehaviour:
   format: 0
   category: 0
   summary: Set rd to 1 when rs is less than rt; otherwise set rd to 0.
-  assemblyInstructionText: slt t2, t0, t1
-  fieldBreakdownText: "opcode: 000000\nrs: t0\nrt: t1\nrd: t2\nfunct: 101010"
+  assemblyInstructionText: slt v0, a2, a3
+  fieldBreakdownText: "opcode: 000000\nrs: a2\nrt: a3\nrd: v0\nfunct: 101010"
   opcodeBits: 000000
   functBits: 101010
-  expectedRs: t0
-  expectedRt: t1
-  expectedRd: t2
+  expectedRs: a2
+  expectedRt: a3
+  expectedRd: v0
   expectedImmediateValue: 0
   touchesDataMemory: 0
   writesRegisterFile: 1
   usesImmediate: 0
   usesDestinationRegister: 1
   initialRegisterValues:
-  - registerId: t0
-    value: 3
-  - registerId: t1
-    value: 7
-  - registerId: t2
+  - registerId: a2
+    value: 12
+  - registerId: a3
+    value: 16
+  - registerId: v0
     value: 0
   flowSteps:
   - stepName: Fetch

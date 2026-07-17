@@ -17,12 +17,12 @@ MonoBehaviour:
   format: 1
   category: 2
   summary: Store a register value into Data Memory using a base register plus immediate offset.
-  assemblyInstructionText: sw t1, 12(t0)
-  fieldBreakdownText: "opcode: 101011\nrs: t0\nrt: t1\nimmediate: 12"
+  assemblyInstructionText: sw t6, 12(s4)
+  fieldBreakdownText: "opcode: 101011\nrs: s4\nrt: t6\nimmediate: 12"
   opcodeBits: 101011
   functBits: 
-  expectedRs: t0
-  expectedRt: t1
+  expectedRs: s4
+  expectedRt: t6
   expectedRd: 
   expectedImmediateValue: 12
   touchesDataMemory: 1
@@ -30,10 +30,10 @@ MonoBehaviour:
   usesImmediate: 1
   usesDestinationRegister: 0
   initialRegisterValues:
-  - registerId: t0
-    value: 268500992
-  - registerId: t1
-    value: 55
+  - registerId: s4
+    value: 268501044
+  - registerId: t6
+    value: 70
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1

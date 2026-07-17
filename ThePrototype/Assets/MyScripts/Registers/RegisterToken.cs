@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -23,6 +24,12 @@ public class RegisterToken : MonoBehaviour
 
     [SerializeField]
     int m_RegisterValue;
+
+    [NonSerialized]
+    int m_AuthoredRegisterValue;
+
+    [NonSerialized]
+    bool m_HasCapturedAuthoredValue;
 
     [SerializeField]
     RegisterBank m_OwningBank;
@@ -68,12 +75,14 @@ public class RegisterToken : MonoBehaviour
 
     void Awake()
     {
+        CaptureAuthoredRegisterValue();
         CacheReferences();
         RefreshText();
     }
 
     void OnEnable()
     {
+        CaptureAuthoredRegisterValue();
         CacheReferences();
 
         if (m_GrabInteractable == null)
@@ -138,12 +147,25 @@ public class RegisterToken : MonoBehaviour
     }
 
     /// <summary>
-    /// Resets only the logical register value back to zero.
-    /// This is separate from the physical bank reset button on purpose.
+    /// Stores the authored starting value exactly once so later lesson runs can
+    /// restore the prefab baseline without touching token positions.
     /// </summary>
-    public void ResetRegisterValue()
+    public void CaptureAuthoredRegisterValue()
     {
-        SetRegisterValue(0);
+        if (m_HasCapturedAuthoredValue)
+            return;
+
+        m_AuthoredRegisterValue = m_RegisterValue;
+        m_HasCapturedAuthoredValue = true;
+    }
+
+    /// <summary>
+    /// Restores the logical register value to the one authored on the prefab.
+    /// </summary>
+    public void RestoreAuthoredRegisterValue()
+    {
+        CaptureAuthoredRegisterValue();
+        SetRegisterValue(m_AuthoredRegisterValue);
     }
 
     /// <summary>

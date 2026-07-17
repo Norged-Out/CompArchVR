@@ -17,23 +17,23 @@ MonoBehaviour:
   format: 1
   category: 2
   summary: Load a word from Data Memory into rt using a base register plus immediate offset.
-  assemblyInstructionText: lw t1, 8(t0)
-  fieldBreakdownText: "opcode: 100011\nrs: t0\nrt: t1\nimmediate: 8"
+  assemblyInstructionText: lw at, 12(s2)
+  fieldBreakdownText: "opcode: 100011\nrs: s2\nrt: at\nimmediate: 12"
   opcodeBits: 100011
   functBits: 
-  expectedRs: t0
-  expectedRt: t1
+  expectedRs: s2
+  expectedRt: at
   expectedRd: 
-  expectedImmediateValue: 8
+  expectedImmediateValue: 12
   touchesDataMemory: 1
   writesRegisterFile: 1
   usesImmediate: 1
   usesDestinationRegister: 0
   initialRegisterValues:
-  - registerId: t0
-    value: 268500992
-  - registerId: t1
-    value: 0
+  - registerId: s2
+    value: 268501020
+  - registerId: at
+    value: 1
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1

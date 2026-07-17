@@ -43,6 +43,7 @@ sealed class LessonLifecycle
             m_Flow);
 
         m_Decode.Bind();
+        m_Flow.RegisterBankRef?.SetLessonInactivePreviewMode(false);
         m_State.BeginLesson(m_Flow.ActiveInstruction);
         m_Flow.ImmediateExtenderRef?.ResetScanner();
         m_Fetch.PrepareTerminals();
@@ -59,6 +60,7 @@ sealed class LessonLifecycle
 
         m_Decode.PrepareRegisterBankForLesson();
         m_State.ResetLesson(m_Flow.ActiveInstruction);
+        m_Flow.RegisterBankRef?.SetLessonInactivePreviewMode(true);
         m_Flow.ImmediateExtenderRef?.ResetScanner();
         m_Fetch.PrepareTerminals();
         m_Flow.RaiseStepChanged();

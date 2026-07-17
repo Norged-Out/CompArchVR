@@ -17,12 +17,12 @@ MonoBehaviour:
   format: 1
   category: 3
   summary: Compare two registers and branch when they are not equal.
-  assemblyInstructionText: bne t0, t1, 8
-  fieldBreakdownText: "opcode: 000101\nrs: t0\nrt: t1\nimmediate: 8"
+  assemblyInstructionText: bne a0, a1, 8
+  fieldBreakdownText: "opcode: 000101\nrs: a0\nrt: a1\nimmediate: 8"
   opcodeBits: 000101
   functBits: 
-  expectedRs: t0
-  expectedRt: t1
+  expectedRs: a0
+  expectedRt: a1
   expectedRd: 
   expectedImmediateValue: 8
   touchesDataMemory: 0
@@ -30,10 +30,10 @@ MonoBehaviour:
   usesImmediate: 1
   usesDestinationRegister: 0
   initialRegisterValues:
-  - registerId: t0
-    value: 12
-  - registerId: t1
-    value: 5
+  - registerId: a0
+    value: 4
+  - registerId: a1
+    value: 8
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1

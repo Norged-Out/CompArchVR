@@ -17,12 +17,12 @@ MonoBehaviour:
   format: 1
   category: 0
   summary: Add an immediate value to a source register and write the result into rt.
-  assemblyInstructionText: addi t1, t0, 4
-  fieldBreakdownText: "opcode: 001000\nrs: t0\nrt: t1\nimmediate: 4"
+  assemblyInstructionText: addi v1, t3, 4
+  fieldBreakdownText: "opcode: 001000\nrs: t3\nrt: v1\nimmediate: 4"
   opcodeBits: 001000
   functBits: 
-  expectedRs: t0
-  expectedRt: t1
+  expectedRs: t3
+  expectedRt: v1
   expectedRd: 
   expectedImmediateValue: 4
   touchesDataMemory: 0
@@ -30,9 +30,9 @@ MonoBehaviour:
   usesImmediate: 1
   usesDestinationRegister: 0
   initialRegisterValues:
-  - registerId: t0
-    value: 9
-  - registerId: t1
+  - registerId: t3
+    value: 40
+  - registerId: v1
     value: 0
   flowSteps:
   - stepName: Fetch

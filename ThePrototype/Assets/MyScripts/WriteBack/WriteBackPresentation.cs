@@ -33,17 +33,23 @@ public static class WriteBackPresentation
         {
             if (controller.HasAppliedWriteBack)
             {
-                controller.RegisterStatusText.text = $"Register Target: {controller.LastTargetRegister}";
+                controller.RegisterStatusText.text = BuildRegisterStatusText(
+                    controller.LastTargetRegister,
+                    controller.RegisterBank != null ? controller.RegisterBank.GetRegisterValue(controller.LastTargetRegister) : 0,
+                    false);
             }
             else if (controller.AcceptedRegister == null)
             {
-                controller.RegisterStatusText.text =
-                    $"Register Target: waiting for {controller.GetExpectedRegisterIdFromControlState()}";
+                var expectedRegisterId = controller.GetExpectedRegisterIdFromControlState();
+                var currentValue = controller.RegisterBank != null ? controller.RegisterBank.GetRegisterValue(expectedRegisterId) : 0;
+                controller.RegisterStatusText.text = BuildRegisterStatusText(expectedRegisterId, currentValue, true);
             }
             else
             {
-                controller.RegisterStatusText.text =
-                    $"Register Target: {controller.AcceptedRegister.RegisterId}";
+                controller.RegisterStatusText.text = BuildRegisterStatusText(
+                    controller.AcceptedRegister.RegisterId,
+                    controller.AcceptedRegister.RegisterValue,
+                    false);
             }
         }
 
@@ -139,6 +145,15 @@ public static class WriteBackPresentation
             DataPacketRole.Zero => "Zero",
             _ => "Packet",
         };
+    }
+
+    static string BuildRegisterStatusText(string registerId, int currentValue, bool isWaiting)
+    {
+        if (string.IsNullOrWhiteSpace(registerId))
+            return isWaiting ? "Register Target: waiting" : "Register Target: none";
+
+        var prefix = isWaiting ? $"Register Target: waiting for {registerId}" : $"Register Target: {registerId}";
+        return $"{prefix}\nCurrent Value: {currentValue}";
     }
 
     static void SetHintBlockActive(TMP_Text textBlock, bool isActive)

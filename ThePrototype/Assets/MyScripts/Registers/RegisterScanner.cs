@@ -66,6 +66,8 @@ public class RegisterScanner : PedestalScannerBase
 
     DataPacketToken m_SpawnedPacket;
     int m_LastResolvedValue;
+    bool m_HasResolvedValue;
+    bool m_IsInLessonInactivePreviewMode;
 
     public InstructionRegisterRole RegisterRole => m_RegisterRole;
     public bool UseInLessonFlow => m_UseInLessonFlow;
@@ -87,7 +89,7 @@ public class RegisterScanner : PedestalScannerBase
         base.OnEnable();
         BindZoneHelper();
 
-        if (m_AlwaysActiveInspector || !m_UseInLessonFlow)
+        if (m_AlwaysActiveInspector || m_IsInLessonInactivePreviewMode || !m_UseInLessonFlow)
             SetStepActive(true);
     }
 
@@ -123,9 +125,8 @@ public class RegisterScanner : PedestalScannerBase
             OnCandidateLost();
         }
 
-        if (m_AlwaysActiveInspector && IsLatchedSuccessful)
+        if ((m_AlwaysActiveInspector || m_IsInLessonInactivePreviewMode) && IsLatchedSuccessful)
             ResetScanner();
-
     }
 
     protected override Component GetStableCandidate()
@@ -177,6 +178,22 @@ public class RegisterScanner : PedestalScannerBase
     public void SetOwningBank(RegisterBank owningBank)
     {
         m_OwningBank = owningBank;
+    }
+
+    /// <summary>
+    /// Lets lesson-flow scanners fall back to utility-preview behavior while
+    /// the lesson is idle.
+    /// </summary>
+    public void SetLessonInactivePreviewMode(bool isEnabled)
+    {
+        if (!m_UseInLessonFlow)
+            return;
+
+        if (m_IsInLessonInactivePreviewMode == isEnabled)
+            return;
+
+        m_IsInLessonInactivePreviewMode = isEnabled;
+        SetStepActive(isEnabled);
     }
 
     void ConfigureSupportCollider()
@@ -285,16 +302,31 @@ public class RegisterScanner : PedestalScannerBase
     protected override void OnCandidateLost()
     {
         m_LastResolvedValue = 0;
+        m_HasResolvedValue = false;
+        UpdateValueText();
     }
 
     protected override void AfterFailureReset()
     {
-        m_LastResolvedValue = 0;
+        var currentCandidate = CurrentCandidateAs<RegisterToken>();
+        if (currentCandidate != null)
+        {
+            m_LastResolvedValue = currentCandidate.RegisterValue;
+            m_HasResolvedValue = true;
+        }
+        else
+        {
+            m_LastResolvedValue = 0;
+            m_HasResolvedValue = false;
+        }
+
+        UpdateValueText();
     }
 
     protected override void OnStepActiveChanged(bool isActive)
     {
         m_LastResolvedValue = 0;
+        m_HasResolvedValue = false;
         UpdateValueText();
     }
 
@@ -303,6 +335,7 @@ public class RegisterScanner : PedestalScannerBase
         m_TokensInZone.Clear();
         ClearSpawnedPacket();
         m_LastResolvedValue = 0;
+        m_HasResolvedValue = false;
         UpdateValueText();
     }
 
@@ -312,9 +345,15 @@ public class RegisterScanner : PedestalScannerBase
         if (registerToken == null)
             return;
 
-        if (m_AlwaysActiveInspector || !m_UseInLessonFlow)
+        // Preview the scanned value even when lesson validation later rejects
+        // the token. The scanner result and the packet spawn are still gated by
+        // success, but the learner can always read the candidate's contents.
+        m_LastResolvedValue = registerToken.RegisterValue;
+        m_HasResolvedValue = true;
+        UpdateValueText();
+
+        if (m_AlwaysActiveInspector || m_IsInLessonInactivePreviewMode || !m_UseInLessonFlow)
         {
-            m_LastResolvedValue = registerToken.RegisterValue;
             MarkSuccess();
             return;
         }
@@ -329,7 +368,7 @@ public class RegisterScanner : PedestalScannerBase
         if (m_ValueText == null)
             return;
 
-        m_ValueText.text = IsLatchedSuccessful
+        m_ValueText.text = m_HasResolvedValue
             ? m_LastResolvedValue.ToString()
             : "0";
     }
@@ -338,6 +377,7 @@ public class RegisterScanner : PedestalScannerBase
     {
         var currentCandidate = CurrentCandidateAs<RegisterToken>();
         m_LastResolvedValue = currentCandidate != null ? currentCandidate.RegisterValue : 0;
+        m_HasResolvedValue = currentCandidate != null;
 
         if (ShouldSpawnDataPacket())
             SpawnDataPacketFromCurrentCandidate();
@@ -392,7 +432,7 @@ public class RegisterScanner : PedestalScannerBase
 
     bool ShouldSpawnDataPacket()
     {
-        if (m_AlwaysActiveInspector || !m_UseInLessonFlow)
+        if (m_AlwaysActiveInspector || m_IsInLessonInactivePreviewMode || !m_UseInLessonFlow)
             return false;
 
         if (m_RegisterRole == InstructionRegisterRole.Rd)

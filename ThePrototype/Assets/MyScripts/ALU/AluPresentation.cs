@@ -202,7 +202,7 @@ public static class AluPresentation
             ? scanner.AcceptedPacket.IsSignExtended ? " (sign-extended)" : " (not sign-extended)"
             : string.Empty;
 
-        return $"{inputLabel}: {GetRoleDisplayName(scanner.AcceptedPacket.PacketRole)} = {scanner.AcceptedValue}{signExtensionSuffix}";
+        return $"{inputLabel}: {scanner.AcceptedValue}{signExtensionSuffix}";
     }
 
     /// <summary>

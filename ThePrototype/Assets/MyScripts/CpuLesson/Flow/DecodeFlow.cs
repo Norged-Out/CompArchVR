@@ -45,7 +45,8 @@ sealed class DecodeFlow
     }
 
     /// <summary>
-    /// Resets register transforms, scanner caches, and authored starting values for a new run.
+    /// Resets register transforms and scanner caches for a new run while
+    /// preserving the current logical register values.
     /// </summary>
     public void PrepareRegisterBankForLesson()
     {
@@ -55,7 +56,6 @@ sealed class DecodeFlow
         m_Flow.RegisterBankRef.RefreshRegisterCache();
         m_Flow.RegisterBankRef.RefreshScannerCache();
         m_Flow.RegisterBankRef.ResetAllRegisters();
-        ApplyInitialRegisterValues();
     }
 
     /// <summary>
@@ -99,29 +99,6 @@ sealed class DecodeFlow
 
         m_State.RuntimeSelection.immediateValue = m_Flow.ActiveInstruction.expectedImmediateValue;
         return m_Flow.ImmediateExtenderRef.SpawnImmediatePacket(m_Flow.ActiveInstruction.expectedImmediateValue);
-    }
-
-    /// <summary>
-    /// Applies the authored register values that should exist at the start of the current lesson.
-    /// </summary>
-    public void ApplyInitialRegisterValues()
-    {
-        if (m_Flow.RegisterBankRef == null)
-            return;
-
-        m_Flow.RegisterBankRef.ResetAllRegisterValues();
-
-        var initialRegisterValues = m_Flow.ActiveInstruction?.initialRegisterValues;
-        if (initialRegisterValues == null)
-            return;
-
-        foreach (var registerValue in initialRegisterValues)
-        {
-            if (registerValue == null || string.IsNullOrWhiteSpace(registerValue.registerId))
-                continue;
-
-            m_Flow.RegisterBankRef.SetRegisterValue(registerValue.registerId, registerValue.value);
-        }
     }
 
     /// <summary>

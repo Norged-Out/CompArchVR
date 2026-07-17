@@ -17,25 +17,25 @@ MonoBehaviour:
   format: 0
   category: 0
   summary: Subtract rt from rs and write the result into rd.
-  assemblyInstructionText: sub t2, t0, t1
-  fieldBreakdownText: "opcode: 000000\nrs: t0\nrt: t1\nrd: t2\nfunct: 100010"
+  assemblyInstructionText: sub t5, t3, t6
+  fieldBreakdownText: "opcode: 000000\nrs: t3\nrt: t6\nrd: t5\nfunct: 100010"
   opcodeBits: 000000
   functBits: 100010
-  expectedRs: t0
-  expectedRt: t1
-  expectedRd: t2
+  expectedRs: t3
+  expectedRt: t6
+  expectedRd: t5
   expectedImmediateValue: 0
   touchesDataMemory: 0
   writesRegisterFile: 1
   usesImmediate: 0
   usesDestinationRegister: 1
   initialRegisterValues:
-  - registerId: t0
-    value: 12
-  - registerId: t1
-    value: 5
-  - registerId: t2
-    value: 0
+  - registerId: t3
+    value: 40
+  - registerId: t6
+    value: 70
+  - registerId: t5
+    value: 60
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
