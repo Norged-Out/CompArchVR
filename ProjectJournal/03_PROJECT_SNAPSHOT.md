@@ -24,6 +24,8 @@ Current prototype features:
 - lesson-mode groundwork for:
   - `Learning`
   - `Practice`
+- first real practice-mode decode slice for:
+  - `add`
 - scene-authored world-space UIs for:
   - `Intro UI`
   - `Instruction Decode UI`
@@ -108,6 +110,7 @@ Current build truth:
 - these instructions work through the current guided loop
 - the project is now in polish/presentation mode more than raw datapath expansion mode
 - the next serious system extension in flight is practice mode, built on top of the same lesson foundation
+- the current practice-mode implementation is no longer just scaffolding; the first decode slice is now real, but still narrow
 
 More detailed current-state notes:
 - fetch is no longer just UI framing; it uses a physical instruction upload/download handoff
@@ -118,6 +121,12 @@ More detailed current-state notes:
   - funct handling where applicable
   - source-operand scanning
   - immediate generation for immediate-bearing instructions
+- practice decode now has its own staged path for the first playable slice:
+  - fetch still shows the encoded instruction
+  - decode now presents the full 32-bit binary form
+  - opcode is confirmed first
+  - remaining decode fields are then validated in a staged interaction
+  - hints and answer attempts are limited inside that slice
 - when no lesson is active, the two decode-stage lesson scanners can now act as simple preview scanners instead of staying uselessly inactive
 - execute is currently responsible for:
   - ALU signal interaction
@@ -172,6 +181,10 @@ What is current polish work versus already-solved systems:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeHintBuilder.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeGuideFlow.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeDropdownView.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\PracticeDecodeFlow.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\PracticeDecodeView.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\PracticeDecodeFieldViews.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\PracticeDecodeInputState.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\PracticeInstructionDefinition.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideController.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideView.cs`
@@ -237,6 +250,7 @@ Before stopping:
 ## Current Open Questions
 
 - what the safest first playable slice of practice mode should be before deeper decode complexity is added
+- how quickly practice mode should grow beyond the current `add`-only decode slice
 - how strong the door + arrow + audio guidance should be without becoming visually noisy
 - whether onboarding V1 should ship as:
   - a recorded custom tutorial video

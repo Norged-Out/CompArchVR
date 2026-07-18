@@ -30,6 +30,8 @@ Current stable feature set:
 - lesson-mode groundwork for:
   - `Learning`
   - `Practice`
+- first playable practice-mode decode slice for:
+  - `add`
 - physical instruction fetch through:
   - `Instruction Module`
   - uploader `Instruction Terminal`
@@ -109,6 +111,14 @@ Current interaction systems that are already implemented:
   - branch condition handling for `beq` / `bne`
 - scanner feedback through shared occupied / success / failure visuals and audio
 - local 3D audio feedback across the main interaction loop
+- practice decode flow for the first safe slice now supports:
+  - fetch display in hex form
+  - decode display in 32-bit binary form
+  - staged opcode confirmation
+  - staged `rs` / `rt` / `rd` / `funct` validation for `add`
+  - limited hints
+  - limited answer attempts
+  - failed-state hold until explicit reset press
 
 Current architecture truths:
 - lesson UI is scene-authored and code-driven
@@ -118,6 +128,11 @@ Current architecture truths:
 - the routed map is part of the lesson design, not just environment decoration
 - the current build direction is polish-first, not instruction-count-first
 - practice mode is now an active extension path and should be built by safely extending the existing lesson architecture, not replacing it
+- the decode panel now uses a clearer split between:
+  - scene reference containers
+  - learning-mode view logic
+  - practice-mode view logic
+  - practice decode validation state
 
 Current delivery target:
 - next supervisor checkpoint: `2026-07-24`
@@ -128,6 +143,7 @@ Current delivery target:
 
 Current development priority:
 - stabilize the practice-mode groundwork without regressing the guided baseline
+- stabilize the first practice-mode decode slice before widening instruction coverage inside that mode
 - improve readability, onboarding, experiment-mode readiness, and overall presentation quality
 - avoid major architecture churn unless it fixes a real blocker
 - preserve the now-working lesson loop while polishing around it
@@ -1199,6 +1215,41 @@ Risks / Notes:
 - the current practice-mode work is still foundation work, not the finished mode itself
 - the biggest near-term risk is accidental regression of the stable guided flow while practice-mode pieces are being added
 - the new register-value persistence direction is intentionally more realistic/useful for replay, but it increases the importance of keeping authored reset boundaries explicit
+
+
+### 2026-07-18 - Decode Practice Slice Refined And Refactored
+
+Completed:
+- finished the first real practice-mode slice around `add` instead of leaving practice mode as only intro/setup groundwork
+- kept `IF` and the shared lesson flow architecture intact while layering the new decode behavior onto the existing system
+- updated practice decode so it now supports:
+  - opcode confirmation first
+  - staged `rs`, `rt`, `rd`, and `funct` validation for the `add` path
+  - limited hint usage
+  - limited answer attempts
+  - held failure state that waits for an explicit reset press instead of auto-resetting immediately
+- updated the practice decode presentation so the binary instruction display now has clearer runtime framing text
+- moved decode-panel serialized reference containers out of the main decode controller into their own helper file
+- split repeated practice-decode field behavior into focused helper classes instead of leaving the main practice view to manually manage every dropdown/toggle combination
+- changed practice decode validation to read from a captured input-state object instead of repeatedly pulling individual values from the panel controller
+- removed a duplicated lesson-guide initialization path by collapsing shared `Awake`/`OnEnable` setup into one helper path
+
+Changed:
+- practice mode is no longer only "groundwork"; it now has a real first decode interaction slice for one instruction
+- the decode architecture is now cleaner than the first implementation pass:
+  - scene refs are separate from controller logic
+  - practice field widgets own more of their own behavior
+  - practice validation reads one captured state instead of scattered panel calls
+- this was intentionally a refactor-in-place, not a second parallel decode stack
+
+Next:
+- widen practice mode carefully beyond `add` only after the current decode slice has been judged safe enough
+- decide how much of decode guidance should live in lesson text versus hint text before broadening practice coverage
+- continue protecting the guided baseline while practice-specific decode logic grows
+
+Risks / Notes:
+- the current practice mode is still only a first slice, not the full intended mode
+- decode remains the highest-risk area for architecture sprawl, so future additions should keep honoring the split-responsibility direction established here
 
 
 ## Current Working Baseline

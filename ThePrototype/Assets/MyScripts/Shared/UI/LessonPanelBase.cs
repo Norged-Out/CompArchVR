@@ -146,6 +146,14 @@ public abstract class LessonPanelBase : MonoBehaviour
     }
 
     /// <summary>
+    /// Plays the authored failure cue from this panel's local audio source.
+    /// </summary>
+    public void PlayFailureCue()
+    {
+        m_LessonAudioCues.PlayFailureCue();
+    }
+
+    /// <summary>
     /// Ensures authored action buttons reserve enough height for their runtime label.
     /// </summary>
     static void EnsureButtonLayout(Button button)

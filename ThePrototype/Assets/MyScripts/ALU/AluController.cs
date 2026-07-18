@@ -234,6 +234,12 @@ public sealed class AluController : MonoBehaviour
         m_HasExplicitFunctSelection = false;
         m_SelectedFunctOperation = AluOperation.Add;
 
+        if (m_FunctDropdown != null)
+        {
+            m_FunctDropdown.SetValueWithoutNotify(0);
+            m_FunctDropdown.RefreshShownValue();
+        }
+
         m_InputA?.ResetScanner();
         m_InputB?.ResetScanner();
         m_ExecutionService?.ClearSpawnedResultPacket(this);

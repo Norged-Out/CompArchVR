@@ -23,6 +23,9 @@ public sealed class LessonUiAudioCueSet
     [SerializeField]
     AudioClip m_LessonCompletedClip;
 
+    [SerializeField]
+    AudioClip m_FailureClip;
+
     /// <summary>
     /// Plays the phase-entered cue from the authored source.
     /// </summary>
@@ -42,6 +45,11 @@ public sealed class LessonUiAudioCueSet
     /// Plays the final lesson-complete cue from the authored source.
     /// </summary>
     public void PlayLessonCompletedCue() => PlayClip(m_LessonCompletedClip);
+
+    /// <summary>
+    /// Plays the authored failure cue from the authored source.
+    /// </summary>
+    public void PlayFailureCue() => PlayClip(m_FailureClip);
 
     void PlayClip(AudioClip clip)
     {

@@ -1045,6 +1045,25 @@ Implication:
 - this fallback should be treated as a utility behavior, not as a second lesson-mode path
 
 
+## 2026-07-18 - Practice Decode Must Extend The Existing Decode Panel Through Focused Helpers, Not Through A Second Controller Stack
+
+Decision:
+- keep one decode panel/controller entry point
+- split scene refs, learning presentation, practice presentation, and practice validation into focused helper types instead of bloating the main controller
+
+Why:
+- the first practice-mode pass already showed how quickly decode can become too crowded if every new field and rule is handled directly in one place
+- the existing decode scene wiring is still valuable and should not be replaced with a parallel practice-only panel controller stack
+- a helper split keeps the mode extension real without turning the decode controller into another oversized file
+
+Implication:
+- future practice-mode decode growth should keep reusing:
+  - dedicated scene-ref containers
+  - focused practice field/view helpers
+  - captured input-state validation
+- additional practice instructions should extend the staged decode logic carefully rather than reopening the panel architecture each time
+
+
 ## Open Questions
 
 - how much instruction decoding should be interactive in V1

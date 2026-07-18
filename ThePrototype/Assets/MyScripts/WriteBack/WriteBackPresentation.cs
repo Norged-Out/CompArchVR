@@ -58,17 +58,17 @@ public static class WriteBackPresentation
             if (controller.HasAppliedWriteBack)
             {
                 controller.DataStatusText.text =
-                    $"Write Data: {GetPacketRoleDisplayName(controller.LastTransferredPacketRole)} = {controller.LastTransferredValue}";
+                    $"Write Data: {controller.LastTransferredValue}";
             }
             else if (controller.AcceptedPacket == null)
             {
                 controller.DataStatusText.text =
-                    $"Write Data: waiting for {GetPacketRoleDisplayName(controller.GetExpectedPacketRoleFromControlState())}";
+                    "Write Data: waiting";
             }
             else
             {
                 controller.DataStatusText.text =
-                    $"Write Data: {GetPacketRoleDisplayName(controller.AcceptedPacket.PacketRole)} = {controller.AcceptedPacket.Value}";
+                    $"Write Data: {controller.AcceptedPacket.Value}";
             }
         }
 
@@ -131,20 +131,6 @@ public static class WriteBackPresentation
         SetHintBlockActive(regDstText, selectedHint == 1);
         SetHintBlockActive(regWriteText, selectedHint == 2);
         SetHintBlockActive(memToRegText, selectedHint == 3);
-    }
-
-    static string GetPacketRoleDisplayName(DataPacketRole packetRole)
-    {
-        return packetRole switch
-        {
-            DataPacketRole.ReadData1 => "Read Data 1",
-            DataPacketRole.ReadData2 => "Read Data 2",
-            DataPacketRole.Immediate => "Immediate",
-            DataPacketRole.AluResult => "ALU Result",
-            DataPacketRole.MemoryData => "Memory Data",
-            DataPacketRole.Zero => "Zero",
-            _ => "Packet",
-        };
     }
 
     static string BuildRegisterStatusText(string registerId, int currentValue, bool isWaiting)

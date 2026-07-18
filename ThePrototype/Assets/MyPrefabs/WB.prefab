@@ -1630,6 +1630,7 @@ MonoBehaviour:
     m_PhaseCompletedClip: {fileID: 8300000, guid: 65f114a662844764786343f3eb52e23f, type: 3}
     m_IncorrectClip: {fileID: 8300000, guid: 88fe676e2603e464897daddb0d5a62f4, type: 3}
     m_LessonCompletedClip: {fileID: 8300000, guid: f84e071ebd67c6e49b9fb6e25cf6f5f7, type: 3}
+    m_FailureClip: {fileID: 0}
   m_WbUiRoot: {fileID: 0}
   m_LessonRuntimeText: {fileID: 0}
   m_RegDstStatusText: {fileID: 0}

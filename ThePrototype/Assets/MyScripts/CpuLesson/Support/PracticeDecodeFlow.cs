@@ -1,72 +1,81 @@
 using System;
+using System.Collections.Generic;
 
-/// <summary>
-/// Owns the staged Practice-mode decode checks that happen before the shared
-/// register-scanner step begins.
-/// </summary>
 public sealed class PracticeDecodeFlow
 {
-    int m_RevealedHintCount;
+    enum PracticeHintTarget
+    {
+        None,
+        Opcode,
+        Rs,
+        Rt,
+        Immediate,
+        Rd,
+        Funct,
+    }
 
-    /// <summary>
-    /// Tracks whether the learner has already identified the opcode and thus
-    /// unlocked the rest of the practice-decode fields.
-    /// </summary>
+    int m_MaxAttempts = 4;
+    int m_MaxHints = 3;
+    int m_RemainingAttempts = 4;
+    int m_RemainingHints = 3;
+
     public bool IsOpcodeConfirmed { get; private set; }
+    public bool IsFailed { get; private set; }
 
-    /// <summary>
-    /// Clears staged practice-decode state when the lesson resets or returns to
-    /// the pre-start intro panel.
-    /// </summary>
+    public void Configure(int maxAttempts, int maxHints)
+    {
+        m_MaxAttempts = Math.Max(1, maxAttempts);
+        m_MaxHints = Math.Max(0, maxHints);
+    }
+
     public void Reset(DecodePanelController panel, ref bool isRefreshing)
     {
         IsOpcodeConfirmed = false;
-        m_RevealedHintCount = 0;
+        IsFailed = false;
+        m_RemainingAttempts = m_MaxAttempts;
+        m_RemainingHints = m_MaxHints;
         panel?.ResetPracticeControls(ref isRefreshing);
         panel?.SetPracticeHintText(string.Empty);
     }
 
-    /// <summary>
-    /// Returns the learner-facing decode summary that appears after opcode
-    /// confirmation and stays visible while the remaining fields are solved.
-    /// </summary>
     public string GetDecodeStatusText(PracticeInstructionDefinition instruction)
     {
         if (!IsOpcodeConfirmed || instruction == null)
             return string.Empty;
 
-        return $"Instruction Type: {instruction.GetInstructionTypeLabel()}\n" +
-               $"Source Registers Needed: {instruction.GetRequiredSourceRegisterCount()}";
+        return $"Instruction identified: {instruction.GetDecodedInstructionLabel()}\n" +
+               $"Instruction Type: {instruction.GetInstructionTypeLabel()}";
     }
 
-    /// <summary>
-    /// Validates the next staged Practice decode action.
-    /// </summary>
     public void HandleContinue(
         CpuLessonFlow lessonFlow,
         DecodePanelController panel,
-        Action<string, bool> reportFeedback)
+        Action<string, bool> reportFeedback,
+        Action onFailure)
     {
         if (lessonFlow == null || panel == null || reportFeedback == null)
             return;
+
+        if (IsFailed)
+        {
+            lessonFlow.ResetLesson();
+            return;
+        }
 
         var instruction = lessonFlow.CurrentPracticeInstruction;
         if (instruction == null)
             return;
 
+        var input = panel.GetPracticeInputState();
         if (!IsOpcodeConfirmed)
         {
-            ValidateOpcode(panel, instruction, reportFeedback);
+            ValidateOpcode(input, instruction, reportFeedback, onFailure);
             return;
         }
 
-        ValidateRemainingFields(lessonFlow, panel, instruction, reportFeedback);
+        ValidateRemainingFields(lessonFlow, input, instruction, reportFeedback, onFailure);
     }
 
-    /// <summary>
-    /// Reveals one more staged practice hint each time the learner presses the
-    /// hint button.
-    /// </summary>
     public void RevealNextHint(CpuLessonFlow lessonFlow, DecodePanelController panel)
     {
         if (lessonFlow == null || panel == null)
@@ -76,120 +85,174 @@ public sealed class PracticeDecodeFlow
         if (instruction == null)
             return;
 
-        m_RevealedHintCount++;
-        panel.SetPracticeHintText(BuildHintText(instruction, m_RevealedHintCount));
-    }
-
-    void ValidateOpcode(
-        DecodePanelController panel,
-        PracticeInstructionDefinition instruction,
-        Action<string, bool> reportFeedback)
-    {
-        var selectedOpcode = NormalizeBits(panel.GetSelectedPracticeOpcode());
-        if (string.IsNullOrWhiteSpace(selectedOpcode))
+        if (m_RemainingHints <= 0)
         {
-            reportFeedback("Select an opcode first.", true);
+            panel.SetPracticeHintText(FormatHint("No hints remaining.", 0));
             return;
         }
 
-        var expectedOpcode = NormalizeBits(instruction.expectedOpcodeBits);
-        if (!string.Equals(selectedOpcode, expectedOpcode, StringComparison.Ordinal))
+        var hintTarget = ResolveHintTarget(panel.GetPracticeInputState(), instruction);
+        if (hintTarget == PracticeHintTarget.None)
         {
-            reportFeedback("That opcode does not match this encoded instruction.", true);
+            panel.SetPracticeHintText(FormatHint("No hint is needed for the current decode state.", m_RemainingHints));
+            return;
+        }
+
+        m_RemainingHints = Math.Max(0, m_RemainingHints - 1);
+        panel.SetPracticeHintText(FormatHint(BuildHintText(hintTarget), m_RemainingHints));
+    }
+
+    void ValidateOpcode(
+        PracticeDecodeInputState input,
+        PracticeInstructionDefinition instruction,
+        Action<string, bool> reportFeedback,
+        Action onFailure)
+    {
+        if (!BitsMatch(input.OpcodeBits, instruction.expectedOpcodeBits))
+        {
+            ReportIncorrect(reportFeedback, onFailure, "opcode");
             return;
         }
 
         IsOpcodeConfirmed = true;
-        reportFeedback($"Opcode confirmed. This is an {instruction.GetInstructionTypeLabel()} instruction.", false);
+        reportFeedback(
+            FormatFeedback(
+                $"Opcode confirmed. This is an {instruction.GetInstructionTypeLabel()} instruction.",
+                m_RemainingAttempts),
+            false);
     }
 
     void ValidateRemainingFields(
         CpuLessonFlow lessonFlow,
-        DecodePanelController panel,
+        PracticeDecodeInputState input,
         PracticeInstructionDefinition instruction,
-        Action<string, bool> reportFeedback)
+        Action<string, bool> reportFeedback,
+        Action onFailure)
     {
-        var selectedRs = NormalizeBits(panel.GetSelectedPracticeRs());
-        if (!BitsMatch(selectedRs, instruction.expectedRsBits))
+        var incorrectFields = new List<string>();
+
+        ValidateRequiredField(incorrectFields, "rs", input.RsBits, instruction.expectedRsBits);
+        ValidateRequiredField(incorrectFields, "rt", input.RtBits, instruction.expectedRtBits);
+        ValidateOptionalField(incorrectFields, "rd", input.UseRd, input.RdBits, instruction.expectedRdBits);
+        ValidateOptionalField(incorrectFields, "immediate", input.UseImmediate, input.ImmediateBits, instruction.expectedImmediateBits);
+        ValidateOptionalField(incorrectFields, "funct", input.UseFunct, input.FunctBits, instruction.expectedFunctBits);
+
+        if (incorrectFields.Count > 0)
         {
-            reportFeedback("The selected rs field is incorrect.", true);
+            ReportIncorrect(reportFeedback, onFailure, incorrectFields.ToArray());
             return;
         }
 
-        var selectedRt = NormalizeBits(panel.GetSelectedPracticeRt());
-        if (!BitsMatch(selectedRt, instruction.expectedRtBits))
-        {
-            reportFeedback("The selected rt field is incorrect.", true);
-            return;
-        }
-
-        var shouldUseImmediate = instruction.UsesImmediateField();
-        if (panel.GetPracticeImmediateToggleValue() != shouldUseImmediate)
-        {
-            reportFeedback(
-                shouldUseImmediate
-                    ? "This instruction does use an immediate field."
-                    : "This instruction does not use an immediate field.",
-                true);
-            return;
-        }
-
-        if (shouldUseImmediate)
-        {
-            var selectedImmediate = NormalizeBits(panel.GetSelectedPracticeImmediate());
-            if (!BitsMatch(selectedImmediate, instruction.expectedImmediateBits))
-            {
-                reportFeedback("The selected immediate field is incorrect.", true);
-                return;
-            }
-        }
-
-        var shouldUseFunct = instruction.UsesFunctField();
-        if (panel.GetPracticeFunctToggleValue() != shouldUseFunct)
-        {
-            reportFeedback(
-                shouldUseFunct
-                    ? "This instruction does use a funct field."
-                    : "This instruction does not use a funct field.",
-                true);
-            return;
-        }
-
-        if (shouldUseFunct)
-        {
-            var selectedFunct = NormalizeBits(panel.GetSelectedPracticeFunct());
-            if (!BitsMatch(selectedFunct, instruction.expectedFunctBits))
-            {
-                reportFeedback("The selected funct field is incorrect.", true);
-                return;
-            }
-        }
-
-        reportFeedback("Practice decode confirmed. Continue into register collection.", false);
+        reportFeedback(
+            FormatFeedback("Practice decode confirmed. Continue into register collection.", m_RemainingAttempts),
+            false);
         lessonFlow.Advance();
     }
 
-    static string BuildHintText(PracticeInstructionDefinition instruction, int hintIndex)
+    void ValidateRequiredField(List<string> incorrectFields, string fieldLabel, string selectedBits, string expectedBits)
     {
-        if (instruction == null)
-            return string.Empty;
+        if (!BitsMatch(selectedBits, expectedBits))
+            incorrectFields.Add(fieldLabel);
+    }
 
-        return hintIndex switch
+    void ValidateOptionalField(
+        List<string> incorrectFields,
+        string fieldLabel,
+        bool useField,
+        string selectedBits,
+        string expectedBits)
+    {
+        var shouldUseField = !string.IsNullOrWhiteSpace(expectedBits);
+        if (useField != shouldUseField)
         {
-            1 => "Start with the opcode. It is the first 6 bits of the 32-bit instruction.",
-            2 => $"After the opcode, identify the two 5-bit source-register fields needed by this {instruction.GetInstructionTypeLabel()} instruction.",
-            3 => instruction.UsesFunctField()
-                ? "This encoded instruction uses a funct field and does not rely on an immediate field."
-                : instruction.UsesImmediateField()
-                    ? "This encoded instruction uses an immediate field instead of a funct field."
-                    : "Focus on which optional field groups actually belong to this encoding.",
-            _ => $"This decode should reveal {instruction.GetRequiredSourceRegisterCount()} source register field(s) before the scanner stage begins.",
+            incorrectFields.Add($"{fieldLabel} toggle");
+            return;
+        }
+
+        if (shouldUseField && !BitsMatch(selectedBits, expectedBits))
+            incorrectFields.Add(fieldLabel);
+    }
+
+    void ReportIncorrect(Action<string, bool> reportFeedback, Action onFailure, params string[] incorrectFields)
+    {
+        m_RemainingAttempts = Math.Max(0, m_RemainingAttempts - 1);
+
+        if (m_RemainingAttempts <= 0)
+        {
+            IsFailed = true;
+            reportFeedback(
+                FormatFeedback($"Practice decode failed: {string.Join(", ", incorrectFields)}", m_RemainingAttempts),
+                true);
+            onFailure?.Invoke();
+            return;
+        }
+
+        reportFeedback(
+            FormatFeedback($"Incorrect: {string.Join(", ", incorrectFields)}", m_RemainingAttempts),
+            true);
+    }
+
+    PracticeHintTarget ResolveHintTarget(PracticeDecodeInputState input, PracticeInstructionDefinition instruction)
+    {
+        if (input == null || instruction == null)
+            return PracticeHintTarget.None;
+
+        if (!IsOpcodeConfirmed)
+            return PracticeHintTarget.Opcode;
+
+        if (!BitsMatch(input.RsBits, instruction.expectedRsBits))
+            return PracticeHintTarget.Rs;
+
+        if (!BitsMatch(input.RtBits, instruction.expectedRtBits))
+            return PracticeHintTarget.Rt;
+
+        if (ShouldHintOptionalField(input.UseImmediate, input.ImmediateBits, instruction.expectedImmediateBits))
+            return PracticeHintTarget.Immediate;
+
+        if (ShouldHintOptionalField(input.UseRd, input.RdBits, instruction.expectedRdBits))
+            return PracticeHintTarget.Rd;
+
+        if (ShouldHintOptionalField(input.UseFunct, input.FunctBits, instruction.expectedFunctBits))
+            return PracticeHintTarget.Funct;
+
+        return PracticeHintTarget.None;
+    }
+
+    static bool ShouldHintOptionalField(bool useField, string selectedBits, string expectedBits)
+    {
+        if (string.IsNullOrWhiteSpace(expectedBits))
+            return false;
+
+        return !useField || !BitsMatch(selectedBits, expectedBits);
+    }
+
+    static string BuildHintText(PracticeHintTarget hintTarget)
+    {
+        return hintTarget switch
+        {
+            PracticeHintTarget.Opcode => "The opcode is the leftmost 6 bits of the 32-bit instruction.",
+            PracticeHintTarget.Rs => "rs is the first 5-bit register field after the opcode.",
+            PracticeHintTarget.Rt => "rt is the second 5-bit register field after the opcode.",
+            PracticeHintTarget.Immediate => "This instruction uses an immediate field on the right side instead of rd and funct.",
+            PracticeHintTarget.Rd => "rd is the destination register field that appears after rs and rt in an R-type instruction.",
+            PracticeHintTarget.Funct => "The funct field is the final 6 bits on the right side of an R-type instruction.",
+            _ => string.Empty,
         };
     }
 
     static bool BitsMatch(string selectedBits, string expectedBits)
     {
-        return string.Equals(selectedBits, NormalizeBits(expectedBits), StringComparison.Ordinal);
+        return string.Equals(NormalizeBits(selectedBits), NormalizeBits(expectedBits), StringComparison.Ordinal);
+    }
+
+    static string FormatFeedback(string message, int remainingAttempts)
+    {
+        return $"{message}\nChances remaining: {remainingAttempts}";
+    }
+
+    static string FormatHint(string message, int remainingHints)
+    {
+        return $"{message}\nHints remaining: {remainingHints}";
     }
 
     static string NormalizeBits(string rawBits)

@@ -159,6 +159,7 @@ The project has already moved beyond the old three-instruction V1 boundary, so f
 
 Current extension note:
 - practice mode is now the main near-term systems extension, and it should be built by extending the existing lesson architecture rather than forking an unrelated second flow
+- the first safe implementation slice is now decode-focused `add` practice, not a broad multi-instruction practice rollout
 
 ## Non-Goals
 

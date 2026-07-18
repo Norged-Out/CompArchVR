@@ -3,182 +3,80 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-/// <summary>
-/// Presentation owner for the instruction-decode lesson panel.
-/// </summary>
 [DisallowMultipleComponent]
 public sealed class DecodePanelController : LessonPanelBase
 {
+    [Header("Lesson Panel")]
     [SerializeField]
-    TMP_Text m_OpcodeLessonText;
+    DecodeLessonPanelRefs m_LessonPanel;
 
+    [Header("Hint Panel")]
     [SerializeField]
-    TMP_Text m_RegisterLessonText;
+    DecodeHintPanelRefs m_HintPanel;
 
+    [Header("Interaction Panel / Learn")]
     [SerializeField]
-    TMP_Text m_FunctLessonText;
+    DecodeLearnInteractionRefs m_LearnInteraction;
 
-    [Header("Practice Decode")]
+    [Header("Interaction Panel / Practice")]
     [SerializeField]
-    GameObject m_PracticeRoot;
+    DecodePracticeInteractionRefs m_PracticeInteraction;
 
+    [Header("Interaction Panel / Shared")]
     [SerializeField]
-    TMP_Text m_PracticeBinaryText;
-
-    [SerializeField]
-    TMP_Text m_PracticeStatusText;
-
-    [SerializeField]
-    GameObject m_PracticeOpcodeGroupRoot;
-
-    [SerializeField]
-    TMP_Dropdown m_PracticeOpcodeDropdown;
-
-    [SerializeField]
-    GameObject m_PracticeRsGroupRoot;
-
-    [SerializeField]
-    TMP_Dropdown m_PracticeRsDropdown;
-
-    [SerializeField]
-    GameObject m_PracticeRtGroupRoot;
-
-    [SerializeField]
-    TMP_Dropdown m_PracticeRtDropdown;
-
-    [SerializeField]
-    GameObject m_PracticeImmediateGroupRoot;
-
-    [SerializeField]
-    Toggle m_PracticeImmediateToggle;
-
-    [SerializeField]
-    TMP_Dropdown m_PracticeImmediateDropdown;
-
-    [SerializeField]
-    GameObject m_PracticeFunctGroupRoot;
-
-    [SerializeField]
-    Toggle m_PracticeFunctToggle;
-
-    [SerializeField]
-    TMP_Dropdown m_PracticeFunctDropdown;
-
-    [SerializeField]
-    TMP_Text m_PracticeHintText;
-
-    [SerializeField]
-    GameObject m_OpcodeGroupRoot;
-
-    [SerializeField]
-    GameObject m_FunctGroupRoot;
-
-    [SerializeField]
-    TMP_Text m_RegisterBodyText;
-
-    [SerializeField]
-    TMP_Text m_OpcodeSelectionText;
-
-    [SerializeField]
-    TMP_Text m_RegisterSelectionText;
-
-    [SerializeField]
-    TMP_Text m_FunctSelectionText;
-
-    [SerializeField]
-    TMP_Text m_Feedback;
-
-    [SerializeField]
-    Button m_ActionButton;
-
-    [SerializeField]
-    TMP_Text m_ActionLabel;
-
-    [SerializeField]
-    TMP_Dropdown m_OpcodeDropdown;
-
-    [SerializeField]
-    TMP_Dropdown m_FunctDropdown;
-
-    [SerializeField]
-    TMP_Dropdown m_HintDropdown;
-
-    [SerializeField]
-    TMP_Text m_HintText;
+    DecodeSharedInteractionRefs m_SharedInteraction;
 
     LearnDecodeView m_LearningView;
     PracticeDecodeView m_PracticeView;
     bool m_IsShowingPracticeDecode;
 
-    /// <summary>
-    /// Shows or hides the authored decode panel root.
-    /// </summary>
     public void SetVisible(bool isVisible)
     {
         SetPanelVisible(isVisible);
     }
 
-    /// <summary>
-    /// Hides the authored decode action button when another phase owns progression.
-    /// </summary>
     public void HideAction()
     {
-        SetButtonState(m_ActionButton, m_ActionLabel, string.Empty, false);
-        RefreshPanelLayout(m_ActionButton);
+        SetButtonState(m_SharedInteraction.ActionButton, m_SharedInteraction.ActionLabel, string.Empty, false);
+        RefreshPanelLayout(m_SharedInteraction.ActionButton);
     }
 
-    /// <summary>
-    /// Rebuilds all decode dropdowns from the authored instruction catalog.
-    /// </summary>
-    public void PopulateDropdowns(IReadOnlyList<InstructionDefinition> availableInstructions, InstructionDefinition currentInstruction, ref bool isRefreshing)
+    public void PopulateDropdowns(
+        IReadOnlyList<InstructionDefinition> availableInstructions,
+        InstructionDefinition currentInstruction,
+        ref bool isRefreshing)
     {
         EnsureLearningView();
         m_LearningView.PopulateDropdowns(availableInstructions, currentInstruction, ref isRefreshing);
     }
 
-    /// <summary>
-    /// Resets all decode dropdowns to their authored placeholder values.
-    /// </summary>
     public void ResetDropdowns(ref bool isRefreshing)
     {
         EnsureLearningView();
         m_LearningView.ResetDropdowns(ref isRefreshing);
     }
 
-    /// <summary>
-    /// Resets the funct dropdown when opcode validation unlocks the R-type funct step.
-    /// </summary>
     public void ResetFunctDropdown(ref bool isRefreshing)
     {
         EnsureLearningView();
         m_LearningView.ResetFunctDropdown(ref isRefreshing);
     }
 
-    /// <summary>
-    /// Rebuilds the authored Practice decode controls from the currently selected
-    /// Practice instruction and staged opcode-confirmation state.
-    /// </summary>
     public void PopulatePracticeControls(
         PracticeInstructionDefinition currentInstruction,
         bool opcodeConfirmed,
         ref bool isRefreshing)
     {
         EnsurePracticeView();
-        m_PracticeView?.Refresh(currentInstruction, opcodeConfirmed, ref isRefreshing);
+        m_PracticeView.Refresh(currentInstruction, opcodeConfirmed, false, ref isRefreshing);
     }
 
-    /// <summary>
-    /// Resets the authored Practice decode controls back to their unsolved state.
-    /// </summary>
     public void ResetPracticeControls(ref bool isRefreshing)
     {
         EnsurePracticeView();
-        m_PracticeView?.Reset(ref isRefreshing);
+        m_PracticeView.Reset(ref isRefreshing);
     }
 
-    /// <summary>
-    /// Refreshes the authored decode panel for the currently active decode sub-step.
-    /// </summary>
     public void Refresh(
         CpuLessonFlow lessonFlow,
         InstructionFlowStep step,
@@ -194,179 +92,183 @@ public sealed class DecodePanelController : LessonPanelBase
 
         SetVisible(true);
 
-        m_IsShowingPracticeDecode =
-            lessonFlow.CurrentMode == LessonMode.Practice &&
-            step.highlightedNode == DatapathNodeId.InstructionMemory;
+        var isPracticeMode = lessonFlow.CurrentMode == LessonMode.Practice;
+        m_IsShowingPracticeDecode = IsPracticeDecodeStep(lessonFlow, step);
+
+        ApplyHintPanelMode(isPracticeMode);
 
         if (m_IsShowingPracticeDecode)
         {
-            EnsureLearningView();
-            m_LearningView.HideAll();
-            EnsurePracticeView();
-            var isRefreshingPractice = false;
-            m_PracticeView?.Refresh(
-                currentPracticeInstruction,
-                practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed,
-                ref isRefreshingPractice);
-            m_PracticeView?.SetStatusText(
-                practiceDecodeFlow != null
-                    ? practiceDecodeFlow.GetDecodeStatusText(currentPracticeInstruction)
-                    : string.Empty);
-
-            SetButtonState(m_ActionButton, m_ActionLabel, continueLabel, true);
-            RefreshPanelLayout(m_ActionButton);
+            RefreshPracticeDecode(currentPracticeInstruction, practiceDecodeFlow, continueLabel, restartLabel);
             return;
         }
 
-        EnsureLearningView();
-        m_LearningView.Refresh(lessonFlow, step, availableInstructions, selectionMode);
-        if (m_PracticeRoot != null)
-            m_PracticeRoot.SetActive(false);
-
-        SetButtonState(
-            m_ActionButton,
-            m_ActionLabel,
-            step.requiredInteraction == InstructionStepInteractionType.Completion ? restartLabel : continueLabel,
-            ShouldShowContinue(selectionMode, step, lessonFlow));
-
-        RefreshPanelLayout(m_ActionButton);
+        RefreshLearningDecode(lessonFlow, step, availableInstructions, selectionMode, continueLabel, restartLabel);
     }
 
-    /// <summary>
-    /// Applies decode feedback styling and keeps the hint panel layout in sync.
-    /// </summary>
     public void SetFeedback(string message, bool isFailure, IReadOnlyList<InstructionDefinition> availableInstructions)
     {
-        SetFeedbackField(m_Feedback, message, isFailure);
+        SetFeedbackField(m_SharedInteraction.Feedback, message, isFailure);
 
         if (!m_IsShowingPracticeDecode)
             RefreshHintText(availableInstructions);
 
-        RefreshPanelLayout(m_ActionButton);
+        RefreshPanelLayout(m_SharedInteraction.ActionButton);
     }
 
-    /// <summary>
-    /// Refreshes the currently selected hint text.
-    /// </summary>
     public void RefreshHintText(IReadOnlyList<InstructionDefinition> availableInstructions)
     {
         EnsureLearningView();
         m_LearningView.RefreshHintText(availableInstructions);
-        RefreshPanelLayout(m_ActionButton);
+        RefreshPanelLayout(m_SharedInteraction.ActionButton);
     }
 
-    /// <summary>
-    /// Returns the learner's currently selected opcode bits.
-    /// </summary>
     public string GetSelectedOpcode()
     {
         EnsureLearningView();
         return m_LearningView.GetSelectedOpcode();
     }
 
-    /// <summary>
-    /// Returns the learner's currently selected funct bits.
-    /// </summary>
     public string GetSelectedFunct()
     {
         EnsureLearningView();
         return m_LearningView.GetSelectedFunct();
     }
 
-    public string GetSelectedPracticeOpcode()
+    public PracticeDecodeInputState GetPracticeInputState()
     {
         EnsurePracticeView();
-        return m_PracticeView != null ? m_PracticeView.GetSelectedOpcode() : string.Empty;
+        return m_PracticeView.CaptureInputState();
     }
 
-    public string GetSelectedPracticeRs()
-    {
-        EnsurePracticeView();
-        return m_PracticeView != null ? m_PracticeView.GetSelectedRs() : string.Empty;
-    }
-
-    public string GetSelectedPracticeRt()
-    {
-        EnsurePracticeView();
-        return m_PracticeView != null ? m_PracticeView.GetSelectedRt() : string.Empty;
-    }
-
-    public bool GetPracticeImmediateToggleValue()
-    {
-        EnsurePracticeView();
-        return m_PracticeView != null && m_PracticeView.GetImmediateToggleValue();
-    }
-
-    public string GetSelectedPracticeImmediate()
-    {
-        EnsurePracticeView();
-        return m_PracticeView != null ? m_PracticeView.GetSelectedImmediate() : string.Empty;
-    }
-
-    public bool GetPracticeFunctToggleValue()
-    {
-        EnsurePracticeView();
-        return m_PracticeView != null && m_PracticeView.GetFunctToggleValue();
-    }
-
-    public string GetSelectedPracticeFunct()
-    {
-        EnsurePracticeView();
-        return m_PracticeView != null ? m_PracticeView.GetSelectedFunct() : string.Empty;
-    }
-
-    /// <summary>
-    /// Updates the hint text shown by the authored Practice decode hint area.
-    /// </summary>
     public void SetPracticeHintText(string hintText)
     {
         EnsurePracticeView();
-        m_PracticeView?.SetHintText(hintText);
-        RefreshPanelLayout(m_ActionButton);
+        m_PracticeView.SetHintText(hintText);
+        RefreshPanelLayout(m_SharedInteraction.ActionButton);
+    }
+
+    void RefreshPracticeDecode(
+        PracticeInstructionDefinition currentPracticeInstruction,
+        PracticeDecodeFlow practiceDecodeFlow,
+        string continueLabel,
+        string restartLabel)
+    {
+        EnsureLearningView();
+        EnsurePracticeView();
+
+        m_LearningView.HideAll();
+        ApplyPracticeLessonText(practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed);
+
+        var isRefreshing = false;
+        var opcodeConfirmed = practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed;
+        var isFailed = practiceDecodeFlow != null && practiceDecodeFlow.IsFailed;
+
+        m_PracticeView.Refresh(currentPracticeInstruction, opcodeConfirmed, isFailed, ref isRefreshing);
+        m_PracticeView.SetStatusText(
+            practiceDecodeFlow != null
+                ? practiceDecodeFlow.GetDecodeStatusText(currentPracticeInstruction)
+                : string.Empty);
+
+        SetButtonState(
+            m_SharedInteraction.ActionButton,
+            m_SharedInteraction.ActionLabel,
+            isFailed ? restartLabel : continueLabel,
+            true);
+        RefreshPanelLayout(m_SharedInteraction.ActionButton);
+    }
+
+    void RefreshLearningDecode(
+        CpuLessonFlow lessonFlow,
+        InstructionFlowStep step,
+        IReadOnlyList<InstructionDefinition> availableInstructions,
+        DecodeSelectionMode selectionMode,
+        string continueLabel,
+        string restartLabel)
+    {
+        EnsureLearningView();
+        m_LearningView.Refresh(lessonFlow, step, availableInstructions, selectionMode);
+        ApplyPracticeLessonText(false);
+
+        if (m_PracticeInteraction.Root != null)
+            m_PracticeInteraction.Root.SetActive(false);
+
+        SetButtonState(
+            m_SharedInteraction.ActionButton,
+            m_SharedInteraction.ActionLabel,
+            step.requiredInteraction == InstructionStepInteractionType.Completion ? restartLabel : continueLabel,
+            ShouldShowContinue(selectionMode, step, lessonFlow));
+        RefreshPanelLayout(m_SharedInteraction.ActionButton);
     }
 
     void EnsureLearningView()
     {
         m_LearningView ??= new LearnDecodeView(
-            m_OpcodeLessonText,
-            m_RegisterLessonText,
-            m_FunctLessonText,
-            m_OpcodeGroupRoot,
-            m_FunctGroupRoot,
-            m_RegisterBodyText,
-            m_OpcodeSelectionText,
-            m_RegisterSelectionText,
-            m_FunctSelectionText,
-            m_OpcodeDropdown,
-            m_FunctDropdown,
-            m_HintDropdown,
-            m_HintText);
+            m_LessonPanel.OpcodeText,
+            m_LessonPanel.RegisterText,
+            m_LessonPanel.FunctText,
+            m_LearnInteraction.OpcodeGroupRoot,
+            m_LearnInteraction.FunctGroupRoot,
+            m_SharedInteraction.RegisterBodyText,
+            m_LearnInteraction.OpcodeSelectionText,
+            m_SharedInteraction.RegisterSelectionText,
+            m_LearnInteraction.FunctSelectionText,
+            m_LearnInteraction.OpcodeDropdown,
+            m_LearnInteraction.FunctDropdown,
+            m_HintPanel.InfoDropdown,
+            m_HintPanel.InfoText);
     }
 
     void EnsurePracticeView()
     {
         m_PracticeView ??= new PracticeDecodeView(
-            m_PracticeRoot,
-            m_PracticeBinaryText,
-            m_PracticeStatusText,
-            m_PracticeOpcodeGroupRoot,
-            m_PracticeOpcodeDropdown,
-            m_PracticeRsGroupRoot,
-            m_PracticeRsDropdown,
-            m_PracticeRtGroupRoot,
-            m_PracticeRtDropdown,
-            m_PracticeImmediateGroupRoot,
-            m_PracticeImmediateToggle,
-            m_PracticeImmediateDropdown,
-            m_PracticeFunctGroupRoot,
-            m_PracticeFunctToggle,
-            m_PracticeFunctDropdown,
-            m_PracticeHintText);
+            m_PracticeInteraction.Root,
+            m_PracticeInteraction.BinaryText,
+            m_PracticeInteraction.StatusText,
+            m_PracticeInteraction.OpcodeGroupRoot,
+            m_PracticeInteraction.OpcodeDropdown,
+            m_PracticeInteraction.RsGroupRoot,
+            m_PracticeInteraction.RsDropdown,
+            m_PracticeInteraction.RtGroupRoot,
+            m_PracticeInteraction.RtDropdown,
+            m_PracticeInteraction.RdGroupRoot,
+            m_PracticeInteraction.RdToggle,
+            m_PracticeInteraction.RdDropdown,
+            m_PracticeInteraction.ImmediateGroupRoot,
+            m_PracticeInteraction.ImmediateToggle,
+            m_PracticeInteraction.ImmediateDropdown,
+            m_PracticeInteraction.FunctGroupRoot,
+            m_PracticeInteraction.FunctToggle,
+            m_PracticeInteraction.FunctDropdown,
+            m_HintPanel.HintText);
     }
 
-    /// <summary>
-    /// Returns whether the current decode state should expose the continue button.
-    /// </summary>
+    void ApplyHintPanelMode(bool isPracticeMode)
+    {
+        SetObjectActive(m_HintPanel.InfoRoot, !isPracticeMode);
+        SetTextFieldActive(m_HintPanel.InfoText, !isPracticeMode);
+
+        if (m_HintPanel.HintButton != null)
+            m_HintPanel.HintButton.gameObject.SetActive(isPracticeMode);
+
+        SetTextFieldActive(m_HintPanel.HintText, isPracticeMode && !string.IsNullOrWhiteSpace(m_HintPanel.HintText.text));
+    }
+
+    void ApplyPracticeLessonText(bool showDecodingLesson)
+    {
+        SetTextFieldActive(m_LessonPanel.OpcodeText, !showDecodingLesson);
+        SetTextFieldActive(m_LessonPanel.PracticeDecodingText, showDecodingLesson);
+        SetTextFieldActive(m_LessonPanel.FunctText, false);
+        SetTextFieldActive(m_LessonPanel.RegisterText, false);
+    }
+
+    static bool IsPracticeDecodeStep(CpuLessonFlow lessonFlow, InstructionFlowStep step)
+    {
+        return lessonFlow.CurrentMode == LessonMode.Practice &&
+               step.highlightedNode == DatapathNodeId.InstructionMemory &&
+               step.requiredInteraction != InstructionStepInteractionType.RegisterSelection;
+    }
+
     static bool ShouldShowContinue(DecodeSelectionMode selectionMode, InstructionFlowStep step, CpuLessonFlow lessonFlow)
     {
         var isSelectionStep = selectionMode == DecodeSelectionMode.Opcode || selectionMode == DecodeSelectionMode.Funct;

@@ -34,6 +34,13 @@ public sealed class LessonGuideController : MonoBehaviour
     [SerializeField]
     DecodePanelController m_DecodePanel;
 
+    [Header("Practice Decode")]
+    [SerializeField]
+    int m_PracticeDecodeChances = 4;
+
+    [SerializeField]
+    int m_PracticeDecodeHints = 3;
+
     [Header("Execution Phase")]
     [SerializeField]
     GameObject m_ExecutePanelRoot;
@@ -73,33 +80,18 @@ public sealed class LessonGuideController : MonoBehaviour
     bool m_IsRefreshingDecodeDropdowns;
     LessonCuePhase m_LastCuePhase = LessonCuePhase.None;
 
-    /// <summary>
-    /// Prepares authored dropdown data and UI event hooks before the scene starts.
-    /// </summary>
     void Awake()
     {
-        EnsureView();
-        RefreshInstructionLibrary();
-        SyncLessonCueState();
-        RefreshView();
+        InitializeGuideState();
     }
 
-    /// <summary>
-    /// Subscribes runtime events every time the guide root becomes active.
-    /// </summary>
     void OnEnable()
     {
-        EnsureView();
-        RefreshInstructionLibrary();
+        InitializeGuideState();
         SubscribePhaseEvents();
         SubscribeLessonFlowEvents();
-        SyncLessonCueState();
-        RefreshView();
     }
 
-    /// <summary>
-    /// Unsubscribes runtime events to avoid duplicate handlers after re-enable.
-    /// </summary>
     void OnDisable()
     {
         UnsubscribePhaseEvents();
@@ -115,6 +107,7 @@ public sealed class LessonGuideController : MonoBehaviour
         if (m_LessonFlow == null)
             return;
 
+        ConfigurePracticeDecodeFlow();
         m_IntroPanel?.PopulateModeDropdown(m_LessonFlow.CurrentMode, ref m_IsRefreshingModeDropdown);
         m_SelectionState.Refresh(m_LessonFlow);
 
@@ -263,7 +256,7 @@ public sealed class LessonGuideController : MonoBehaviour
             m_LessonFlow.CurrentStep != null &&
             m_LessonFlow.CurrentStep.highlightedNode == DatapathNodeId.InstructionMemory)
         {
-            m_PracticeDecodeFlow.HandleContinue(m_LessonFlow, m_DecodePanel, HandleFeedbackChanged);
+            m_PracticeDecodeFlow.HandleContinue(m_LessonFlow, m_DecodePanel, HandleFeedbackChanged, HandlePracticeDecodeFailed);
             RefreshView();
             return;
         }
@@ -421,11 +414,34 @@ public sealed class LessonGuideController : MonoBehaviour
     /// </summary>
     void HandleFeedbackChanged(string message, bool isFailure)
     {
-        if (isFailure && !string.IsNullOrWhiteSpace(message))
+        if (isFailure &&
+            !string.IsNullOrWhiteSpace(message) &&
+            !(m_LessonFlow != null && m_LessonFlow.CurrentMode == LessonMode.Practice && m_PracticeDecodeFlow.IsFailed))
+        {
             PlayIncorrectCueForCurrentOwner();
+        }
 
         EnsureView();
         m_View?.RouteFeedback(m_LessonFlow, message, isFailure, m_SelectionState.LearningInstructions);
+    }
+
+    void ConfigurePracticeDecodeFlow()
+    {
+        m_PracticeDecodeFlow.Configure(m_PracticeDecodeChances, m_PracticeDecodeHints);
+    }
+
+    void InitializeGuideState()
+    {
+        ConfigurePracticeDecodeFlow();
+        EnsureView();
+        RefreshInstructionLibrary();
+        SyncLessonCueState();
+        RefreshView();
+    }
+
+    void HandlePracticeDecodeFailed()
+    {
+        m_DecodePanel?.PlayFailureCue();
     }
 
     /// <summary>

@@ -101,6 +101,40 @@ public sealed class PracticeInstructionDefinition : ScriptableObject
     }
 
     /// <summary>
+    /// Returns the raw binary bits authored for one logical register field.
+    /// </summary>
+    public string GetExpectedRegisterBits(InstructionRegisterRole role)
+    {
+        return role switch
+        {
+            InstructionRegisterRole.Rs => NormalizeBits(expectedRsBits),
+            InstructionRegisterRole.Rt => NormalizeBits(expectedRtBits),
+            InstructionRegisterRole.Rd => NormalizeBits(expectedRdBits),
+            _ => string.Empty,
+        };
+    }
+
+    /// <summary>
+    /// Returns the authored register number for one logical register field.
+    /// Invalid or missing data falls back to -1.
+    /// </summary>
+    public int GetExpectedRegisterNumber(InstructionRegisterRole role)
+    {
+        var registerBits = GetExpectedRegisterBits(role);
+        if (string.IsNullOrWhiteSpace(registerBits))
+            return -1;
+
+        try
+        {
+            return Convert.ToInt32(registerBits, 2);
+        }
+        catch
+        {
+            return -1;
+        }
+    }
+
+    /// <summary>
     /// Returns a short learner-facing type label after opcode confirmation.
     /// </summary>
     public string GetInstructionTypeLabel()
@@ -112,6 +146,18 @@ public sealed class PracticeInstructionDefinition : ScriptableObject
             InstructionFormat.JType => "J-Type",
             _ => "Instruction",
         };
+    }
+
+    /// <summary>
+    /// Returns the decoded instruction label that should be shown once the
+    /// learner has identified the opcode.
+    /// </summary>
+    public string GetDecodedInstructionLabel()
+    {
+        if (learningModeInstruction != null && !string.IsNullOrWhiteSpace(learningModeInstruction.displayName))
+            return learningModeInstruction.displayName;
+
+        return expectedMnemonic.ToString().ToLowerInvariant();
     }
 
     static string NormalizeBits(string rawBits)

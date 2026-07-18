@@ -58,7 +58,14 @@ public static class AluPresentation
             controller.FunctDropdown.interactable = showFunctDropdown && !controller.HasProducedResult;
 
             if (showFunctDropdown && controller.HasExplicitFunctSelection)
+            {
                 SyncDropdownToCurrentOperation(controller.FunctDropdown, controller.SelectedFunctOperation);
+            }
+            else if (showFunctDropdown)
+            {
+                controller.FunctDropdown.SetValueWithoutNotify(0);
+                controller.FunctDropdown.RefreshShownValue();
+            }
         }
 
         if (controller.ExecuteButtonLabel != null)
