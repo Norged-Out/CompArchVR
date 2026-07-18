@@ -34,6 +34,9 @@ public sealed class AluExecutionService
         controller.InputA?.ResetScanner();
         controller.InputB?.ResetScanner();
         RefreshExpectedInputRoles(controller, false);
+
+        if (controller.IsPracticeMode)
+            controller.ShowPracticeBudgetSummary();
     }
 
     /// <summary>

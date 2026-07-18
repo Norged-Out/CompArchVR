@@ -1631,20 +1631,31 @@ MonoBehaviour:
     m_IncorrectClip: {fileID: 8300000, guid: 88fe676e2603e464897daddb0d5a62f4, type: 3}
     m_LessonCompletedClip: {fileID: 8300000, guid: f84e071ebd67c6e49b9fb6e25cf6f5f7, type: 3}
     m_FailureClip: {fileID: 0}
+  m_LessonPanel:
+    m_RuntimeText: {fileID: 0}
+  m_HintPanel:
+    m_InfoRoot: {fileID: 0}
+    m_InfoDropdown: {fileID: 0}
+    m_HintButton: {fileID: 0}
+    m_HintText: {fileID: 0}
+  m_LearningHints:
+    m_RegDstText: {fileID: 0}
+    m_RegWriteText: {fileID: 0}
+    m_MemToRegText: {fileID: 0}
   m_WbUiRoot: {fileID: 0}
-  m_LessonRuntimeText: {fileID: 0}
-  m_RegDstStatusText: {fileID: 0}
-  m_RegWriteStatusText: {fileID: 0}
-  m_MemToRegStatusText: {fileID: 0}
-  m_RegisterStatusText: {fileID: 0}
-  m_DataStatusText: {fileID: 0}
-  m_FeedbackText: {fileID: 0}
-  m_ActionButton: {fileID: 0}
-  m_ActionButtonLabel: {fileID: 0}
-  m_HintDropdown: {fileID: 0}
-  m_HintRegDstText: {fileID: 0}
-  m_HintRegWriteText: {fileID: 0}
-  m_HintMemToRegText: {fileID: 0}
+  m_InteractionPanel:
+    m_RegDstStatusText: {fileID: 0}
+    m_RegWriteStatusText: {fileID: 0}
+    m_MemToRegStatusText: {fileID: 0}
+    m_RegisterStatusText: {fileID: 0}
+    m_DataStatusText: {fileID: 0}
+  m_SharedInteraction:
+    m_FeedbackText: {fileID: 0}
+    m_ActionButton: {fileID: 0}
+    m_ActionLabel: {fileID: 0}
+  m_PracticeValidationAttempts: 2
+  m_PracticeScannerAttempts: 2
+  m_PracticeHints: 1
   m_ParticleLeadTimeSeconds: 0.75
   m_ExecuteButtonText: Execute Write Back
   m_ContinueButtonText: Continue

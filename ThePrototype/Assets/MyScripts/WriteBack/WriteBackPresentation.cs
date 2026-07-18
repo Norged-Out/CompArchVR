@@ -18,7 +18,9 @@ public static class WriteBackPresentation
             return;
 
         if (controller.LessonRuntimeText != null)
-            controller.LessonRuntimeText.text = BuildLessonRuntimeText(controller.CurrentInstruction);
+            controller.LessonRuntimeText.text = controller.IsPracticeMode
+                ? "Practice Mode\nComplete the Write Back phase using the instruction you decoded earlier."
+                : BuildLessonRuntimeText(controller.CurrentInstruction);
 
         if (controller.RegWriteStatusText != null)
             controller.RegWriteStatusText.text = $"RegWrite: {controller.RegWriteValue}";
@@ -36,20 +38,22 @@ public static class WriteBackPresentation
                 controller.RegisterStatusText.text = BuildRegisterStatusText(
                     controller.LastTargetRegister,
                     controller.RegisterBank != null ? controller.RegisterBank.GetRegisterValue(controller.LastTargetRegister) : 0,
-                    false);
+                    false,
+                    controller.IsPracticeMode);
             }
             else if (controller.AcceptedRegister == null)
             {
                 var expectedRegisterId = controller.GetExpectedRegisterIdFromControlState();
                 var currentValue = controller.RegisterBank != null ? controller.RegisterBank.GetRegisterValue(expectedRegisterId) : 0;
-                controller.RegisterStatusText.text = BuildRegisterStatusText(expectedRegisterId, currentValue, true);
+                controller.RegisterStatusText.text = BuildRegisterStatusText(expectedRegisterId, currentValue, true, controller.IsPracticeMode);
             }
             else
             {
                 controller.RegisterStatusText.text = BuildRegisterStatusText(
                     controller.AcceptedRegister.RegisterId,
                     controller.AcceptedRegister.RegisterValue,
-                    false);
+                    false,
+                    controller.IsPracticeMode);
             }
         }
 
@@ -58,29 +62,31 @@ public static class WriteBackPresentation
             if (controller.HasAppliedWriteBack)
             {
                 controller.DataStatusText.text =
-                    $"Write Data: {controller.LastTransferredValue}";
+                    controller.IsPracticeMode ? $"Packet Value: {controller.LastTransferredValue}" : $"Write Data: {controller.LastTransferredValue}";
             }
             else if (controller.AcceptedPacket == null)
             {
                 controller.DataStatusText.text =
-                    "Write Data: waiting";
+                    controller.IsPracticeMode ? "Packet Value: waiting" : "Write Data: waiting";
             }
             else
             {
                 controller.DataStatusText.text =
-                    $"Write Data: {controller.AcceptedPacket.Value}";
+                    controller.IsPracticeMode ? $"Packet Value: {controller.AcceptedPacket.Value}" : $"Write Data: {controller.AcceptedPacket.Value}";
             }
         }
 
         if (controller.ActionButtonLabel != null)
-            controller.ActionButtonLabel.text = controller.IsAwaitingContinue
+            controller.ActionButtonLabel.text = controller.IsPracticeAwaitingReset
+                ? "Restart"
+                : controller.IsAwaitingContinue
                 ? controller.ContinueButtonText
                 : controller.ExecuteButtonText;
 
         if (controller.ActionButton != null)
             controller.ActionButton.interactable = controller.IsPhaseActive && !controller.IsTransferRunning;
 
-        RefreshHintBlocks(controller.HintDropdown, controller.HintRegDstText, controller.HintRegWriteText, controller.HintMemToRegText);
+        RefreshHintBlocks(controller);
     }
 
     /// <summary>
@@ -123,20 +129,42 @@ public static class WriteBackPresentation
         return $"Instruction: {instructionName}\nAssembly: {assembly}";
     }
 
-    static void RefreshHintBlocks(TMP_Dropdown hintDropdown, TMP_Text regDstText, TMP_Text regWriteText, TMP_Text memToRegText)
+    static void RefreshHintBlocks(WriteBackController controller)
     {
-        // Only one authored hint block is shown at a time so the hint panel
-        // behaves like a lightweight reference card rather than a wall of text.
-        var selectedHint = hintDropdown != null ? hintDropdown.value : 0;
-        SetHintBlockActive(regDstText, selectedHint == 1);
-        SetHintBlockActive(regWriteText, selectedHint == 2);
-        SetHintBlockActive(memToRegText, selectedHint == 3);
+        var isPracticeMode = controller.IsPracticeMode;
+        SetObjectActive(controller.HintPanel.InfoRoot, !isPracticeMode);
+
+        if (controller.PracticeHintButton != null)
+            controller.PracticeHintButton.gameObject.SetActive(isPracticeMode);
+
+        SetHintBlockActive(
+            controller.PracticeHintText,
+            isPracticeMode && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
+
+        if (isPracticeMode)
+        {
+            SetHintBlockActive(controller.HintRegDstText, false);
+            SetHintBlockActive(controller.HintRegWriteText, false);
+            SetHintBlockActive(controller.HintMemToRegText, false);
+            return;
+        }
+
+        var selectedHint = controller.HintDropdown != null ? controller.HintDropdown.value : 0;
+        SetHintBlockActive(controller.HintRegDstText, selectedHint == 1);
+        SetHintBlockActive(controller.HintRegWriteText, selectedHint == 2);
+        SetHintBlockActive(controller.HintMemToRegText, selectedHint == 3);
     }
 
-    static string BuildRegisterStatusText(string registerId, int currentValue, bool isWaiting)
+    static string BuildRegisterStatusText(string registerId, int currentValue, bool isWaiting, bool isPracticeMode)
     {
         if (string.IsNullOrWhiteSpace(registerId))
-            return isWaiting ? "Register Target: waiting" : "Register Target: none";
+            return isPracticeMode ? "Target Register: waiting" : isWaiting ? "Register Target: waiting" : "Register Target: none";
+
+        if (isPracticeMode)
+        {
+            var registerNumber = RegisterNumberUtility.FormatRegisterNumber(registerId);
+            return $"Target Register: {registerNumber}\nCurrent Value: {currentValue}";
+        }
 
         var prefix = isWaiting ? $"Register Target: waiting for {registerId}" : $"Register Target: {registerId}";
         return $"{prefix}\nCurrent Value: {currentValue}";
@@ -146,5 +174,11 @@ public static class WriteBackPresentation
     {
         if (textBlock != null)
             textBlock.gameObject.SetActive(isActive);
+    }
+
+    static void SetObjectActive(GameObject targetObject, bool isActive)
+    {
+        if (targetObject != null)
+            targetObject.SetActive(isActive);
     }
 }

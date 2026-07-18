@@ -28,91 +28,36 @@ public class PcUpdateController : MonoBehaviour
     [SerializeField]
     LessonUiAudioCueSet m_LessonAudioCues = new();
 
-    [Header("PC Update UI")]
+    [Header("Lesson Panel")]
+    [SerializeField]
+    PcUpdateLessonPanelRefs m_LessonPanel;
+
+    [Header("Hint Panel")]
+    [SerializeField]
+    PhaseHintPanelRefs m_HintPanel;
+
+    [SerializeField]
+    PcUpdateHintInfoRefs m_LearningHints;
+
+    [Header("Interaction Panel")]
     [SerializeField]
     GameObject m_PcUpdateUiRoot;
 
     [SerializeField]
-    TMP_Text m_LessonRuntimeText;
+    PcUpdateInteractionPanelRefs m_InteractionPanel;
 
     [SerializeField]
-    TMP_Text m_LessonBranchText;
+    PhaseSharedInteractionRefs m_SharedInteraction;
+
+    [Header("Practice")]
+    [SerializeField]
+    int m_PracticeValidationAttempts = 3;
 
     [SerializeField]
-    TMP_Text m_LessonShiftText;
+    int m_PracticeScannerAttempts = 2;
 
     [SerializeField]
-    TMP_Text m_LessonResultText;
-
-    [SerializeField]
-    TMP_Text m_LessonEndText;
-
-    [SerializeField]
-    GameObject m_PcUpdateGroupRoot;
-
-    [SerializeField]
-    GameObject m_SignalsGroupRoot;
-
-    [SerializeField]
-    Slider m_PcIncrementSlider;
-
-    [SerializeField]
-    TMP_Text m_BranchStatusText;
-
-    [SerializeField]
-    TMP_Text m_JumpStatusText;
-
-    [SerializeField]
-    GameObject m_ImmediateGroupRoot;
-
-    [SerializeField]
-    TMP_Text m_ImmediateStatusText;
-
-    [SerializeField]
-    Button m_ShiftButton;
-
-    [SerializeField]
-    GameObject m_BranchConditionGroupRoot;
-
-    [SerializeField]
-    TMP_Text m_ZeroStatusText;
-
-    [SerializeField]
-    TMP_Dropdown m_BranchConditionDropdown;
-
-    [SerializeField]
-    TMP_Text m_PCSrcStatusText;
-
-    [SerializeField]
-    TMP_Text m_FeedbackText;
-
-    [SerializeField]
-    Button m_ActionButton;
-
-    [SerializeField]
-    TMP_Text m_ActionButtonLabel;
-
-    [Header("Hint UI")]
-    [SerializeField]
-    TMP_Dropdown m_HintDropdown;
-
-    [SerializeField]
-    TMP_Text m_HintPcText;
-
-    [SerializeField]
-    TMP_Text m_HintPcSrcText;
-
-    [SerializeField]
-    TMP_Text m_HintBranchText;
-
-    [SerializeField]
-    TMP_Text m_HintJumpText;
-
-    [SerializeField]
-    TMP_Text m_HintShiftLeftTwoText;
-
-    [SerializeField]
-    TMP_Text m_HintZeroText;
+    int m_PracticeHints = 2;
 
     [Header("Labels")]
     [SerializeField]
@@ -134,9 +79,12 @@ public class PcUpdateController : MonoBehaviour
     string m_JumpValue = "0";
     DataPacketToken m_ShiftPreparedImmediatePacket;
     PcBranchService m_BranchService;
+    readonly PcUpdatePracticeFlow m_PracticeFlow = new();
+    LessonMode m_CurrentMode = LessonMode.Learning;
 
     public event System.Action ContinueRequested;
     public event System.Action PcUpdateConfirmed;
+    public event System.Action PracticeResetRequested;
 
     /// <summary>
     /// Builds the authored services and wires every authored UI / scanner event
@@ -145,8 +93,9 @@ public class PcUpdateController : MonoBehaviour
     void Awake()
     {
         m_BranchService = new PcBranchService();
-        PcUpdatePresentation.PopulateBranchConditionDropdown(m_BranchConditionDropdown);
-        PcUpdatePresentation.PopulateHintDropdown(m_HintDropdown);
+        ConfigurePracticeFlow();
+        PcUpdatePresentation.PopulateBranchConditionDropdown(BranchConditionDropdown);
+        PcUpdatePresentation.PopulateHintDropdown(HintDropdown);
         HookPhysicalBindings(true);
         HookScannerEvents(true);
         RefreshPresentation();
@@ -159,8 +108,9 @@ public class PcUpdateController : MonoBehaviour
     void OnEnable()
     {
         m_BranchService ??= new PcBranchService();
-        PcUpdatePresentation.PopulateBranchConditionDropdown(m_BranchConditionDropdown);
-        PcUpdatePresentation.PopulateHintDropdown(m_HintDropdown);
+        ConfigurePracticeFlow();
+        PcUpdatePresentation.PopulateBranchConditionDropdown(BranchConditionDropdown);
+        PcUpdatePresentation.PopulateHintDropdown(HintDropdown);
         HookPhysicalBindings(true);
         HookScannerEvents(true);
         RefreshPresentation();
@@ -180,16 +130,21 @@ public class PcUpdateController : MonoBehaviour
     /// Called by the lesson flow whenever the PC update phase becomes active or
     /// inactive for the current instruction.
     /// </summary>
-    public void SetPhaseState(bool isActive, InstructionDefinition instruction)
+    public void SetPhaseState(bool isActive, LessonMode lessonMode, InstructionDefinition instruction)
     {
         var instructionChanged = instruction != null && instruction != m_CurrentInstruction;
+        var modeChanged = lessonMode != m_CurrentMode;
         var isEnteringPhase = isActive && !m_IsPhaseActive;
 
         m_IsPhaseActive = isActive;
+        m_CurrentMode = lessonMode;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
 
-        if (isEnteringPhase || instructionChanged)
+        if (isEnteringPhase || instructionChanged || modeChanged)
+        {
             PrepareForPcUpdate();
+            m_PracticeFlow.Reset();
+        }
 
         if (m_PcUpdateUiRoot != null)
             m_PcUpdateUiRoot.SetActive(isActive);
@@ -212,15 +167,17 @@ public class PcUpdateController : MonoBehaviour
         m_BranchValue = "0";
         m_JumpValue = "0";
         m_ShiftPreparedImmediatePacket = null;
+        m_CurrentMode = LessonMode.Learning;
+        m_PracticeFlow.Reset();
 
-        if (m_PcIncrementSlider != null)
-            m_PcIncrementSlider.SetValueWithoutNotify(0f);
+        if (PcIncrementSlider != null)
+            PcIncrementSlider.SetValueWithoutNotify(0f);
 
-        if (m_BranchConditionDropdown != null)
-            m_BranchConditionDropdown.SetValueWithoutNotify(0);
+        if (BranchConditionDropdown != null)
+            BranchConditionDropdown.SetValueWithoutNotify(0);
 
-        if (m_HintDropdown != null)
-            m_HintDropdown.SetValueWithoutNotify(0);
+        if (HintDropdown != null)
+            HintDropdown.SetValueWithoutNotify(0);
 
         m_ImmediateScanner?.ResetScanner();
         m_ZeroScanner?.ResetScanner();
@@ -240,6 +197,12 @@ public class PcUpdateController : MonoBehaviour
         if (!m_IsPhaseActive)
             return;
 
+        if (m_PracticeFlow.IsAwaitingReset)
+        {
+            PracticeResetRequested?.Invoke();
+            return;
+        }
+
         if (m_IsAwaitingContinue)
         {
             m_IsAwaitingContinue = false;
@@ -258,7 +221,19 @@ public class PcUpdateController : MonoBehaviour
                 GetSelectedBranchCondition(),
                 out var validationMessage))
         {
-            SetFeedback(validationMessage, true);
+            if (IsPracticeMode)
+            {
+                var didFail = m_PracticeFlow.HandleValidationFailure(validationMessage, out var practiceFeedback);
+                if (didFail)
+                    EnterPracticeFailureState(practiceFeedback);
+                else
+                    SetFeedback(practiceFeedback, true);
+            }
+            else
+            {
+                SetFeedback(validationMessage, true);
+            }
+
             RefreshPresentation();
             return;
         }
@@ -282,20 +257,24 @@ public class PcUpdateController : MonoBehaviour
         m_JumpValue = "0";
         m_ShiftPreparedImmediatePacket = null;
 
-        if (m_PcIncrementSlider != null)
+        if (PcIncrementSlider != null)
         {
-            m_PcIncrementSlider.minValue = 0f;
-            m_PcIncrementSlider.maxValue = 4f;
-            m_PcIncrementSlider.wholeNumbers = true;
-            m_PcIncrementSlider.SetValueWithoutNotify(0f);
+            PcIncrementSlider.minValue = 0f;
+            PcIncrementSlider.maxValue = 4f;
+            PcIncrementSlider.wholeNumbers = true;
+            PcIncrementSlider.SetValueWithoutNotify(0f);
         }
 
-        if (m_BranchConditionDropdown != null)
-            m_BranchConditionDropdown.SetValueWithoutNotify(0);
+        if (BranchConditionDropdown != null)
+            BranchConditionDropdown.SetValueWithoutNotify(0);
 
         m_ImmediateScanner?.ResetScanner();
         m_ZeroScanner?.ResetScanner();
-        SetFeedback("Move the PC update control from 0 to 4, then confirm the next PC path.", false);
+        SetFeedback(
+            IsPracticeMode
+                ? m_PracticeFlow.BuildBudgetSummary("Build the next PC path, then validate.")
+                : "Move the PC update control from 0 to 4, then confirm the next PC path.",
+            false);
         RefreshPresentation();
     }
 
@@ -344,8 +323,8 @@ public class PcUpdateController : MonoBehaviour
             m_ShiftPreparedImmediatePacket = null;
             m_ImmediateScanner?.ResetScanner();
             m_ZeroScanner?.ResetScanner();
-            if (m_BranchConditionDropdown != null)
-                m_BranchConditionDropdown.SetValueWithoutNotify(0);
+            if (BranchConditionDropdown != null)
+                BranchConditionDropdown.SetValueWithoutNotify(0);
         }
 
         SetFeedback(string.Empty, false);
@@ -411,6 +390,18 @@ public class PcUpdateController : MonoBehaviour
     }
 
     /// <summary>
+    /// Reveals the next Practice-mode hint for Program Counter Update.
+    /// </summary>
+    public void HandlePracticeHintPressed()
+    {
+        if (!IsPracticeMode || PracticeHintText == null)
+            return;
+
+        PracticeHintText.text = m_PracticeFlow.BuildHint(this, m_BranchService);
+        RefreshPresentation();
+    }
+
+    /// <summary>
     /// Keeps only the XR-side branch and jump controls code-bound. Standard UI
     /// widgets now use Inspector event hookups instead.
     /// </summary>
@@ -434,8 +425,8 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     void HookScannerEvents(bool subscribe)
     {
-        HookScannerEvent(m_ImmediateScanner, HandleImmediateAccepted, subscribe);
-        HookScannerEvent(m_ZeroScanner, HandleZeroAccepted, subscribe);
+        HookScannerEvent(m_ImmediateScanner, HandleImmediateAccepted, HandleImmediateRejected, subscribe);
+        HookScannerEvent(m_ZeroScanner, HandleZeroAccepted, HandleZeroRejected, subscribe);
     }
 
     /// <summary>
@@ -444,14 +435,19 @@ public class PcUpdateController : MonoBehaviour
     void HookScannerEvent(
         PcUpdatePacketScanner scanner,
         System.Action<PcUpdatePacketScanner, DataPacketToken> handler,
+        System.Action<PcUpdatePacketScanner, DataPacketToken, PcUpdatePacketScanner.PacketIssue> rejectedHandler,
         bool subscribe)
     {
         if (scanner == null)
             return;
 
         scanner.PacketAccepted -= handler;
+        scanner.PacketRejected -= rejectedHandler;
         if (subscribe)
+        {
             scanner.PacketAccepted += handler;
+            scanner.PacketRejected += rejectedHandler;
+        }
     }
 
     /// <summary>
@@ -467,11 +463,11 @@ public class PcUpdateController : MonoBehaviour
     /// Updates the authored feedback text using shared success / failure
     /// colors.
     /// </summary>
-    void SetFeedback(string message, bool isFailure)
+    void SetFeedback(string message, bool isFailure, bool playIncorrectCue = true)
     {
-        PcUpdatePresentation.SetFeedback(m_FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
+        PcUpdatePresentation.SetFeedback(m_SharedInteraction.FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
 
-        if (isFailure && !string.IsNullOrWhiteSpace(message))
+        if (playIncorrectCue && isFailure && !string.IsNullOrWhiteSpace(message))
             PlayIncorrectCue();
     }
 
@@ -480,7 +476,7 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     public int GetPcIncrementValue()
     {
-        return m_PcIncrementSlider != null ? Mathf.RoundToInt(m_PcIncrementSlider.value) : 0;
+        return PcIncrementSlider != null ? Mathf.RoundToInt(PcIncrementSlider.value) : 0;
     }
 
     /// <summary>
@@ -489,42 +485,76 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     public BranchConditionKind GetSelectedBranchCondition()
     {
-        return m_BranchService != null && m_BranchConditionDropdown != null
-            ? m_BranchService.GetSelectedBranchCondition(m_BranchConditionDropdown.value)
+        return m_BranchService != null && BranchConditionDropdown != null
+            ? m_BranchService.GetSelectedBranchCondition(BranchConditionDropdown.value)
             : BranchConditionKind.None;
+    }
+
+    void HandleImmediateRejected(PcUpdatePacketScanner _, DataPacketToken packetToken, PcUpdatePacketScanner.PacketIssue issue)
+    {
+        if (!IsPracticeMode || !m_IsPhaseActive || m_IsAwaitingContinue || IsPracticeAwaitingReset)
+            return;
+
+        var didFail = m_PracticeFlow.HandleImmediateScannerFailure(packetToken, issue, out var feedbackText);
+        if (didFail)
+            EnterPracticeFailureState(feedbackText);
+        else
+            SetFeedback(feedbackText, true);
+        RefreshPresentation();
+    }
+
+    void HandleZeroRejected(PcUpdatePacketScanner _, DataPacketToken packetToken, PcUpdatePacketScanner.PacketIssue issue)
+    {
+        if (!IsPracticeMode || !m_IsPhaseActive || m_IsAwaitingContinue || IsPracticeAwaitingReset)
+            return;
+
+        var didFail = m_PracticeFlow.HandleZeroScannerFailure(packetToken, out var feedbackText);
+        if (didFail)
+            EnterPracticeFailureState(feedbackText);
+        else
+            SetFeedback(feedbackText, true);
+        RefreshPresentation();
     }
 
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
     public bool IsPhaseActive => m_IsPhaseActive;
+    public bool IsPracticeMode => m_CurrentMode == LessonMode.Practice;
+    public bool IsPracticeAwaitingReset => m_PracticeFlow.IsAwaitingReset;
     public bool IsAwaitingContinue => m_IsAwaitingContinue;
     public string BranchValue => m_BranchValue;
     public string JumpValue => m_JumpValue;
     public DataPacketToken ShiftPreparedImmediatePacket => m_ShiftPreparedImmediatePacket;
     public PcUpdatePacketScanner ImmediateScanner => m_ImmediateScanner;
     public PcUpdatePacketScanner ZeroScanner => m_ZeroScanner;
-    public GameObject PcUpdateGroupRoot => m_PcUpdateGroupRoot;
-    public GameObject SignalsGroupRoot => m_SignalsGroupRoot;
-    public GameObject ImmediateGroupRoot => m_ImmediateGroupRoot;
-    public GameObject BranchConditionGroupRoot => m_BranchConditionGroupRoot;
-    public TMP_Text LessonRuntimeText => m_LessonRuntimeText;
-    public TMP_Text LessonBranchText => m_LessonBranchText;
-    public TMP_Text LessonShiftText => m_LessonShiftText;
-    public TMP_Text LessonResultText => m_LessonResultText;
-    public TMP_Text LessonEndText => m_LessonEndText;
-    public TMP_Text BranchStatusText => m_BranchStatusText;
-    public TMP_Text JumpStatusText => m_JumpStatusText;
-    public TMP_Text ImmediateStatusText => m_ImmediateStatusText;
-    public TMP_Text ZeroStatusText => m_ZeroStatusText;
-    public TMP_Text PCSrcStatusText => m_PCSrcStatusText;
-    public Button ActionButton => m_ActionButton;
-    public TMP_Text ActionButtonLabel => m_ActionButtonLabel;
-    public TMP_Dropdown HintDropdown => m_HintDropdown;
-    public TMP_Text HintPcText => m_HintPcText;
-    public TMP_Text HintPcSrcText => m_HintPcSrcText;
-    public TMP_Text HintBranchText => m_HintBranchText;
-    public TMP_Text HintJumpText => m_HintJumpText;
-    public TMP_Text HintShiftLeftTwoText => m_HintShiftLeftTwoText;
-    public TMP_Text HintZeroText => m_HintZeroText;
+    public GameObject PcUpdateGroupRoot => m_InteractionPanel.PcUpdateGroupRoot;
+    public GameObject SignalsGroupRoot => m_InteractionPanel.SignalsGroupRoot;
+    public GameObject ImmediateGroupRoot => m_InteractionPanel.ImmediateGroupRoot;
+    public GameObject BranchConditionGroupRoot => m_InteractionPanel.BranchConditionGroupRoot;
+    public TMP_Text LessonRuntimeText => m_LessonPanel.RuntimeText;
+    public TMP_Text LessonBranchText => m_LessonPanel.BranchText;
+    public TMP_Text LessonShiftText => m_LessonPanel.ShiftText;
+    public TMP_Text LessonResultText => m_LessonPanel.ResultText;
+    public TMP_Text LessonEndText => m_LessonPanel.EndText;
+    public TMP_Text BranchStatusText => m_InteractionPanel.BranchStatusText;
+    public TMP_Text JumpStatusText => m_InteractionPanel.JumpStatusText;
+    public TMP_Text ImmediateStatusText => m_InteractionPanel.ImmediateStatusText;
+    public TMP_Text ZeroStatusText => m_InteractionPanel.ZeroStatusText;
+    public TMP_Text PCSrcStatusText => m_InteractionPanel.PCSrcStatusText;
+    public Button ActionButton => m_SharedInteraction.ActionButton;
+    public TMP_Text ActionButtonLabel => m_SharedInteraction.ActionLabel;
+    public TMP_Dropdown HintDropdown => m_HintPanel.InfoDropdown;
+    public TMP_Text HintPcText => m_LearningHints.PcText;
+    public TMP_Text HintPcSrcText => m_LearningHints.PcSrcText;
+    public TMP_Text HintBranchText => m_LearningHints.BranchText;
+    public TMP_Text HintJumpText => m_LearningHints.JumpText;
+    public TMP_Text HintShiftLeftTwoText => m_LearningHints.ShiftLeftTwoText;
+    public TMP_Text HintZeroText => m_LearningHints.ZeroText;
+    public Slider PcIncrementSlider => m_InteractionPanel.PcIncrementSlider;
+    public TMP_Dropdown BranchConditionDropdown => m_InteractionPanel.BranchConditionDropdown;
+    public Button ShiftButton => m_InteractionPanel.ShiftButton;
+    public Button PracticeHintButton => m_HintPanel.HintButton;
+    public TMP_Text PracticeHintText => m_HintPanel.HintText;
+    public PhaseHintPanelRefs HintPanel => m_HintPanel;
     public string ConfirmButtonText => m_ConfirmButtonText;
     public string ContinueButtonText => m_ContinueButtonText;
 
@@ -546,5 +576,41 @@ public class PcUpdateController : MonoBehaviour
     public void PlayLessonCompletedCue()
     {
         m_LessonAudioCues.PlayLessonCompletedCue();
+    }
+
+    public void PlayFailureCue()
+    {
+        m_LessonAudioCues.PlayFailureCue();
+    }
+
+    /// <summary>
+    /// Dev-mode helper that treats the current PC update as complete without
+    /// requiring the learner to configure the station.
+    /// </summary>
+    public void DevForceCompletePhase()
+    {
+        if (!m_IsPhaseActive)
+            return;
+
+        PcUpdateConfirmed?.Invoke();
+        ContinueRequested?.Invoke();
+    }
+
+    void ConfigurePracticeFlow()
+    {
+        m_PracticeFlow.Configure(m_PracticeValidationAttempts, m_PracticeScannerAttempts, m_PracticeHints);
+    }
+
+    /// <summary>
+    /// Matches the normal two-step phase ending flow, but for Practice failure.
+    /// The cue plays immediately and Restart confirms the reset.
+    /// </summary>
+    void EnterPracticeFailureState(string feedbackText)
+    {
+        m_IsAwaitingContinue = false;
+        m_ImmediateScanner?.SetActive(false);
+        m_ZeroScanner?.SetActive(false);
+        SetFeedback(m_PracticeFlow.BuildFailureResetText(feedbackText), true, false);
+        PlayFailureCue();
     }
 }

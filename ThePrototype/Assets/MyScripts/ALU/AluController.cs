@@ -41,48 +41,36 @@ public sealed class AluController : MonoBehaviour
     [SerializeField]
     Transform m_AluSrcButtonRoot;
 
-    [Header("ALU UI")]
+    [Header("Lesson Panel")]
+    [SerializeField]
+    AluLessonPanelRefs m_LessonPanel;
+
+    [Header("Hint Panel")]
+    [SerializeField]
+    PhaseHintPanelRefs m_HintPanel;
+
+    [SerializeField]
+    AluHintInfoRefs m_LearningHints;
+
+    [Header("Interaction Panel")]
     [SerializeField]
     GameObject m_AluUiRoot;
 
     [SerializeField]
-    TMP_Text m_LessonRuntimeText;
+    AluInteractionPanelRefs m_InteractionPanel;
 
     [SerializeField]
-    TMP_Text m_AluOpStatusText;
+    PhaseSharedInteractionRefs m_SharedInteraction;
+
+    [Header("Practice")]
+    [SerializeField]
+    int m_PracticeValidationAttempts = 3;
 
     [SerializeField]
-    TMP_Text m_AluSrcStatusText;
+    int m_PracticeScannerAttempts = 3;
 
     [SerializeField]
-    TMP_Text m_Input1StatusText;
-
-    [SerializeField]
-    TMP_Text m_Input2StatusText;
-
-    [SerializeField]
-    TMP_Text m_FeedbackText;
-
-    [SerializeField]
-    Button m_ExecuteButton;
-
-    [SerializeField]
-    TMP_Text m_ExecuteButtonLabel;
-
-    [SerializeField]
-    TMP_Dropdown m_FunctDropdown;
-
-    [SerializeField]
-    TMP_Dropdown m_HintDropdown;
-
-    [SerializeField]
-    TMP_Text m_HintAluOpText;
-
-    [SerializeField]
-    TMP_Text m_HintAluSrcText;
-
-    [SerializeField]
-    TMP_Text m_HintAluControlText;
+    int m_PracticeHints = 2;
 
     [Header("Timing")]
     [SerializeField]
@@ -105,6 +93,7 @@ public sealed class AluController : MonoBehaviour
     Coroutine m_ComputeRoutine;
     DataPacketToken m_SpawnedResultPacket;
     AluExecutionService m_ExecutionService;
+    readonly AluPracticeFlow m_PracticeFlow = new();
     bool m_IsPhaseActive;
     bool m_HasProducedResult;
     bool m_IsAwaitingContinue;
@@ -113,8 +102,10 @@ public sealed class AluController : MonoBehaviour
     string m_CurrentAluSrcValue = "0";
     AluOperation m_SelectedFunctOperation = AluOperation.Add;
     bool m_HasExplicitFunctSelection;
+    LessonMode m_CurrentMode = LessonMode.Learning;
 
     public event Action<int> ExecutionCompleted;
+    public event Action PracticeResetRequested;
 
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
     public bool IsPhaseActive => m_IsPhaseActive;
@@ -125,22 +116,28 @@ public sealed class AluController : MonoBehaviour
     public AluOperation SelectedFunctOperation => m_SelectedFunctOperation;
     public bool HasExplicitFunctSelection => m_HasExplicitFunctSelection;
     public int LastResultValue => m_LastResultValue;
+    public LessonMode CurrentMode => m_CurrentMode;
+    public bool IsPracticeMode => m_CurrentMode == LessonMode.Practice;
+    public bool IsPracticeAwaitingReset => m_PracticeFlow.IsAwaitingReset;
     public AluInputScanner InputA => m_InputA;
     public AluInputScanner InputB => m_InputB;
-    public TMP_Dropdown FunctDropdown => m_FunctDropdown;
-    public TMP_Dropdown HintDropdown => m_HintDropdown;
-    public TMP_Text LessonRuntimeText => m_LessonRuntimeText;
-    public TMP_Text AluOpStatusText => m_AluOpStatusText;
-    public TMP_Text AluSrcStatusText => m_AluSrcStatusText;
-    public TMP_Text Input1StatusText => m_Input1StatusText;
-    public TMP_Text Input2StatusText => m_Input2StatusText;
-    public TMP_Text FeedbackText => m_FeedbackText;
-    public TMP_Text ExecuteButtonLabel => m_ExecuteButtonLabel;
+    public TMP_Dropdown FunctDropdown => m_InteractionPanel.FunctDropdown;
+    public TMP_Dropdown HintDropdown => m_HintPanel.InfoDropdown;
+    public TMP_Text LessonRuntimeText => m_LessonPanel.RuntimeText;
+    public TMP_Text AluOpStatusText => m_InteractionPanel.AluOpStatusText;
+    public TMP_Text AluSrcStatusText => m_InteractionPanel.AluSrcStatusText;
+    public TMP_Text Input1StatusText => m_InteractionPanel.Input1StatusText;
+    public TMP_Text Input2StatusText => m_InteractionPanel.Input2StatusText;
+    public TMP_Text FeedbackText => m_SharedInteraction.FeedbackText;
+    public TMP_Text ExecuteButtonLabel => m_SharedInteraction.ActionLabel;
     public TMP_Text OperationLabelText => m_OperationLabelText;
-    public Button ExecuteButton => m_ExecuteButton;
-    public TMP_Text HintAluOpText => m_HintAluOpText;
-    public TMP_Text HintAluSrcText => m_HintAluSrcText;
-    public TMP_Text HintAluControlText => m_HintAluControlText;
+    public Button ExecuteButton => m_SharedInteraction.ActionButton;
+    public TMP_Text HintAluOpText => m_LearningHints.AluOpText;
+    public TMP_Text HintAluSrcText => m_LearningHints.AluSrcText;
+    public TMP_Text HintAluControlText => m_LearningHints.AluControlText;
+    public Button PracticeHintButton => m_HintPanel.HintButton;
+    public TMP_Text PracticeHintText => m_HintPanel.HintText;
+    public PhaseHintPanelRefs HintPanel => m_HintPanel;
     public string ExecuteButtonText => m_ExecuteButtonText;
     public string ResultReadyButtonText => m_ResultReadyButtonText;
     public float ResultSpawnDelaySeconds => m_ResultSpawnDelaySeconds;
@@ -153,9 +150,10 @@ public sealed class AluController : MonoBehaviour
     void Awake()
     {
         m_ExecutionService = new AluExecutionService();
+        ConfigurePracticeFlow();
         CacheLocalReferences();
         HookRuntimeBindings(true);
-        AluPresentation.PopulateHintDropdown(m_HintDropdown);
+        AluPresentation.PopulateHintDropdown(HintDropdown);
         RefreshPresentation();
         SetFeedback(string.Empty, false);
     }
@@ -163,9 +161,10 @@ public sealed class AluController : MonoBehaviour
     void OnEnable()
     {
         m_ExecutionService ??= new AluExecutionService();
+        ConfigurePracticeFlow();
         CacheLocalReferences();
         HookRuntimeBindings(true);
-        AluPresentation.PopulateHintDropdown(m_HintDropdown);
+        AluPresentation.PopulateHintDropdown(HintDropdown);
         RefreshPresentation();
     }
 
@@ -189,18 +188,23 @@ public sealed class AluController : MonoBehaviour
     /// <summary>
     /// Activates or deactivates the ALU phase for the current instruction.
     /// </summary>
-    public void SetPhaseState(bool isActive, InstructionDefinition instruction)
+    public void SetPhaseState(bool isActive, LessonMode lessonMode, InstructionDefinition instruction)
     {
         CacheLocalReferences();
 
         var instructionChanged = instruction != null && instruction != m_CurrentInstruction;
+        var modeChanged = lessonMode != m_CurrentMode;
         var isEnteringPhase = isActive && !m_IsPhaseActive;
 
         m_IsPhaseActive = isActive;
+        m_CurrentMode = lessonMode;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
 
-        if (isEnteringPhase || instructionChanged)
+        if (isEnteringPhase || instructionChanged || modeChanged)
+        {
+            m_PracticeFlow.Reset();
             m_ExecutionService.PrepareForExecution(this);
+        }
 
         if (m_AluUiRoot != null)
             m_AluUiRoot.SetActive(isActive);
@@ -233,11 +237,13 @@ public sealed class AluController : MonoBehaviour
         m_IsPhaseActive = false;
         m_HasExplicitFunctSelection = false;
         m_SelectedFunctOperation = AluOperation.Add;
+        m_CurrentMode = LessonMode.Learning;
+        m_PracticeFlow.Reset();
 
-        if (m_FunctDropdown != null)
+        if (FunctDropdown != null)
         {
-            m_FunctDropdown.SetValueWithoutNotify(0);
-            m_FunctDropdown.RefreshShownValue();
+            FunctDropdown.SetValueWithoutNotify(0);
+            FunctDropdown.RefreshShownValue();
         }
 
         m_InputA?.ResetScanner();
@@ -258,6 +264,12 @@ public sealed class AluController : MonoBehaviour
         if (!m_IsPhaseActive || m_ComputeRoutine != null)
             return;
 
+        if (m_PracticeFlow.IsAwaitingReset)
+        {
+            PracticeResetRequested?.Invoke();
+            return;
+        }
+
         if (m_HasProducedResult && m_IsAwaitingContinue)
         {
             m_IsAwaitingContinue = false;
@@ -267,7 +279,19 @@ public sealed class AluController : MonoBehaviour
 
         if (!m_ExecutionService.TryValidateExecutionSetup(this, out var validationMessage))
         {
-            SetFeedback(validationMessage, true);
+            if (IsPracticeMode)
+            {
+                var didFail = m_PracticeFlow.HandleValidationFailure(validationMessage, out var practiceFeedback);
+                if (didFail)
+                    EnterPracticeFailureState(practiceFeedback);
+                else
+                    SetFeedback(practiceFeedback, true);
+            }
+            else
+            {
+                SetFeedback(validationMessage, true);
+            }
+
             RefreshPresentation();
             return;
         }
@@ -318,7 +342,7 @@ public sealed class AluController : MonoBehaviour
     /// </summary>
     public void HandleFunctDropdownChanged(int selectedIndex)
     {
-        m_SelectedFunctOperation = m_ExecutionService.GetDropdownOperation(m_FunctDropdown, selectedIndex);
+        m_SelectedFunctOperation = m_ExecutionService.GetDropdownOperation(FunctDropdown, selectedIndex);
         m_HasExplicitFunctSelection = true;
         SetFeedback(string.Empty, false);
         RefreshPresentation();
@@ -333,11 +357,43 @@ public sealed class AluController : MonoBehaviour
     }
 
     /// <summary>
+    /// Reveals the next Practice-mode hint without affecting learning-mode
+    /// dropdown hints.
+    /// </summary>
+    public void HandlePracticeHintPressed()
+    {
+        if (!IsPracticeMode)
+            return;
+
+        if (PracticeHintText != null)
+            PracticeHintText.text = m_PracticeFlow.BuildHint(this, m_ExecutionService);
+
+        RefreshPresentation();
+    }
+
+    /// <summary>
     /// Clears stale feedback whenever one of the ALU inputs accepts a packet.
     /// </summary>
     public void HandlePacketAccepted(AluInputScanner _, DataPacketToken __)
     {
         SetFeedback(string.Empty, false);
+        RefreshPresentation();
+    }
+
+    /// <summary>
+    /// Charges Practice-mode scanner budgets when a stable but invalid packet
+    /// is placed on one of the ALU inputs.
+    /// </summary>
+    public void HandlePacketRejected(AluInputScanner scanner, DataPacketToken packetToken, AluInputScanner.PacketIssue issue)
+    {
+        if (!IsPracticeMode || !m_IsPhaseActive || m_HasProducedResult || IsPracticeAwaitingReset)
+            return;
+
+        var didFail = m_PracticeFlow.HandleScannerFailure(scanner, packetToken, issue, out var feedbackText);
+        if (didFail)
+            EnterPracticeFailureState(feedbackText);
+        else
+            SetFeedback(feedbackText, true);
         RefreshPresentation();
     }
 
@@ -354,11 +410,11 @@ public sealed class AluController : MonoBehaviour
     /// Updates the shared ALU feedback field using the authored success and
     /// failure colors.
     /// </summary>
-    public void SetFeedback(string message, bool isFailure)
+    public void SetFeedback(string message, bool isFailure, bool playIncorrectCue = true)
     {
-        AluPresentation.SetFeedback(m_FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
+        AluPresentation.SetFeedback(FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
 
-        if (isFailure && !string.IsNullOrWhiteSpace(message))
+        if (playIncorrectCue && isFailure && !string.IsNullOrWhiteSpace(message))
             PlayIncorrectCue();
     }
 
@@ -378,6 +434,14 @@ public sealed class AluController : MonoBehaviour
     {
         m_SelectedFunctOperation = selectedOperation;
         m_HasExplicitFunctSelection = hasExplicitSelection;
+    }
+
+    public void ShowPracticeBudgetSummary()
+    {
+        if (!IsPracticeMode)
+            return;
+
+        SetFeedback(m_PracticeFlow.BuildBudgetSummary("Set the ALU controls and inputs, then validate."), false);
     }
 
     /// <summary>
@@ -425,8 +489,12 @@ public sealed class AluController : MonoBehaviour
             return;
 
         inputScanner.PacketAccepted -= HandlePacketAccepted;
+        inputScanner.PacketRejected -= HandlePacketRejected;
         if (subscribe)
+        {
             inputScanner.PacketAccepted += HandlePacketAccepted;
+            inputScanner.PacketRejected += HandlePacketRejected;
+        }
     }
 
     /// <summary>
@@ -467,6 +535,11 @@ public sealed class AluController : MonoBehaviour
         return childTransform != null ? childTransform.GetComponent<TMP_Text>() : null;
     }
 
+    void ConfigurePracticeFlow()
+    {
+        m_PracticeFlow.Configure(m_PracticeValidationAttempts, m_PracticeScannerAttempts, m_PracticeHints);
+    }
+
     public void PlayPhaseActivatedCue()
     {
         m_LessonAudioCues.PlayPhaseActivatedCue();
@@ -485,5 +558,39 @@ public sealed class AluController : MonoBehaviour
     public void PlayLessonCompletedCue()
     {
         m_LessonAudioCues.PlayLessonCompletedCue();
+    }
+
+    public void PlayFailureCue()
+    {
+        m_LessonAudioCues.PlayFailureCue();
+    }
+
+    /// <summary>
+    /// Dev-mode helper that stamps the expected ALU result into the scene and
+    /// forwards the phase completion without requiring manual setup.
+    /// </summary>
+    public void DevForceCompletePhase(int resultValue)
+    {
+        if (!m_IsPhaseActive || m_CurrentInstruction == null)
+            return;
+
+        m_ExecutionService.SpawnResultPacket(this, resultValue);
+        SetProducedResultState(true, false, resultValue);
+        SetFeedback(AluPresentation.BuildPostExecuteFeedback(m_CurrentInstruction, resultValue), false);
+        ExecutionCompleted?.Invoke(resultValue);
+        RefreshPresentation();
+    }
+
+    /// <summary>
+    /// Mirrors the normal two-step phase ending pattern for Practice failure:
+    /// play the failure cue now, then wait for Restart on the next press.
+    /// </summary>
+    void EnterPracticeFailureState(string feedbackText)
+    {
+        m_IsAwaitingContinue = false;
+        m_InputA?.SetActive(false);
+        m_InputB?.SetActive(false);
+        SetFeedback(m_PracticeFlow.BuildFailureResetText(feedbackText), true, false);
+        PlayFailureCue();
     }
 }

@@ -26,47 +26,16 @@ sealed class FlowProgress
     /// </summary>
     public void AdvanceStep()
     {
-        if (m_Flow.ActiveInstruction == null || m_Flow.ActiveInstruction.flowSteps == null)
-            return;
+        AdvanceStepInternal(useDebounce: true);
+    }
 
-        // UI panels are toggled as part of progression. Without a small
-        // debounce, the same click can occasionally be seen twice while panels
-        // swap, which makes the lesson jump over authored intermediate steps.
-        if (!m_State.TrySetAdvanceFrame(Time.frameCount))
-        {
-            Debug.Log(
-                $"{m_Flow.LogPrefix} AdvanceStep blocked by debounce | currentStepIndex={m_State.CurrentStepIndex} frame={Time.frameCount}",
-                m_Flow);
-            return;
-        }
-
-        var previousStepName = m_Flow.CurrentStep != null ? m_Flow.CurrentStep.stepName : "<none>";
-        var previousStepIndex = m_State.CurrentStepIndex;
-
-        m_State.AdvanceStep();
-
-        while (m_State.CurrentStepIndex < m_Flow.ActiveInstruction.flowSteps.Length &&
-               ShouldSkip(m_Flow.GetStepAt(m_State.CurrentStepIndex)))
-        {
-            var skippedStep = m_Flow.GetStepAt(m_State.CurrentStepIndex);
-            Debug.Log(
-                $"{m_Flow.LogPrefix} Skipping step | stepIndex={m_State.CurrentStepIndex} step={skippedStep?.stepName} frame={Time.frameCount}",
-                m_Flow);
-            m_State.SkipToStep(m_State.CurrentStepIndex + 1);
-        }
-
-        Debug.Log(
-            $"{m_Flow.LogPrefix} AdvanceStep | fromIndex={previousStepIndex} fromStep={previousStepName} toIndex={m_State.CurrentStepIndex} frame={Time.frameCount}",
-            m_Flow);
-
-        if (m_State.CurrentStepIndex >= m_Flow.ActiveInstruction.flowSteps.Length)
-        {
-            m_State.SkipToStep(m_Flow.ActiveInstruction.flowSteps.Length - 1);
-            m_Flow.RaiseStepChanged();
-            return;
-        }
-
-        PresentStep();
+    /// <summary>
+    /// Dev-mode advancement bypasses the per-frame debounce so scripted skips
+    /// can move through multiple decode-owned steps in one frame.
+    /// </summary>
+    public void ForceAdvanceStep()
+    {
+        AdvanceStepInternal(useDebounce: false);
     }
 
     /// <summary>
@@ -168,5 +137,47 @@ sealed class FlowProgress
         }
 
         return false;
+    }
+
+    void AdvanceStepInternal(bool useDebounce)
+    {
+        if (m_Flow.ActiveInstruction == null || m_Flow.ActiveInstruction.flowSteps == null)
+            return;
+
+        if (useDebounce && !m_State.TrySetAdvanceFrame(Time.frameCount))
+        {
+            Debug.Log(
+                $"{m_Flow.LogPrefix} AdvanceStep blocked by debounce | currentStepIndex={m_State.CurrentStepIndex} frame={Time.frameCount}",
+                m_Flow);
+            return;
+        }
+
+        var previousStepName = m_Flow.CurrentStep != null ? m_Flow.CurrentStep.stepName : "<none>";
+        var previousStepIndex = m_State.CurrentStepIndex;
+
+        m_State.AdvanceStep();
+
+        while (m_State.CurrentStepIndex < m_Flow.ActiveInstruction.flowSteps.Length &&
+               ShouldSkip(m_Flow.GetStepAt(m_State.CurrentStepIndex)))
+        {
+            var skippedStep = m_Flow.GetStepAt(m_State.CurrentStepIndex);
+            Debug.Log(
+                $"{m_Flow.LogPrefix} Skipping step | stepIndex={m_State.CurrentStepIndex} step={skippedStep?.stepName} frame={Time.frameCount}",
+                m_Flow);
+            m_State.SkipToStep(m_State.CurrentStepIndex + 1);
+        }
+
+        Debug.Log(
+            $"{m_Flow.LogPrefix} AdvanceStep | fromIndex={previousStepIndex} fromStep={previousStepName} toIndex={m_State.CurrentStepIndex} frame={Time.frameCount}",
+            m_Flow);
+
+        if (m_State.CurrentStepIndex >= m_Flow.ActiveInstruction.flowSteps.Length)
+        {
+            m_State.SkipToStep(m_Flow.ActiveInstruction.flowSteps.Length - 1);
+            m_Flow.RaiseStepChanged();
+            return;
+        }
+
+        PresentStep();
     }
 }

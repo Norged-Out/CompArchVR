@@ -1,3 +1,5 @@
+using UnityEngine;
+
 /// <summary>
 /// Mutable runtime state for the current lesson run.
 /// This keeps the transient flow state out of the scene-facing controller.
@@ -51,6 +53,16 @@ sealed class LessonState
     public void AdvanceRegisterSelection()
     {
         CurrentRegisterSelectionIndex++;
+    }
+
+    /// <summary>
+    /// Marks decode register collection as fully satisfied without requiring
+    /// each authored scanner callback to fire one by one.
+    /// </summary>
+    public void ForceRegisterSelectionComplete(int requiredSelectionCount)
+    {
+        CurrentRegisterSelectionIndex = Mathf.Max(0, requiredSelectionCount);
+        RegisterSelectionReadyToContinue = true;
     }
 
     /// <summary>

@@ -43,6 +43,24 @@ public class RegisterBank : MonoBehaviour
     }
 
     /// <summary>
+    /// Returns the authored display label for a register token.
+    /// Falls back to a simple `$name` label when the token cannot be found.
+    /// </summary>
+    public string GetRegisterDisplayLabel(string registerId)
+    {
+        if (string.IsNullOrWhiteSpace(registerId))
+            return string.Empty;
+
+        if (m_RegisterTokens.TryGetValue(registerId, out var registerToken) &&
+            !string.IsNullOrWhiteSpace(registerToken.DisplayLabel))
+        {
+            return registerToken.DisplayLabel;
+        }
+
+        return $"${registerId}";
+    }
+
+    /// <summary>
     /// Writes a logical value into the named register token.
     /// This does not move the token or change lesson progress.
     /// </summary>

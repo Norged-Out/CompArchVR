@@ -33,6 +33,7 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
     public PacketIssue CurrentIssue => m_CurrentIssue;
 
     public event System.Action<PcUpdatePacketScanner, DataPacketToken> PacketAccepted;
+    public event System.Action<PcUpdatePacketScanner, DataPacketToken, PacketIssue> PacketRejected;
 
     protected override void Awake()
     {
@@ -216,6 +217,9 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
     /// </summary>
     protected override void OnImmediateMismatch(Component _)
     {
+        if (_ is DataPacketToken dataPacketToken)
+            PacketRejected?.Invoke(this, dataPacketToken, m_CurrentIssue);
+
         if (AcceptedPacket != null)
             AcceptedPacket.ReleaseFromLatch();
 

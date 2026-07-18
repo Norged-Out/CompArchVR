@@ -135,7 +135,7 @@ public sealed class DecodePanelController : LessonPanelBase
         return m_LearningView.GetSelectedFunct();
     }
 
-    public PracticeDecodeInputState GetPracticeInputState()
+    internal PracticeDecodeInputState GetPracticeInputState()
     {
         EnsurePracticeView();
         return m_PracticeView.CaptureInputState();
@@ -193,11 +193,15 @@ public sealed class DecodePanelController : LessonPanelBase
         if (m_PracticeInteraction.Root != null)
             m_PracticeInteraction.Root.SetActive(false);
 
+        var isPracticeDecodeScannerFailure =
+            lessonFlow.CurrentMode == LessonMode.Practice &&
+            lessonFlow.IsPracticeDecodeScannerFailureAwaitingReset;
+
         SetButtonState(
             m_SharedInteraction.ActionButton,
             m_SharedInteraction.ActionLabel,
-            step.requiredInteraction == InstructionStepInteractionType.Completion ? restartLabel : continueLabel,
-            ShouldShowContinue(selectionMode, step, lessonFlow));
+            isPracticeDecodeScannerFailure || step.requiredInteraction == InstructionStepInteractionType.Completion ? restartLabel : continueLabel,
+            isPracticeDecodeScannerFailure || ShouldShowContinue(selectionMode, step, lessonFlow));
         RefreshPanelLayout(m_SharedInteraction.ActionButton);
     }
 

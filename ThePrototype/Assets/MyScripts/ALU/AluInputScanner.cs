@@ -36,6 +36,7 @@ public class AluInputScanner : PedestalScannerBase
     public PacketIssue CurrentIssue => m_CurrentIssue;
 
     public event System.Action<AluInputScanner, DataPacketToken> PacketAccepted;
+    public event System.Action<AluInputScanner, DataPacketToken, PacketIssue> PacketRejected;
 
     protected override float RequiredStableSeconds => m_RequiredStableSeconds;
     protected override float PressedOffsetY => m_LocalPressedOffsetY;
@@ -209,6 +210,9 @@ public class AluInputScanner : PedestalScannerBase
 
     protected override void OnImmediateMismatch(Component candidate)
     {
+        if (candidate is DataPacketToken dataPacketToken)
+            PacketRejected?.Invoke(this, dataPacketToken, m_CurrentIssue);
+
         ClearAcceptedPacket();
     }
 

@@ -27,6 +27,7 @@ public class WriteBackPacketScanner : PedestalScannerBase
     public DataPacketRole ExpectedPacketRole => m_ExpectedPacketRole;
 
     public event Action<WriteBackPacketScanner, DataPacketToken> PacketAccepted;
+    public event Action<WriteBackPacketScanner, DataPacketToken> PacketRejected;
 
     protected override float RequiredStableSeconds => m_RequiredStableSeconds;
     protected override float PressedOffsetY => m_LocalPressedOffsetY;
@@ -135,6 +136,7 @@ public class WriteBackPacketScanner : PedestalScannerBase
 
         if (stableCandidate.PacketRole != m_ExpectedPacketRole)
         {
+            PacketRejected?.Invoke(this, stableCandidate);
             FlashFailure();
             return;
         }

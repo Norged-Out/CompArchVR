@@ -53,6 +53,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
 
     public event Action<CpuLessonFlow> StepChanged;
     public event Action<string, bool> FeedbackChanged;
+    public event Action PracticeDecodeScannerFailed;
 
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
     public PracticeInstructionDefinition CurrentPracticeInstruction => m_CurrentPracticeInstruction;
@@ -69,6 +70,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
     public bool UsesInstructionSelection => LessonInstrResolver.UsesInstructionSelection(m_CurrentMode);
     public bool CanStartSelectedMode => LessonInstrResolver.CanStart(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction);
     public bool IsFetchStepActive => m_Fetch.IsFetchStep(CurrentStep);
+    public bool IsPracticeDecodeScannerFailureAwaitingReset => m_Decode != null && m_Decode.IsPracticeScannerFailureAwaitingReset;
     public string CurrentFetchDisplayText => LessonInstrResolver.GetFetchDisplayText(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction);
     public string CurrentPracticeBinaryText => m_CurrentPracticeInstruction != null
         ? m_CurrentPracticeInstruction.GetNormalizedBinaryInstruction()
@@ -297,6 +299,11 @@ public sealed class CpuLessonFlow : MonoBehaviour
         FeedbackChanged?.Invoke(message, isFailure);
     }
 
+    internal void NotifyPracticeDecodeScannerFailed()
+    {
+        PracticeDecodeScannerFailed?.Invoke();
+    }
+
     /// <summary>
     /// Loads the fallback lesson instruction used when the authored scene has not
     /// explicitly selected one yet.
@@ -325,11 +332,32 @@ public sealed class CpuLessonFlow : MonoBehaviour
     }
 
     /// <summary>
+    /// Lets the guide configure the Practice decode scanner budget without
+    /// owning the scanner-validation logic itself.
+    /// </summary>
+    public void ConfigurePracticeDecodeScannerAttempts(int maxAttempts)
+    {
+        EnsureServices();
+        m_Decode.ConfigurePracticeScannerAttempts(maxAttempts);
+    }
+
+    /// <summary>
+    /// Dev-mode helper that bypasses the decode phase and prepares the runtime
+    /// operand state expected by later phases.
+    /// </summary>
+    public void DevForceCompleteDecodePhase()
+    {
+        EnsureServices();
+        m_Decode.ForceCompleteDecodePhase();
+    }
+
+    /// <summary>
     /// Updates the active instruction and mirrors it into the runtime selection state.
     /// Internal services use this to keep authored instruction swaps centralized.
     /// </summary>
     internal void SetActiveInstructionInternal(InstructionDefinition instruction)
     {
+        DisposeTransientPracticeInstruction();
         m_CurrentInstruction = instruction;
 
         if (m_State != null)
@@ -357,5 +385,24 @@ public sealed class CpuLessonFlow : MonoBehaviour
         m_Lifecycle = new LessonLifecycle(this, m_State, m_Decode, m_Fetch);
         m_Actions = new LessonStepActions(this, m_State, m_Decode, m_Fetch, m_Progress, m_Lifecycle);
         m_RegisterBank?.SetLessonInactivePreviewMode(true);
+    }
+
+    /// <summary>
+    /// Practice-mode runtime instructions are cloned on demand so they can
+    /// carry per-practice operand overrides. Dispose the previous transient
+    /// clone before replacing it with the next one.
+    /// </summary>
+    void DisposeTransientPracticeInstruction()
+    {
+        if (m_CurrentMode != LessonMode.Practice || m_CurrentInstruction == null)
+            return;
+
+        if (m_CurrentInstruction.hideFlags != HideFlags.DontSave)
+            return;
+
+        if (Application.isPlaying)
+            Destroy(m_CurrentInstruction);
+        else
+            DestroyImmediate(m_CurrentInstruction);
     }
 }

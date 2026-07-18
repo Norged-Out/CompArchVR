@@ -41,6 +41,9 @@ public sealed class LessonGuideController : MonoBehaviour
     [SerializeField]
     int m_PracticeDecodeHints = 3;
 
+    [SerializeField]
+    int m_PracticeDecodeScannerAttempts = 3;
+
     [Header("Execution Phase")]
     [SerializeField]
     GameObject m_ExecutePanelRoot;
@@ -75,6 +78,7 @@ public sealed class LessonGuideController : MonoBehaviour
     readonly PracticeDecodeFlow m_PracticeDecodeFlow = new();
 
     LessonGuideView m_View;
+    bool m_IsDevModeEnabled;
     bool m_IsRefreshingModeDropdown;
     bool m_IsRefreshingInstructionDropdown;
     bool m_IsRefreshingDecodeDropdowns;
@@ -146,24 +150,30 @@ public sealed class LessonGuideController : MonoBehaviour
     void SubscribePhaseEvents()
     {
         if (m_ExecuteController != null)
+        {
             m_ExecuteController.ExecutionCompleted += HandleAluExecutionCompleted;
+            m_ExecuteController.PracticeResetRequested += HandlePracticePhaseResetRequested;
+        }
 
         if (m_WriteBackController != null)
         {
             m_WriteBackController.WriteBackApplied += HandleWriteBackApplied;
             m_WriteBackController.ContinueRequested += HandleWriteBackContinueRequested;
+            m_WriteBackController.PracticeResetRequested += HandlePracticePhaseResetRequested;
         }
 
         if (m_MemoryController != null)
         {
             m_MemoryController.ContinueRequested += HandleMemoryContinueRequested;
             m_MemoryController.MemoryTransferCompleted += HandleMemoryTransferCompleted;
+            m_MemoryController.PracticeResetRequested += HandlePracticePhaseResetRequested;
         }
 
         if (m_PcUpdateController != null)
         {
             m_PcUpdateController.ContinueRequested += HandlePcUpdateContinueRequested;
             m_PcUpdateController.PcUpdateConfirmed += HandlePcUpdateConfirmed;
+            m_PcUpdateController.PracticeResetRequested += HandlePracticePhaseResetRequested;
         }
     }
 
@@ -173,24 +183,30 @@ public sealed class LessonGuideController : MonoBehaviour
     void UnsubscribePhaseEvents()
     {
         if (m_ExecuteController != null)
+        {
             m_ExecuteController.ExecutionCompleted -= HandleAluExecutionCompleted;
+            m_ExecuteController.PracticeResetRequested -= HandlePracticePhaseResetRequested;
+        }
 
         if (m_WriteBackController != null)
         {
             m_WriteBackController.WriteBackApplied -= HandleWriteBackApplied;
             m_WriteBackController.ContinueRequested -= HandleWriteBackContinueRequested;
+            m_WriteBackController.PracticeResetRequested -= HandlePracticePhaseResetRequested;
         }
 
         if (m_MemoryController != null)
         {
             m_MemoryController.ContinueRequested -= HandleMemoryContinueRequested;
             m_MemoryController.MemoryTransferCompleted -= HandleMemoryTransferCompleted;
+            m_MemoryController.PracticeResetRequested -= HandlePracticePhaseResetRequested;
         }
 
         if (m_PcUpdateController != null)
         {
             m_PcUpdateController.ContinueRequested -= HandlePcUpdateContinueRequested;
             m_PcUpdateController.PcUpdateConfirmed -= HandlePcUpdateConfirmed;
+            m_PcUpdateController.PracticeResetRequested -= HandlePracticePhaseResetRequested;
         }
     }
 
@@ -204,6 +220,7 @@ public sealed class LessonGuideController : MonoBehaviour
 
         m_LessonFlow.StepChanged += HandleStepChanged;
         m_LessonFlow.FeedbackChanged += HandleFeedbackChanged;
+        m_LessonFlow.PracticeDecodeScannerFailed += HandlePracticeDecodeScannerFailed;
     }
 
     /// <summary>
@@ -216,6 +233,7 @@ public sealed class LessonGuideController : MonoBehaviour
 
         m_LessonFlow.StepChanged -= HandleStepChanged;
         m_LessonFlow.FeedbackChanged -= HandleFeedbackChanged;
+        m_LessonFlow.PracticeDecodeScannerFailed -= HandlePracticeDecodeScannerFailed;
     }
 
     /// <summary>
@@ -249,6 +267,13 @@ public sealed class LessonGuideController : MonoBehaviour
         if (!m_LessonFlow.HasStarted)
         {
             m_LessonFlow.StartLesson();
+            return;
+        }
+
+        if (m_LessonFlow.CurrentMode == LessonMode.Practice &&
+            m_LessonFlow.IsPracticeDecodeScannerFailureAwaitingReset)
+        {
+            m_LessonFlow.ResetLesson();
             return;
         }
 
@@ -410,13 +435,24 @@ public sealed class LessonGuideController : MonoBehaviour
     }
 
     /// <summary>
+    /// Resets the full lesson when any Practice-mode phase exhausts its budget
+    /// and the learner confirms the restart on that phase's action button.
+    /// </summary>
+    void HandlePracticePhaseResetRequested()
+    {
+        m_LessonFlow?.ResetLesson();
+    }
+
+    /// <summary>
     /// Routes shared lesson feedback to whichever authored panel is currently active.
     /// </summary>
     void HandleFeedbackChanged(string message, bool isFailure)
     {
         if (isFailure &&
             !string.IsNullOrWhiteSpace(message) &&
-            !(m_LessonFlow != null && m_LessonFlow.CurrentMode == LessonMode.Practice && m_PracticeDecodeFlow.IsFailed))
+            !(m_LessonFlow != null &&
+              m_LessonFlow.CurrentMode == LessonMode.Practice &&
+              (m_PracticeDecodeFlow.IsFailed || m_LessonFlow.IsPracticeDecodeScannerFailureAwaitingReset)))
         {
             PlayIncorrectCueForCurrentOwner();
         }
@@ -428,6 +464,7 @@ public sealed class LessonGuideController : MonoBehaviour
     void ConfigurePracticeDecodeFlow()
     {
         m_PracticeDecodeFlow.Configure(m_PracticeDecodeChances, m_PracticeDecodeHints);
+        m_LessonFlow?.ConfigurePracticeDecodeScannerAttempts(m_PracticeDecodeScannerAttempts);
     }
 
     void InitializeGuideState()
@@ -442,6 +479,75 @@ public sealed class LessonGuideController : MonoBehaviour
     void HandlePracticeDecodeFailed()
     {
         m_DecodePanel?.PlayFailureCue();
+    }
+
+    void HandlePracticeDecodeScannerFailed()
+    {
+        m_DecodePanel?.PlayFailureCue();
+        RefreshView();
+    }
+
+    /// <summary>
+    /// Enables or disables the centralized dev skip affordance exposed through
+    /// the settings menu.
+    /// </summary>
+    public void SetDevModeEnabled(bool isEnabled)
+    {
+        m_IsDevModeEnabled = isEnabled;
+    }
+
+    public bool DevModeEnabled => m_IsDevModeEnabled;
+
+    public bool CanDevSkipCurrentPhase()
+    {
+        if (!m_IsDevModeEnabled || m_LessonFlow == null || !m_LessonFlow.HasStarted)
+            return false;
+
+        return ResolveCuePhase() is LessonCuePhase.Decode or LessonCuePhase.Execute or LessonCuePhase.Memory or LessonCuePhase.WriteBack or LessonCuePhase.PcUpdate;
+    }
+
+    public string GetDevSkipButtonLabel()
+    {
+        if (!CanDevSkipCurrentPhase())
+            return "Skip Current Phase";
+
+        return $"Skip Current Phase: {GetCurrentDevPhaseLabel()}";
+    }
+
+    /// <summary>
+    /// Dev-mode entry point used by the settings menu to jump past the phase
+    /// that currently owns lesson progression.
+    /// </summary>
+    public void SkipCurrentPhase()
+    {
+        if (!CanDevSkipCurrentPhase() || m_LessonFlow == null)
+            return;
+
+        switch (ResolveCuePhase())
+        {
+            case LessonCuePhase.Decode:
+                m_LessonFlow.DevForceCompleteDecodePhase();
+                break;
+
+            case LessonCuePhase.Execute:
+                var aluResult = LessonDevMath.ComputeExpectedAluResult(m_LessonFlow.CurrentInstruction, m_LessonFlow.RegisterBank);
+                m_ExecuteController?.DevForceCompletePhase(aluResult);
+                break;
+
+            case LessonCuePhase.Memory:
+                SkipMemoryPhase();
+                break;
+
+            case LessonCuePhase.WriteBack:
+                SkipWriteBackPhase();
+                break;
+
+            case LessonCuePhase.PcUpdate:
+                m_PcUpdateController?.DevForceCompletePhase();
+                break;
+        }
+
+        RefreshView();
     }
 
     /// <summary>
@@ -550,6 +656,61 @@ public sealed class LessonGuideController : MonoBehaviour
             return LessonCuePhase.Fetch;
 
         return LessonCuePhase.None;
+    }
+
+    void SkipMemoryPhase()
+    {
+        if (m_MemoryController == null || m_LessonFlow == null || m_LessonFlow.CurrentInstruction == null)
+            return;
+
+        var instruction = m_LessonFlow.CurrentInstruction;
+        var registerBank = m_LessonFlow.RegisterBank;
+
+        if (instruction.mnemonic == InstructionMnemonic.Lw &&
+            LessonDevMath.TryResolveExpectedLoad(m_MemoryController.MemoryBank, instruction, registerBank, out var loadAddress, out var loadedValue))
+        {
+            m_MemoryController.DevForceCompleteLoad(loadAddress, loadedValue);
+            return;
+        }
+
+        if (instruction.mnemonic == InstructionMnemonic.Sw &&
+            LessonDevMath.TryResolveExpectedStore(m_MemoryController.MemoryBank, instruction, registerBank, out var storeAddress, out var storedValue))
+        {
+            m_MemoryController.DevForceCompleteStore(storeAddress, storedValue);
+            return;
+        }
+
+        m_LessonFlow.Advance();
+    }
+
+    void SkipWriteBackPhase()
+    {
+        if (m_WriteBackController == null || m_LessonFlow == null || m_LessonFlow.CurrentInstruction == null)
+            return;
+
+        var instruction = m_LessonFlow.CurrentInstruction;
+        var destinationRegister = instruction.GetWriteBackTargetRegister();
+        var resultValue = LessonDevMath.ResolveExpectedWriteBackValue(
+            instruction,
+            m_LessonFlow.RegisterBank,
+            m_MemoryController != null ? m_MemoryController.MemoryBank : null,
+            m_LessonFlow.RuntimeSelection.aluResultValue);
+
+        m_WriteBackController.DevForceCompletePhase(destinationRegister, resultValue);
+        m_LessonFlow.Advance();
+    }
+
+    string GetCurrentDevPhaseLabel()
+    {
+        return ResolveCuePhase() switch
+        {
+            LessonCuePhase.Decode => "ID",
+            LessonCuePhase.Execute => "EX",
+            LessonCuePhase.Memory => "MEM",
+            LessonCuePhase.WriteBack => "WB",
+            LessonCuePhase.PcUpdate => "PC Update",
+            _ => "None",
+        };
     }
 
     void PlayPhaseCompletedCue(LessonCuePhase previousPhase, LessonCuePhase currentPhase)

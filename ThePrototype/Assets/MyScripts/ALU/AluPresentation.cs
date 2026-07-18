@@ -29,9 +29,14 @@ public static class AluPresentation
 
         if (controller.LessonRuntimeText != null)
         {
-            var instructionName = controller.CurrentInstruction != null ? controller.CurrentInstruction.displayName : "instruction";
-            var assembly = controller.CurrentInstruction != null ? controller.CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
-            controller.LessonRuntimeText.text = $"Instruction: {instructionName}\nAssembly: {assembly}";
+            if (controller.IsPracticeMode)
+                controller.LessonRuntimeText.text = "Practice Mode\nComplete the Execute phase using the instruction you decoded earlier.";
+            else
+            {
+                var instructionName = controller.CurrentInstruction != null ? controller.CurrentInstruction.displayName : "instruction";
+                var assembly = controller.CurrentInstruction != null ? controller.CurrentInstruction.assemblyInstructionText : "add t2, t0, t1";
+                controller.LessonRuntimeText.text = $"Instruction: {instructionName}\nAssembly: {assembly}";
+            }
         }
 
         var operationDisplayName = GetOperationDisplayName(controller, executionService);
@@ -46,10 +51,10 @@ public static class AluPresentation
             controller.AluSrcStatusText.text = $"ALUSrc: {controller.CurrentAluSrcValue}";
 
         if (controller.Input1StatusText != null)
-            controller.Input1StatusText.text = BuildInputStatusText("Input 1", DataPacketRole.ReadData1, controller.InputA);
+            controller.Input1StatusText.text = BuildInputStatusText("Input 1", DataPacketRole.ReadData1, controller.InputA, controller.IsPracticeMode);
 
         if (controller.Input2StatusText != null)
-            controller.Input2StatusText.text = BuildInputStatusText("Input 2", executionService.GetExpectedInput2Role(controller), controller.InputB);
+            controller.Input2StatusText.text = BuildInputStatusText("Input 2", executionService.GetExpectedInput2Role(controller), controller.InputB, controller.IsPracticeMode);
 
         if (controller.FunctDropdown != null)
         {
@@ -69,12 +74,16 @@ public static class AluPresentation
         }
 
         if (controller.ExecuteButtonLabel != null)
-            controller.ExecuteButtonLabel.text = controller.HasProducedResult ? controller.ResultReadyButtonText : controller.ExecuteButtonText;
+        {
+            controller.ExecuteButtonLabel.text = controller.IsPracticeAwaitingReset
+                ? "Restart"
+                : controller.HasProducedResult ? controller.ResultReadyButtonText : controller.ExecuteButtonText;
+        }
 
         if (controller.ExecuteButton != null)
             controller.ExecuteButton.interactable = controller.IsPhaseActive && controller.ComputeRoutine == null;
 
-        RefreshHintBlocks(controller.HintDropdown, controller.HintAluOpText, controller.HintAluSrcText, controller.HintAluControlText);
+        RefreshHintBlocks(controller);
     }
 
     /// <summary>
@@ -192,36 +201,50 @@ public static class AluPresentation
     /// <summary>
     /// Builds the learner-facing status line for one ALU input hand.
     /// </summary>
-    static string BuildInputStatusText(string inputLabel, DataPacketRole expectedRole, AluInputScanner scanner)
+    static string BuildInputStatusText(string inputLabel, DataPacketRole expectedRole, AluInputScanner scanner, bool isPracticeMode)
     {
         if (scanner == null)
-            return $"{inputLabel}: waiting for {GetRoleDisplayName(expectedRole)}";
+            return isPracticeMode ? "Waiting" : $"{inputLabel}: waiting for {GetRoleDisplayName(expectedRole)}";
 
         if (scanner.AcceptedPacket == null)
         {
             if (scanner.CurrentIssue == AluInputScanner.PacketIssue.ImmediateNotSignExtended)
-                return $"{inputLabel}: Immediate detected (not sign-extended)";
+                return isPracticeMode ? "Not extended" : $"{inputLabel}: Immediate detected (not sign-extended)";
 
-            return $"{inputLabel}: waiting for {GetRoleDisplayName(expectedRole)}";
+            return isPracticeMode ? "Waiting" : $"{inputLabel}: waiting for {GetRoleDisplayName(expectedRole)}";
         }
 
         var signExtensionSuffix = scanner.AcceptedPacket.PacketRole == DataPacketRole.Immediate
             ? scanner.AcceptedPacket.IsSignExtended ? " (sign-extended)" : " (not sign-extended)"
             : string.Empty;
 
-        return $"{inputLabel}: {scanner.AcceptedValue}{signExtensionSuffix}";
+        return isPracticeMode ? $"{scanner.AcceptedValue}{signExtensionSuffix}" : $"{inputLabel}: {scanner.AcceptedValue}{signExtensionSuffix}";
     }
 
-    /// <summary>
-    /// Enables only the hint block that matches the current hint dropdown
-    /// selection.
-    /// </summary>
-    static void RefreshHintBlocks(TMP_Dropdown hintDropdown, TMP_Text aluOpText, TMP_Text aluSrcText, TMP_Text aluControlText)
+    static void RefreshHintBlocks(AluController controller)
     {
-        var selectedHint = hintDropdown != null ? hintDropdown.value : 0;
-        SetHintBlockActive(aluOpText, selectedHint == 1);
-        SetHintBlockActive(aluSrcText, selectedHint == 2);
-        SetHintBlockActive(aluControlText, selectedHint == 3);
+        var isPracticeMode = controller.IsPracticeMode;
+        SetObjectActive(controller.HintPanel.InfoRoot, !isPracticeMode);
+
+        if (controller.PracticeHintButton != null)
+            controller.PracticeHintButton.gameObject.SetActive(isPracticeMode);
+
+        SetHintBlockActive(
+            controller.PracticeHintText,
+            isPracticeMode && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
+
+        if (isPracticeMode)
+        {
+            SetHintBlockActive(controller.HintAluOpText, false);
+            SetHintBlockActive(controller.HintAluSrcText, false);
+            SetHintBlockActive(controller.HintAluControlText, false);
+            return;
+        }
+
+        var selectedHint = controller.HintDropdown != null ? controller.HintDropdown.value : 0;
+        SetHintBlockActive(controller.HintAluOpText, selectedHint == 1);
+        SetHintBlockActive(controller.HintAluSrcText, selectedHint == 2);
+        SetHintBlockActive(controller.HintAluControlText, selectedHint == 3);
     }
 
     /// <summary>
@@ -231,6 +254,12 @@ public static class AluPresentation
     {
         if (textBlock != null)
             textBlock.gameObject.SetActive(isActive);
+    }
+
+    static void SetObjectActive(GameObject targetObject, bool isActive)
+    {
+        if (targetObject != null)
+            targetObject.SetActive(isActive);
     }
 
     static HashSet<string> BuildOperationDropdownAliases(AluOperation operation)

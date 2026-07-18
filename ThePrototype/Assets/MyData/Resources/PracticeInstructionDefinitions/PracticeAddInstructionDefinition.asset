@@ -12,15 +12,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bc7213dfb6e305741b63e9fe4d81ce56, type: 3}
   m_Name: PracticeAddInstructionDefinition
   m_EditorClassIdentifier: 
-  displayName: 0x01095020
+  displayName: 0x018D5820
   expectedMnemonic: 0
   expectedFormat: 0
   expectedCategory: 0
-  rawInstructionBits: 00000001000010010101000000100000
+  rawInstructionBits: 00000001100011010101100000100000
   expectedOpcodeBits: 000000
   expectedFunctBits: 100000
-  expectedRsBits: 01000
-  expectedRtBits: 01001
-  expectedRdBits: 01010
+  expectedRsBits: 01100
+  expectedRtBits: 01101
+  expectedRdBits: 01011
   expectedImmediateBits: 
   learningModeInstruction: {fileID: 11400000, guid: 483a28480b15499cac7ae613f703d453, type: 2}
+  runtimeAssemblyInstructionText: add t3, t4, t5
+  runtimeRs: t4
+  runtimeRt: t5
+  runtimeRd: t3
+  runtimeImmediateValue: 0

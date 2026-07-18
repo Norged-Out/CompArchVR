@@ -1289,20 +1289,31 @@ MonoBehaviour:
     m_FailureClip: {fileID: 0}
   m_MemReadButtonRoot: {fileID: 1364021660308291361}
   m_MemWriteButtonRoot: {fileID: 3582767479301052988}
+  m_LessonPanel:
+    m_RuntimeText: {fileID: 0}
+    m_LoadText: {fileID: 0}
+    m_StoreText: {fileID: 0}
+  m_HintPanel:
+    m_InfoRoot: {fileID: 0}
+    m_InfoDropdown: {fileID: 0}
+    m_HintButton: {fileID: 0}
+    m_HintText: {fileID: 0}
+  m_LearningHints:
+    m_MemReadText: {fileID: 0}
+    m_MemWriteText: {fileID: 0}
   m_MemUiRoot: {fileID: 0}
-  m_LessonRuntimeText: {fileID: 0}
-  m_LoadLessonText: {fileID: 0}
-  m_StoreLessonText: {fileID: 0}
-  m_MemReadStatusText: {fileID: 0}
-  m_MemWriteStatusText: {fileID: 0}
-  m_AddressStatusText: {fileID: 0}
-  m_DataStatusText: {fileID: 0}
-  m_FeedbackText: {fileID: 0}
-  m_ActionButton: {fileID: 0}
-  m_ActionButtonLabel: {fileID: 0}
-  m_HintDropdown: {fileID: 0}
-  m_HintMemReadText: {fileID: 0}
-  m_HintMemWriteText: {fileID: 0}
+  m_InteractionPanel:
+    m_MemReadStatusText: {fileID: 0}
+    m_MemWriteStatusText: {fileID: 0}
+    m_AddressStatusText: {fileID: 0}
+    m_DataStatusText: {fileID: 0}
+  m_SharedInteraction:
+    m_FeedbackText: {fileID: 0}
+    m_ActionButton: {fileID: 0}
+    m_ActionLabel: {fileID: 0}
+  m_PracticeValidationAttempts: 2
+  m_PracticeScannerAttempts: 2
+  m_PracticeHints: 2
   m_DataSpawnDelaySeconds: 0.75
   m_ExecuteButtonText: Execute Memory
   m_ContinueButtonText: Continue

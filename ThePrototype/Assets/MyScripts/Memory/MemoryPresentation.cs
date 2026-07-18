@@ -20,16 +20,21 @@ public static class MemoryPresentation
 
         if (controller.LessonRuntimeText != null)
         {
-            var instructionName = controller.CurrentInstruction != null ? controller.CurrentInstruction.displayName : "instruction";
-            var assembly = controller.CurrentInstruction != null ? controller.CurrentInstruction.assemblyInstructionText : "lw t1, 8(t0)";
-            controller.LessonRuntimeText.text = $"Instruction: {instructionName}\nAssembly: {assembly}";
+            if (controller.IsPracticeMode)
+                controller.LessonRuntimeText.text = "Practice Mode\nComplete the Memory phase using the instruction you decoded earlier.";
+            else
+            {
+                var instructionName = controller.CurrentInstruction != null ? controller.CurrentInstruction.displayName : "instruction";
+                var assembly = controller.CurrentInstruction != null ? controller.CurrentInstruction.assemblyInstructionText : "lw t1, 8(t0)";
+                controller.LessonRuntimeText.text = $"Instruction: {instructionName}\nAssembly: {assembly}";
+            }
         }
 
         if (controller.LoadLessonText != null)
-            controller.LoadLessonText.gameObject.SetActive(transferService.IsLoadInstruction(controller.CurrentInstruction));
+            controller.LoadLessonText.gameObject.SetActive(!controller.IsPracticeMode && transferService.IsLoadInstruction(controller.CurrentInstruction));
 
         if (controller.StoreLessonText != null)
-            controller.StoreLessonText.gameObject.SetActive(transferService.IsStoreInstruction(controller.CurrentInstruction));
+            controller.StoreLessonText.gameObject.SetActive(!controller.IsPracticeMode && transferService.IsStoreInstruction(controller.CurrentInstruction));
 
         if (controller.MemReadStatusText != null)
             controller.MemReadStatusText.text = $"MemRead: {controller.MemReadValue}";
@@ -45,7 +50,9 @@ public static class MemoryPresentation
 
         if (controller.ActionButtonLabel != null)
         {
-            controller.ActionButtonLabel.text = transferService.UsesInteractiveMemory(controller.CurrentInstruction)
+            controller.ActionButtonLabel.text = controller.IsPracticeAwaitingReset
+                ? "Restart"
+                : transferService.UsesInteractiveMemory(controller.CurrentInstruction)
                 ? controller.IsAwaitingContinue ? controller.ContinueButtonText : controller.ExecuteButtonText
                 : controller.ContinueButtonText;
         }
@@ -56,7 +63,7 @@ public static class MemoryPresentation
             controller.ActionButton.interactable = controller.IsPhaseActive && controller.ExecutionRoutine == null;
         }
 
-        RefreshHintBlocks(controller.HintDropdown, controller.HintMemReadText, controller.HintMemWriteText);
+        RefreshHintBlocks(controller);
         RefreshLayout(controller);
     }
 
@@ -95,38 +102,57 @@ public static class MemoryPresentation
     static string BuildAddressStatusText(MemoryController controller, MemoryTransferService transferService)
     {
         if (!transferService.UsesInteractiveMemory(controller.CurrentInstruction))
-            return "Address: memory path skipped";
+            return controller.IsPracticeMode ? "Waiting" : "Address: memory path skipped";
 
         if (controller.AddressScanner == null || controller.AddressScanner.AcceptedPacket == null)
-            return "Address: waiting for ALU Result";
+            return controller.IsPracticeMode ? "Waiting" : "Address: waiting for ALU Result";
 
-        return $"Address: {MemoryTransferService.FormatAddress(controller.AddressScanner.AcceptedPacket.Value)}";
+        return controller.IsPracticeMode
+            ? MemoryTransferService.FormatAddress(controller.AddressScanner.AcceptedPacket.Value)
+            : $"Address: {MemoryTransferService.FormatAddress(controller.AddressScanner.AcceptedPacket.Value)}";
     }
 
     static string BuildDataStatusText(MemoryController controller, MemoryTransferService transferService)
     {
         if (!transferService.UsesInteractiveMemory(controller.CurrentInstruction))
-            return "Data: not used in this phase";
+            return controller.IsPracticeMode ? "Waiting" : "Data: not used in this phase";
 
         if (transferService.IsLoadInstruction(controller.CurrentInstruction))
         {
             if (controller.HasCompletedMemoryAccess)
-                return $"Value: {controller.LastLoadedValue}";
+                return controller.IsPracticeMode ? controller.LastLoadedValue.ToString() : $"Value: {controller.LastLoadedValue}";
 
-            return "Value: waiting for Execute Memory";
+            return controller.IsPracticeMode ? "Waiting" : "Value: waiting for Execute Memory";
         }
 
         if (controller.DataScanner == null || controller.DataScanner.AcceptedPacket == null)
-            return "Value: waiting for store packet";
+            return controller.IsPracticeMode ? "Waiting" : "Value: waiting for store packet";
 
-        return $"Value: {controller.DataScanner.AcceptedPacket.Value}";
+        return controller.IsPracticeMode ? controller.DataScanner.AcceptedPacket.Value.ToString() : $"Value: {controller.DataScanner.AcceptedPacket.Value}";
     }
 
-    static void RefreshHintBlocks(TMP_Dropdown hintDropdown, TMP_Text memReadText, TMP_Text memWriteText)
+    static void RefreshHintBlocks(MemoryController controller)
     {
-        var selectedHint = hintDropdown != null ? hintDropdown.value : 0;
-        SetHintBlockActive(memReadText, selectedHint == 1);
-        SetHintBlockActive(memWriteText, selectedHint == 2);
+        var isPracticeMode = controller.IsPracticeMode;
+        SetObjectActive(controller.HintPanel.InfoRoot, !isPracticeMode);
+
+        if (controller.PracticeHintButton != null)
+            controller.PracticeHintButton.gameObject.SetActive(isPracticeMode);
+
+        SetHintBlockActive(
+            controller.PracticeHintText,
+            isPracticeMode && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
+
+        if (isPracticeMode)
+        {
+            SetHintBlockActive(controller.HintMemReadText, false);
+            SetHintBlockActive(controller.HintMemWriteText, false);
+            return;
+        }
+
+        var selectedHint = controller.HintDropdown != null ? controller.HintDropdown.value : 0;
+        SetHintBlockActive(controller.HintMemReadText, selectedHint == 1);
+        SetHintBlockActive(controller.HintMemWriteText, selectedHint == 2);
     }
 
     static void RefreshLayout(MemoryController controller)
@@ -163,5 +189,11 @@ public static class MemoryPresentation
     {
         if (textBlock != null)
             textBlock.gameObject.SetActive(isActive);
+    }
+
+    static void SetObjectActive(GameObject targetObject, bool isActive)
+    {
+        if (targetObject != null)
+            targetObject.SetActive(isActive);
     }
 }

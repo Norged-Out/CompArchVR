@@ -29,6 +29,9 @@ public sealed class MemoryTransferService
         ClearSpawnedMemoryPacket(controller);
         RefreshExpectedTargets(controller);
         controller.SetFeedback(string.Empty, false);
+
+        if (controller.IsPracticeMode)
+            controller.ShowPracticeBudgetSummary();
     }
 
     /// <summary>

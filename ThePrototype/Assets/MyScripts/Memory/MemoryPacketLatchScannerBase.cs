@@ -29,6 +29,13 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
     /// </summary>
     public DataPacketRole ExpectedPacketRole => m_ExpectedPacketRole;
 
+    /// <summary>
+    /// Raised once a stable-but-wrong packet has been rejected by this scanner.
+    /// Practice mode uses this to track scanner-attempt budgets without moving
+    /// that policy into the scanner itself.
+    /// </summary>
+    public event Action<TScanner, DataPacketToken> PacketRejected;
+
     protected override void Awake()
     {
         base.Awake();
@@ -158,6 +165,7 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
 
         if (stablePacket.PacketRole != m_ExpectedPacketRole)
         {
+            PacketRejected?.Invoke((TScanner)this, stablePacket);
             FlashFailure();
             return;
         }

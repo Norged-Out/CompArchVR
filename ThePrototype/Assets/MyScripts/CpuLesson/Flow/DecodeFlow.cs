@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -8,6 +9,10 @@ sealed class DecodeFlow
 {
     readonly CpuLessonFlow m_Flow;
     readonly LessonState m_State;
+    readonly HashSet<string> m_ConsumedPracticeScannerFailures = new(StringComparer.Ordinal);
+    int m_MaxPracticeScannerAttempts = 3;
+    int m_RemainingPracticeScannerAttempts = 3;
+    bool m_IsPracticeScannerFailureAwaitingReset;
 
     /// <summary>
     /// Captures the flow model and mutable lesson state used by the decode stage.
@@ -17,6 +22,8 @@ sealed class DecodeFlow
         m_Flow = flow;
         m_State = state;
     }
+
+    public bool IsPracticeScannerFailureAwaitingReset => m_IsPracticeScannerFailureAwaitingReset;
 
     /// <summary>
     /// Subscribes the register bank callbacks used by decode scanning.
@@ -53,9 +60,41 @@ sealed class DecodeFlow
         if (m_Flow.RegisterBankRef == null)
             return;
 
+        ResetPracticeScannerBudget();
         m_Flow.RegisterBankRef.RefreshRegisterCache();
         m_Flow.RegisterBankRef.RefreshScannerCache();
         m_Flow.RegisterBankRef.ResetAllRegisters();
+    }
+
+    /// <summary>
+    /// Lets the lesson guide choose how many failed Practice-mode register
+    /// scans the learner can spend during decode.
+    /// </summary>
+    public void ConfigurePracticeScannerAttempts(int maxAttempts)
+    {
+        m_MaxPracticeScannerAttempts = Mathf.Max(1, maxAttempts);
+        ResetPracticeScannerBudget();
+    }
+
+    /// <summary>
+    /// Completes the entire decode phase immediately by stamping the authored
+    /// operand selections and advancing until decode no longer owns the lesson.
+    /// </summary>
+    public void ForceCompleteDecodePhase()
+    {
+        if (!m_State.HasStarted || m_Flow.CurrentStep == null || m_Flow.ActiveInstruction == null)
+            return;
+
+        while (m_Flow.CurrentStep != null &&
+               (m_Flow.CurrentStep.highlightedNode == DatapathNodeId.InstructionMemory ||
+                m_Flow.CurrentStep.requiredInteraction == InstructionStepInteractionType.RegisterSelection))
+        {
+            var currentStep = m_Flow.CurrentStep;
+            if (currentStep.requiredInteraction == InstructionStepInteractionType.RegisterSelection)
+                ForceCompleteRegisterSelection(currentStep);
+
+            m_Flow.ProgressRef.ForceAdvanceStep();
+        }
     }
 
     /// <summary>
@@ -139,6 +178,9 @@ sealed class DecodeFlow
         if (!m_State.HasStarted || string.IsNullOrWhiteSpace(registerName) || m_Flow.CurrentStep == null)
             return;
 
+        if (m_IsPracticeScannerFailureAwaitingReset)
+            return;
+
         if (m_Flow.CurrentStep.requiredInteraction == InstructionStepInteractionType.RegisterSelection)
             ValidateRegisterSelection(InstructionRegisterRole.None, registerName, false);
     }
@@ -152,6 +194,9 @@ sealed class DecodeFlow
             return;
 
         if (m_Flow.CurrentStep.requiredInteraction != InstructionStepInteractionType.RegisterSelection)
+            return;
+
+        if (m_IsPracticeScannerFailureAwaitingReset)
             return;
 
         Debug.Log(
@@ -175,7 +220,7 @@ sealed class DecodeFlow
         if (cameFromScanner && scannedRole != expectedRole)
         {
             m_Flow.RegisterBankRef?.FlashScannerFailure(scannedRole);
-            m_Flow.RaiseFeedback("That operand does not belong on this scanner.", true);
+            RaiseRegisterSelectionFailure("That operand does not belong on this scanner.", scannedRole, registerName, true);
             return;
         }
 
@@ -186,7 +231,7 @@ sealed class DecodeFlow
             else
                 m_Flow.RegisterBankRef?.FlashFailure(registerName);
 
-            m_Flow.RaiseFeedback("That register does not match the current decode target.", true);
+            RaiseRegisterSelectionFailure("That register does not match the current decode target.", scannedRole, registerName, cameFromScanner);
             return;
         }
 
@@ -219,5 +264,103 @@ sealed class DecodeFlow
         m_State.MarkRegisterSelectionReady(false);
         m_Flow.RaiseFeedback("Operand confirmed.", false);
         m_Flow.RaiseStepChanged();
+    }
+
+    void ResetPracticeScannerBudget()
+    {
+        m_RemainingPracticeScannerAttempts = m_MaxPracticeScannerAttempts;
+        m_IsPracticeScannerFailureAwaitingReset = false;
+        m_ConsumedPracticeScannerFailures.Clear();
+    }
+
+    void RaiseRegisterSelectionFailure(string failureMessage, InstructionRegisterRole scannedRole, string registerName, bool cameFromScanner)
+    {
+        if (m_Flow.CurrentMode == LessonMode.Practice && cameFromScanner)
+        {
+            ConsumePracticeScannerFailure(failureMessage, scannedRole, registerName);
+            return;
+        }
+
+        m_Flow.RaiseFeedback(failureMessage, true);
+    }
+
+    void ConsumePracticeScannerFailure(string failureMessage, InstructionRegisterRole scannedRole, string registerName)
+    {
+        var failureKey = BuildPracticeScannerFailureKey(failureMessage, scannedRole, registerName);
+        if (!m_ConsumedPracticeScannerFailures.Add(failureKey))
+        {
+            m_Flow.RaiseFeedback(
+                $"{failureMessage}\nScanner attempts remaining: {m_RemainingPracticeScannerAttempts}",
+                true);
+            return;
+        }
+
+        m_RemainingPracticeScannerAttempts = Mathf.Max(0, m_RemainingPracticeScannerAttempts - 1);
+        var feedbackText = $"{failureMessage}\nScanner attempts remaining: {m_RemainingPracticeScannerAttempts}";
+
+        if (m_RemainingPracticeScannerAttempts > 0)
+        {
+            m_Flow.RaiseFeedback(feedbackText, true);
+            return;
+        }
+
+        m_IsPracticeScannerFailureAwaitingReset = true;
+        m_Flow.RegisterBankRef?.ConfigureScannerRoles(Array.Empty<InstructionRegisterRole>());
+        m_Flow.RaiseFeedback($"{feedbackText}\nPress Restart to reset the lesson.", true);
+        m_Flow.NotifyPracticeDecodeScannerFailed();
+    }
+
+    void ForceCompleteRegisterSelection(InstructionFlowStep step)
+    {
+        var instruction = m_Flow.ActiveInstruction;
+        if (instruction == null || step == null)
+            return;
+
+        var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
+        foreach (var requiredRole in requiredRoles)
+        {
+            m_State.RuntimeSelection.SetSelectedRegister(requiredRole, instruction.GetExpectedRegisterName(requiredRole));
+            SpawnForcedDecodePacket(requiredRole, instruction);
+        }
+
+        if (!string.IsNullOrWhiteSpace(instruction.expectedRd))
+            m_State.RuntimeSelection.SetSelectedRegister(InstructionRegisterRole.Rd, instruction.expectedRd);
+
+        if (instruction.usesImmediate)
+        {
+            m_State.RuntimeSelection.immediateValue = instruction.expectedImmediateValue;
+            TrySpawnImmediatePacket();
+        }
+
+        m_State.ForceRegisterSelectionComplete(requiredRoles.Length);
+    }
+
+    string BuildPracticeScannerFailureKey(string failureMessage, InstructionRegisterRole scannedRole, string registerName)
+    {
+        return $"{m_State.CurrentStepIndex}:{m_State.CurrentRegisterSelectionIndex}:{scannedRole}:{registerName}:{failureMessage}";
+    }
+
+    void SpawnForcedDecodePacket(InstructionRegisterRole role, InstructionDefinition instruction)
+    {
+        if (m_Flow.RegisterBankRef == null || instruction == null)
+            return;
+
+        if (role != InstructionRegisterRole.Rs && role != InstructionRegisterRole.Rt)
+            return;
+
+        var registerId = instruction.GetExpectedRegisterName(role);
+        if (string.IsNullOrWhiteSpace(registerId))
+            return;
+
+        var packetRole = role == InstructionRegisterRole.Rs
+            ? DataPacketRole.ReadData1
+            : instruction.GetDecodeRtPacketRole();
+
+        m_Flow.RegisterBankRef.SpawnPacketFromScanner(
+            role,
+            packetRole,
+            registerId,
+            m_Flow.RegisterBankRef.GetRegisterDisplayLabel(registerId),
+            m_Flow.RegisterBankRef.GetRegisterValue(registerId));
     }
 }

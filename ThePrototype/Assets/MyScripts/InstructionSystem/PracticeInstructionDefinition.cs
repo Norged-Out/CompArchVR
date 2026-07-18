@@ -31,8 +31,17 @@ public sealed class PracticeInstructionDefinition : ScriptableObject
     public string expectedImmediateBits = string.Empty;
 
     [Header("Bridge To Shared Runtime")]
-    [Tooltip("Optional Learning instruction used to drive the shared EX/MEM/WB/PC flow after Practice decode succeeds.")]
+    [Tooltip("Authored instruction template used to drive the shared EX/MEM/WB/PC flow after Practice decode succeeds.")]
     public InstructionDefinition learningModeInstruction;
+
+    [Header("Practice Runtime Overrides")]
+    [TextArea(1, 3)]
+    public string runtimeAssemblyInstructionText = "add t3, t4, t5";
+
+    public string runtimeRs = "t4";
+    public string runtimeRt = "t5";
+    public string runtimeRd = "t3";
+    public int runtimeImmediateValue;
 
     /// <summary>
     /// Returns the encoded instruction as a whitespace-free 32-bit binary string.
@@ -158,6 +167,46 @@ public sealed class PracticeInstructionDefinition : ScriptableObject
             return learningModeInstruction.displayName;
 
         return expectedMnemonic.ToString().ToLowerInvariant();
+    }
+
+    /// <summary>
+    /// Clones the authored runtime template and applies Practice-specific
+    /// operand overrides so one Practice asset can drive both decode and the
+    /// downstream shared runtime.
+    /// </summary>
+    public InstructionDefinition CreateRuntimeInstruction()
+    {
+        var runtimeTemplate = learningModeInstruction != null
+            ? learningModeInstruction
+            : InstructionDefaults.CreateFallbackAdd();
+
+        var runtimeInstruction = Instantiate(runtimeTemplate);
+        runtimeInstruction.name = $"{displayName} Runtime";
+        runtimeInstruction.hideFlags = HideFlags.DontSave;
+        runtimeInstruction.displayName = GetDecodedInstructionLabel();
+
+        ApplyRuntimeOverrides(runtimeInstruction);
+        return runtimeInstruction;
+    }
+
+    void ApplyRuntimeOverrides(InstructionDefinition runtimeInstruction)
+    {
+        if (runtimeInstruction == null)
+            return;
+
+        if (!string.IsNullOrWhiteSpace(runtimeAssemblyInstructionText))
+            runtimeInstruction.assemblyInstructionText = runtimeAssemblyInstructionText;
+
+        if (!string.IsNullOrWhiteSpace(runtimeRs))
+            runtimeInstruction.expectedRs = runtimeRs.Trim();
+
+        if (!string.IsNullOrWhiteSpace(runtimeRt))
+            runtimeInstruction.expectedRt = runtimeRt.Trim();
+
+        if (!string.IsNullOrWhiteSpace(runtimeRd))
+            runtimeInstruction.expectedRd = runtimeRd.Trim();
+
+        runtimeInstruction.expectedImmediateValue = runtimeImmediateValue;
     }
 
     static string NormalizeBits(string rawBits)

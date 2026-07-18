@@ -41,7 +41,7 @@ public static class LessonInstrResolver
         PracticeInstructionDefinition practiceInstruction)
     {
         return mode == LessonMode.Practice
-            ? practiceInstruction != null ? practiceInstruction.learningModeInstruction : null
+            ? practiceInstruction != null ? practiceInstruction.CreateRuntimeInstruction() : null
             : learningInstruction;
     }
 

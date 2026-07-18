@@ -1258,20 +1258,31 @@ MonoBehaviour:
     m_FailureClip: {fileID: 0}
   m_AluOpButtonRoot: {fileID: 1364021660308291361}
   m_AluSrcButtonRoot: {fileID: 8609213945429780975}
+  m_LessonPanel:
+    m_RuntimeText: {fileID: 0}
+  m_HintPanel:
+    m_InfoRoot: {fileID: 0}
+    m_InfoDropdown: {fileID: 0}
+    m_HintButton: {fileID: 0}
+    m_HintText: {fileID: 0}
+  m_LearningHints:
+    m_AluOpText: {fileID: 0}
+    m_AluSrcText: {fileID: 0}
+    m_AluControlText: {fileID: 0}
   m_AluUiRoot: {fileID: 0}
-  m_LessonRuntimeText: {fileID: 0}
-  m_AluOpStatusText: {fileID: 0}
-  m_AluSrcStatusText: {fileID: 0}
-  m_Input1StatusText: {fileID: 0}
-  m_Input2StatusText: {fileID: 0}
-  m_FeedbackText: {fileID: 0}
-  m_ExecuteButton: {fileID: 0}
-  m_ExecuteButtonLabel: {fileID: 0}
-  m_FunctDropdown: {fileID: 0}
-  m_HintDropdown: {fileID: 0}
-  m_HintAluOpText: {fileID: 0}
-  m_HintAluSrcText: {fileID: 0}
-  m_HintAluControlText: {fileID: 0}
+  m_InteractionPanel:
+    m_AluOpStatusText: {fileID: 0}
+    m_AluSrcStatusText: {fileID: 0}
+    m_Input1StatusText: {fileID: 0}
+    m_Input2StatusText: {fileID: 0}
+    m_FunctDropdown: {fileID: 0}
+  m_SharedInteraction:
+    m_FeedbackText: {fileID: 0}
+    m_ActionButton: {fileID: 0}
+    m_ActionLabel: {fileID: 0}
+  m_PracticeValidationAttempts: 3
+  m_PracticeScannerAttempts: 3
+  m_PracticeHints: 2
   m_ResultSpawnDelaySeconds: 1.25
   m_ExecuteButtonText: Execute
   m_ResultReadyButtonText: Result Ready

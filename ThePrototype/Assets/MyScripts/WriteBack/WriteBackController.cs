@@ -42,48 +42,36 @@ public class WriteBackController : MonoBehaviour
     [SerializeField]
     LessonUiAudioCueSet m_LessonAudioCues = new();
 
-    [Header("Write-Back UI")]
+    [Header("Lesson Panel")]
+    [SerializeField]
+    WriteBackLessonPanelRefs m_LessonPanel;
+
+    [Header("Hint Panel")]
+    [SerializeField]
+    PhaseHintPanelRefs m_HintPanel;
+
+    [SerializeField]
+    WriteBackHintInfoRefs m_LearningHints;
+
+    [Header("Interaction Panel")]
     [SerializeField]
     GameObject m_WbUiRoot;
 
     [SerializeField]
-    TMP_Text m_LessonRuntimeText;
+    WriteBackInteractionPanelRefs m_InteractionPanel;
 
     [SerializeField]
-    TMP_Text m_RegDstStatusText;
+    PhaseSharedInteractionRefs m_SharedInteraction;
+
+    [Header("Practice")]
+    [SerializeField]
+    int m_PracticeValidationAttempts = 2;
 
     [SerializeField]
-    TMP_Text m_RegWriteStatusText;
+    int m_PracticeScannerAttempts = 2;
 
     [SerializeField]
-    TMP_Text m_MemToRegStatusText;
-
-    [SerializeField]
-    TMP_Text m_RegisterStatusText;
-
-    [SerializeField]
-    TMP_Text m_DataStatusText;
-
-    [SerializeField]
-    TMP_Text m_FeedbackText;
-
-    [SerializeField]
-    Button m_ActionButton;
-
-    [SerializeField]
-    TMP_Text m_ActionButtonLabel;
-
-    [SerializeField]
-    TMP_Dropdown m_HintDropdown;
-
-    [SerializeField]
-    TMP_Text m_HintRegDstText;
-
-    [SerializeField]
-    TMP_Text m_HintRegWriteText;
-
-    [SerializeField]
-    TMP_Text m_HintMemToRegText;
+    int m_PracticeHints = 1;
 
     [Header("Timing")]
     [SerializeField]
@@ -107,6 +95,7 @@ public class WriteBackController : MonoBehaviour
     RegisterBank m_RegisterBank;
     Coroutine m_TransferRoutine;
     WriteBackTransferService m_TransferService;
+    readonly WriteBackPracticeFlow m_PracticeFlow = new();
     bool m_IsPhaseActive;
     bool m_IsAwaitingContinue;
     bool m_HasAppliedWriteBack;
@@ -116,9 +105,11 @@ public class WriteBackController : MonoBehaviour
     string m_RegDstValue = "0";
     string m_RegWriteValue = "0";
     string m_MemToRegValue = "0";
+    LessonMode m_CurrentMode = LessonMode.Learning;
 
     public event Action<string, int> WriteBackApplied;
     public event Action ContinueRequested;
+    public event Action PracticeResetRequested;
 
     /// <summary>
     /// The currently selected instruction for the WB phase.
@@ -144,6 +135,8 @@ public class WriteBackController : MonoBehaviour
     /// Exposes the current MemToReg signal state for presentation.
     /// </summary>
     public string MemToRegValue => m_MemToRegValue;
+    public bool IsPracticeMode => m_CurrentMode == LessonMode.Practice;
+    public bool IsPracticeAwaitingReset => m_PracticeFlow.IsAwaitingReset;
 
     /// <summary>
     /// True once the actual register write has already happened.
@@ -185,9 +178,10 @@ public class WriteBackController : MonoBehaviour
         // Keep the behavioral service stateless so the controller remains the
         // single runtime owner of authored scene state.
         m_TransferService = new WriteBackTransferService();
+        ConfigurePracticeFlow();
         HookRuntimeBindings(true);
         HookScannerEvents(true);
-        WriteBackPresentation.PopulateHintDropdown(m_HintDropdown);
+        WriteBackPresentation.PopulateHintDropdown(HintDropdown);
         ResetPipeVisuals();
         SetFeedback(string.Empty, false);
         RefreshExpectedTargets();
@@ -198,9 +192,10 @@ public class WriteBackController : MonoBehaviour
     {
         // Rebind authored events whenever Unity re-enables this station so play
         // mode toggles do not accumulate duplicate listeners.
+        ConfigurePracticeFlow();
         HookRuntimeBindings(true);
         HookScannerEvents(true);
-        WriteBackPresentation.PopulateHintDropdown(m_HintDropdown);
+        WriteBackPresentation.PopulateHintDropdown(HintDropdown);
         RefreshExpectedTargets();
         RefreshPresentation();
     }
@@ -214,17 +209,22 @@ public class WriteBackController : MonoBehaviour
     /// <summary>
     /// Shows or hides the WB phase and binds the active instruction context.
     /// </summary>
-    public void SetPhaseState(bool isActive, InstructionDefinition instruction, RegisterBank registerBank)
+    public void SetPhaseState(bool isActive, LessonMode lessonMode, InstructionDefinition instruction, RegisterBank registerBank)
     {
         var instructionChanged = instruction != null && instruction != m_CurrentInstruction;
+        var modeChanged = lessonMode != m_CurrentMode;
         var enteringPhase = isActive && !m_IsPhaseActive;
 
         m_IsPhaseActive = isActive;
+        m_CurrentMode = lessonMode;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
         m_RegisterBank = registerBank;
 
-        if (enteringPhase || instructionChanged)
+        if (enteringPhase || instructionChanged || modeChanged)
+        {
             PrepareForWriteBackStep();
+            m_PracticeFlow.Reset();
+        }
 
         if (m_WbUiRoot != null)
             m_WbUiRoot.SetActive(isActive);
@@ -263,6 +263,8 @@ public class WriteBackController : MonoBehaviour
         m_RegDstValue = "0";
         m_RegWriteValue = "0";
         m_MemToRegValue = "0";
+        m_CurrentMode = LessonMode.Learning;
+        m_PracticeFlow.Reset();
 
         m_RegisterScanner?.ResetScanner();
         m_PacketScanner?.ResetScanner();
@@ -284,6 +286,12 @@ public class WriteBackController : MonoBehaviour
         if (!m_IsPhaseActive || m_TransferRoutine != null)
             return;
 
+        if (m_PracticeFlow.IsAwaitingReset)
+        {
+            PracticeResetRequested?.Invoke();
+            return;
+        }
+
         if (m_IsAwaitingContinue)
         {
             m_IsAwaitingContinue = false;
@@ -300,7 +308,19 @@ public class WriteBackController : MonoBehaviour
                 m_PacketScanner,
                 out var validationMessage))
         {
-            SetFeedback(validationMessage, true);
+            if (IsPracticeMode)
+            {
+                var didFail = m_PracticeFlow.HandleValidationFailure(validationMessage, out var practiceFeedback);
+                if (didFail)
+                    EnterPracticeFailureState(practiceFeedback);
+                else
+                    SetFeedback(practiceFeedback, true);
+            }
+            else
+            {
+                SetFeedback(validationMessage, true);
+            }
+
             RefreshPresentation();
             return;
         }
@@ -338,11 +358,11 @@ public class WriteBackController : MonoBehaviour
     /// <summary>
     /// Updates the authored WB feedback field.
     /// </summary>
-    public void SetFeedback(string message, bool isFailure)
+    public void SetFeedback(string message, bool isFailure, bool playIncorrectCue = true)
     {
-        WriteBackPresentation.SetFeedback(m_FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
+        WriteBackPresentation.SetFeedback(FeedbackText, message, isFailure, m_SuccessFeedbackColor, m_FailureFeedbackColor);
 
-        if (isFailure && !string.IsNullOrWhiteSpace(message))
+        if (playIncorrectCue && isFailure && !string.IsNullOrWhiteSpace(message))
             PlayIncorrectCue();
     }
 
@@ -372,6 +392,8 @@ public class WriteBackController : MonoBehaviour
         m_PacketScanner?.ResetScanner();
         StartWaitingPipeVisuals();
         SetFeedback(string.Empty, false);
+        if (IsPracticeMode)
+            SetFeedback(m_PracticeFlow.BuildBudgetSummary("Set the write-back path, then validate."), false);
         RefreshExpectedTargets();
         RefreshPresentation();
     }
@@ -473,6 +495,15 @@ public class WriteBackController : MonoBehaviour
         RefreshPresentation();
     }
 
+    public void HandlePracticeHintPressed()
+    {
+        if (!IsPracticeMode || PracticeHintText == null)
+            return;
+
+        PracticeHintText.text = m_PracticeFlow.BuildHint(this);
+        RefreshPresentation();
+    }
+
     void HookRuntimeBindings(bool subscribe)
     {
         if (subscribe)
@@ -496,20 +527,54 @@ public class WriteBackController : MonoBehaviour
         if (m_RegisterScanner != null)
         {
             m_RegisterScanner.RegisterAccepted -= HandleRegisterAccepted;
+            m_RegisterScanner.RegisterRejected -= HandleRegisterRejected;
             if (subscribe)
+            {
                 m_RegisterScanner.RegisterAccepted += HandleRegisterAccepted;
+                m_RegisterScanner.RegisterRejected += HandleRegisterRejected;
+            }
         }
 
         if (m_PacketScanner != null)
         {
             m_PacketScanner.PacketAccepted -= HandlePacketAccepted;
+            m_PacketScanner.PacketRejected -= HandlePacketRejected;
             if (subscribe)
+            {
                 m_PacketScanner.PacketAccepted += HandlePacketAccepted;
+                m_PacketScanner.PacketRejected += HandlePacketRejected;
+            }
         }
     }
 
     public void HandleHintDropdownChanged(int _)
     {
+        RefreshPresentation();
+    }
+
+    void HandleRegisterRejected(WriteBackRegisterScanner _, RegisterToken registerToken)
+    {
+        if (!IsPracticeMode || !m_IsPhaseActive || m_HasAppliedWriteBack || IsPracticeAwaitingReset)
+            return;
+
+        var didFail = m_PracticeFlow.HandleRegisterScannerFailure(registerToken, out var feedbackText);
+        if (didFail)
+            EnterPracticeFailureState(feedbackText);
+        else
+            SetFeedback(feedbackText, true);
+        RefreshPresentation();
+    }
+
+    void HandlePacketRejected(WriteBackPacketScanner _, DataPacketToken packetToken)
+    {
+        if (!IsPracticeMode || !m_IsPhaseActive || m_HasAppliedWriteBack || IsPracticeAwaitingReset)
+            return;
+
+        var didFail = m_PracticeFlow.HandlePacketScannerFailure(packetToken, out var feedbackText);
+        if (didFail)
+            EnterPracticeFailureState(feedbackText);
+        else
+            SetFeedback(feedbackText, true);
         RefreshPresentation();
     }
 
@@ -540,6 +605,31 @@ public class WriteBackController : MonoBehaviour
     public void PlayLessonCompletedCue()
     {
         m_LessonAudioCues.PlayLessonCompletedCue();
+    }
+
+    public void PlayFailureCue()
+    {
+        m_LessonAudioCues.PlayFailureCue();
+    }
+
+    /// <summary>
+    /// Dev-mode helper that applies the authored write-back target and value
+    /// without requiring the learner to rebuild the station manually.
+    /// </summary>
+    public void DevForceCompletePhase(string destinationRegister, int transferredValue)
+    {
+        if (!m_IsPhaseActive || m_CurrentInstruction == null)
+            return;
+
+        m_LastTargetRegister = destinationRegister;
+        m_LastTransferredValue = transferredValue;
+        m_LastTransferredPacketRole = m_CurrentInstruction.GetWriteBackPacketRole();
+        m_HasAppliedWriteBack = true;
+        m_IsAwaitingContinue = false;
+        m_RegisterBank?.SetRegisterValue(destinationRegister, transferredValue);
+        SetFeedback($"Write-back complete. {destinationRegister} now stores {transferredValue}.", false);
+        WriteBackApplied?.Invoke(destinationRegister, transferredValue);
+        RefreshPresentation();
     }
 
     void RefreshExpectedTargets()
@@ -589,20 +679,42 @@ public class WriteBackController : MonoBehaviour
         m_PipeSequencePlayer?.PlayIdleSweep();
     }
 
-    public TMP_Text LessonRuntimeText => m_LessonRuntimeText;
-    public TMP_Text RegDstStatusText => m_RegDstStatusText;
-    public TMP_Text RegWriteStatusText => m_RegWriteStatusText;
-    public TMP_Text MemToRegStatusText => m_MemToRegStatusText;
-    public TMP_Text RegisterStatusText => m_RegisterStatusText;
-    public TMP_Text DataStatusText => m_DataStatusText;
-    public TMP_Text ActionButtonLabel => m_ActionButtonLabel;
-    public Button ActionButton => m_ActionButton;
-    public TMP_Dropdown HintDropdown => m_HintDropdown;
-    public TMP_Text HintRegDstText => m_HintRegDstText;
-    public TMP_Text HintRegWriteText => m_HintRegWriteText;
-    public TMP_Text HintMemToRegText => m_HintMemToRegText;
+    public TMP_Text LessonRuntimeText => m_LessonPanel.RuntimeText;
+    public TMP_Text RegDstStatusText => m_InteractionPanel.RegDstStatusText;
+    public TMP_Text RegWriteStatusText => m_InteractionPanel.RegWriteStatusText;
+    public TMP_Text MemToRegStatusText => m_InteractionPanel.MemToRegStatusText;
+    public TMP_Text RegisterStatusText => m_InteractionPanel.RegisterStatusText;
+    public TMP_Text DataStatusText => m_InteractionPanel.DataStatusText;
+    public TMP_Text FeedbackText => m_SharedInteraction.FeedbackText;
+    public TMP_Text ActionButtonLabel => m_SharedInteraction.ActionLabel;
+    public Button ActionButton => m_SharedInteraction.ActionButton;
+    public TMP_Dropdown HintDropdown => m_HintPanel.InfoDropdown;
+    public TMP_Text HintRegDstText => m_LearningHints.RegDstText;
+    public TMP_Text HintRegWriteText => m_LearningHints.RegWriteText;
+    public TMP_Text HintMemToRegText => m_LearningHints.MemToRegText;
+    public Button PracticeHintButton => m_HintPanel.HintButton;
+    public TMP_Text PracticeHintText => m_HintPanel.HintText;
+    public PhaseHintPanelRefs HintPanel => m_HintPanel;
     public bool IsPhaseActive => m_IsPhaseActive;
     public bool IsTransferRunning => m_TransferRoutine != null;
     public string ExecuteButtonText => m_ExecuteButtonText;
     public string ContinueButtonText => m_ContinueButtonText;
+
+    void ConfigurePracticeFlow()
+    {
+        m_PracticeFlow.Configure(m_PracticeValidationAttempts, m_PracticeScannerAttempts, m_PracticeHints);
+    }
+
+    /// <summary>
+    /// Uses the same two-step interaction as the normal phase-complete path:
+    /// the failure cue plays first, then Restart performs the reset.
+    /// </summary>
+    void EnterPracticeFailureState(string feedbackText)
+    {
+        m_IsAwaitingContinue = false;
+        m_RegisterScanner?.SetActive(false);
+        m_PacketScanner?.SetActive(false);
+        SetFeedback(m_PracticeFlow.BuildFailureResetText(feedbackText), true, false);
+        PlayFailureCue();
+    }
 }

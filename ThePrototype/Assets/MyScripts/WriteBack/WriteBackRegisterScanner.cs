@@ -29,6 +29,7 @@ public class WriteBackRegisterScanner : PedestalScannerBase
     public string ExpectedRegisterId => m_ExpectedRegisterId;
 
     public event Action<WriteBackRegisterScanner, RegisterToken> RegisterAccepted;
+    public event Action<WriteBackRegisterScanner, RegisterToken> RegisterRejected;
 
     protected override float RequiredStableSeconds => m_RequiredStableSeconds;
     protected override float PressedOffsetY => m_LocalPressedOffsetY;
@@ -132,6 +133,7 @@ public class WriteBackRegisterScanner : PedestalScannerBase
 
         if (!string.Equals(registerToken.RegisterId, m_ExpectedRegisterId, StringComparison.OrdinalIgnoreCase))
         {
+            RegisterRejected?.Invoke(this, registerToken);
             FlashFailure();
             return;
         }

@@ -156,7 +156,10 @@ sealed class LessonGuideView
         if (m_ExecutePanelRoot != null)
             m_ExecutePanelRoot.SetActive(isVisible);
 
-        m_ExecuteController?.SetPhaseState(isVisible, lessonFlow != null ? lessonFlow.CurrentInstruction : null);
+        m_ExecuteController?.SetPhaseState(
+            isVisible,
+            lessonFlow != null ? lessonFlow.CurrentMode : LessonMode.Learning,
+            lessonFlow != null ? lessonFlow.CurrentInstruction : null);
     }
 
     /// <summary>
@@ -170,7 +173,10 @@ sealed class LessonGuideView
         if (m_MemoryController == null)
             return;
 
-        m_MemoryController.SetPhaseState(isVisible, lessonFlow != null ? lessonFlow.CurrentInstruction : null);
+        m_MemoryController.SetPhaseState(
+            isVisible,
+            lessonFlow != null ? lessonFlow.CurrentMode : LessonMode.Learning,
+            lessonFlow != null ? lessonFlow.CurrentInstruction : null);
     }
 
     /// <summary>
@@ -186,6 +192,7 @@ sealed class LessonGuideView
 
         m_WriteBackController.SetPhaseState(
             isVisible,
+            lessonFlow != null ? lessonFlow.CurrentMode : LessonMode.Learning,
             lessonFlow != null ? lessonFlow.CurrentInstruction : null,
             lessonFlow != null ? lessonFlow.RegisterBank : null);
 
@@ -204,7 +211,10 @@ sealed class LessonGuideView
         if (m_PcUpdateController == null)
             return;
 
-        m_PcUpdateController.SetPhaseState(isVisible, lessonFlow != null ? lessonFlow.CurrentInstruction : null);
+        m_PcUpdateController.SetPhaseState(
+            isVisible,
+            lessonFlow != null ? lessonFlow.CurrentMode : LessonMode.Learning,
+            lessonFlow != null ? lessonFlow.CurrentInstruction : null);
         if (!isVisible)
             m_PcUpdateController.ResetPcUpdateState();
     }

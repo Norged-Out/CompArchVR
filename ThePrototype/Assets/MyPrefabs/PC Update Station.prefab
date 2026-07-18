@@ -1022,34 +1022,45 @@ MonoBehaviour:
     m_IncorrectClip: {fileID: 8300000, guid: 88fe676e2603e464897daddb0d5a62f4, type: 3}
     m_LessonCompletedClip: {fileID: 8300000, guid: f84e071ebd67c6e49b9fb6e25cf6f5f7, type: 3}
     m_FailureClip: {fileID: 0}
+  m_LessonPanel:
+    m_RuntimeText: {fileID: 0}
+    m_BranchText: {fileID: 0}
+    m_ShiftText: {fileID: 0}
+    m_ResultText: {fileID: 0}
+    m_EndText: {fileID: 0}
+  m_HintPanel:
+    m_InfoRoot: {fileID: 0}
+    m_InfoDropdown: {fileID: 0}
+    m_HintButton: {fileID: 0}
+    m_HintText: {fileID: 0}
+  m_LearningHints:
+    m_PcText: {fileID: 0}
+    m_PcSrcText: {fileID: 0}
+    m_BranchText: {fileID: 0}
+    m_JumpText: {fileID: 0}
+    m_ShiftLeftTwoText: {fileID: 0}
+    m_ZeroText: {fileID: 0}
   m_PcUpdateUiRoot: {fileID: 0}
-  m_LessonRuntimeText: {fileID: 0}
-  m_LessonBranchText: {fileID: 0}
-  m_LessonShiftText: {fileID: 0}
-  m_LessonResultText: {fileID: 0}
-  m_LessonEndText: {fileID: 0}
-  m_PcUpdateGroupRoot: {fileID: 0}
-  m_SignalsGroupRoot: {fileID: 0}
-  m_PcIncrementSlider: {fileID: 0}
-  m_BranchStatusText: {fileID: 0}
-  m_JumpStatusText: {fileID: 0}
-  m_ImmediateGroupRoot: {fileID: 0}
-  m_ImmediateStatusText: {fileID: 0}
-  m_ShiftButton: {fileID: 0}
-  m_BranchConditionGroupRoot: {fileID: 0}
-  m_ZeroStatusText: {fileID: 0}
-  m_BranchConditionDropdown: {fileID: 0}
-  m_PCSrcStatusText: {fileID: 0}
-  m_FeedbackText: {fileID: 0}
-  m_ActionButton: {fileID: 0}
-  m_ActionButtonLabel: {fileID: 0}
-  m_HintDropdown: {fileID: 0}
-  m_HintPcText: {fileID: 0}
-  m_HintPcSrcText: {fileID: 0}
-  m_HintBranchText: {fileID: 0}
-  m_HintJumpText: {fileID: 0}
-  m_HintShiftLeftTwoText: {fileID: 0}
-  m_HintZeroText: {fileID: 0}
+  m_InteractionPanel:
+    m_PcUpdateGroupRoot: {fileID: 0}
+    m_SignalsGroupRoot: {fileID: 0}
+    m_PcIncrementSlider: {fileID: 0}
+    m_BranchStatusText: {fileID: 0}
+    m_JumpStatusText: {fileID: 0}
+    m_ImmediateGroupRoot: {fileID: 0}
+    m_ImmediateStatusText: {fileID: 0}
+    m_ShiftButton: {fileID: 0}
+    m_BranchConditionGroupRoot: {fileID: 0}
+    m_ZeroStatusText: {fileID: 0}
+    m_BranchConditionDropdown: {fileID: 0}
+    m_PCSrcStatusText: {fileID: 0}
+  m_SharedInteraction:
+    m_FeedbackText: {fileID: 0}
+    m_ActionButton: {fileID: 0}
+    m_ActionLabel: {fileID: 0}
+  m_PracticeValidationAttempts: 3
+  m_PracticeScannerAttempts: 2
+  m_PracticeHints: 2
   m_ConfirmButtonText: Confirm PC Update
   m_ContinueButtonText: Continue
   m_SuccessFeedbackColor: {r: 0.78, g: 0.96, b: 0.82, a: 1}

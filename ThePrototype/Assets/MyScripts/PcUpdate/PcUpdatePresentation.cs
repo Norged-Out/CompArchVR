@@ -18,10 +18,11 @@ public static class PcUpdatePresentation
             return;
 
         var showEndState = controller.IsAwaitingContinue;
-        var showBranchSpecificGroups = controller.IsPhaseActive && controller.BranchValue == "1" && !showEndState;
+        var showFailureResetState = controller.IsPracticeAwaitingReset;
+        var showBranchSpecificGroups = controller.IsPhaseActive && controller.BranchValue == "1" && !showEndState && !showFailureResetState;
 
-        SetObjectActive(controller.PcUpdateGroupRoot, !showEndState);
-        SetObjectActive(controller.SignalsGroupRoot, !showEndState);
+        SetObjectActive(controller.PcUpdateGroupRoot, !showEndState && !showFailureResetState);
+        SetObjectActive(controller.SignalsGroupRoot, !showEndState && !showFailureResetState);
         SetObjectActive(controller.ImmediateGroupRoot, showBranchSpecificGroups);
         SetObjectActive(controller.BranchConditionGroupRoot, showBranchSpecificGroups);
 
@@ -51,11 +52,13 @@ public static class PcUpdatePresentation
             controller.ActionButton.interactable = controller.IsPhaseActive;
 
         if (controller.ActionButtonLabel != null)
-            controller.ActionButtonLabel.text = controller.IsAwaitingContinue
+            controller.ActionButtonLabel.text = controller.IsPracticeAwaitingReset
+                ? "Restart"
+                : controller.IsAwaitingContinue
                 ? controller.ContinueButtonText
                 : controller.ConfirmButtonText;
 
-        RefreshHintBlocks(controller.HintDropdown, controller.HintPcText, controller.HintPcSrcText, controller.HintBranchText, controller.HintJumpText, controller.HintShiftLeftTwoText, controller.HintZeroText);
+        RefreshHintBlocks(controller);
     }
 
     /// <summary>
@@ -120,13 +123,17 @@ public static class PcUpdatePresentation
     static void RefreshLessonBlocks(PcUpdateController controller, PcBranchService branchService, bool showEndState)
     {
         SetTextActive(controller.LessonRuntimeText, !showEndState);
-        SetTextActive(controller.LessonBranchText, !showEndState && ShouldShowBranchLesson(controller.CurrentInstruction));
-        SetTextActive(controller.LessonShiftText, !showEndState && ShouldShowShiftLesson(controller.CurrentInstruction));
-        SetTextActive(controller.LessonResultText, !showEndState && ShouldShowResultLesson(controller.CurrentInstruction));
+        SetTextActive(controller.LessonBranchText, !controller.IsPracticeMode && !showEndState && ShouldShowBranchLesson(controller.CurrentInstruction));
+        SetTextActive(controller.LessonShiftText, !controller.IsPracticeMode && !showEndState && ShouldShowShiftLesson(controller.CurrentInstruction));
+        SetTextActive(controller.LessonResultText, !controller.IsPracticeMode && !showEndState && ShouldShowResultLesson(controller.CurrentInstruction));
         SetTextActive(controller.LessonEndText, showEndState);
 
         if (controller.LessonRuntimeText != null)
-            controller.LessonRuntimeText.text = branchService.BuildLessonRuntimeText(controller.CurrentInstruction);
+        {
+            controller.LessonRuntimeText.text = controller.IsPracticeMode
+                ? "Practice Mode\nComplete the Program Counter Update phase using the instruction you decoded earlier."
+                : branchService.BuildLessonRuntimeText(controller.CurrentInstruction);
+        }
 
         if (controller.LessonEndText != null)
             controller.LessonEndText.text = branchService.BuildLessonEndText();
@@ -180,12 +187,12 @@ public static class PcUpdatePresentation
     static string BuildZeroStatusText(PcUpdateController controller)
     {
         if (controller.BranchValue != "1")
-            return "Zero: n/a";
+            return controller.IsPracticeMode ? "Waiting" : "Zero: n/a";
 
         if (controller.ZeroScanner == null || controller.ZeroScanner.AcceptedPacket == null)
-            return "Zero: waiting";
+            return controller.IsPracticeMode ? "Waiting" : "Zero: waiting";
 
-        return $"Zero: {controller.ZeroScanner.AcceptedPacket.Value}";
+        return controller.IsPracticeMode ? controller.ZeroScanner.AcceptedPacket.Value.ToString() : $"Zero: {controller.ZeroScanner.AcceptedPacket.Value}";
     }
 
     /// <summary>
@@ -197,7 +204,9 @@ public static class PcUpdatePresentation
         var pcIncrement = controller.GetPcIncrementValue();
 
         if (controller.CurrentInstruction == null || !controller.CurrentInstruction.UsesBranchDecision())
-            return $"PCSrc = 0\nNext PC: PC + {pcIncrement}";
+            return controller.IsPracticeMode
+                ? $"PC + {pcIncrement}"
+                : $"PCSrc = 0\nNext PC: PC + {pcIncrement}";
 
         var zeroValue = controller.ZeroScanner != null && controller.ZeroScanner.AcceptedPacket != null
             ? controller.ZeroScanner.AcceptedPacket.Value
@@ -210,22 +219,45 @@ public static class PcUpdatePresentation
             zeroValue,
             controller.GetSelectedBranchCondition());
 
-        return $"PCSrc = Branch({controller.BranchValue}) AND ConditionMet({(evaluation.ConditionMet ? 1 : 0)}) = {evaluation.PcSrc}\nNext PC: {evaluation.NextPcText}";
+        return controller.IsPracticeMode
+            ? evaluation.NextPcText
+            : $"PCSrc = Branch({controller.BranchValue}) AND ConditionMet({(evaluation.ConditionMet ? 1 : 0)}) = {evaluation.PcSrc}\nNext PC: {evaluation.NextPcText}";
     }
 
     /// <summary>
     /// Turns hint blocks on one-at-a-time based on the current hint dropdown
     /// selection.
     /// </summary>
-    static void RefreshHintBlocks(TMP_Dropdown hintDropdown, TMP_Text pcText, TMP_Text pcSrcText, TMP_Text branchText, TMP_Text jumpText, TMP_Text shiftLeftTwoText, TMP_Text zeroText)
+    static void RefreshHintBlocks(PcUpdateController controller)
     {
-        var selectedHint = hintDropdown != null ? hintDropdown.value : 0;
-        SetTextActive(pcText, selectedHint == 1);
-        SetTextActive(pcSrcText, selectedHint == 2);
-        SetTextActive(branchText, selectedHint == 3);
-        SetTextActive(jumpText, selectedHint == 4);
-        SetTextActive(shiftLeftTwoText, selectedHint == 5);
-        SetTextActive(zeroText, selectedHint == 6);
+        var isPracticeMode = controller.IsPracticeMode;
+        SetObjectActive(controller.HintPanel.InfoRoot, !isPracticeMode);
+
+        if (controller.PracticeHintButton != null)
+            controller.PracticeHintButton.gameObject.SetActive(isPracticeMode);
+
+        SetTextActive(
+            controller.PracticeHintText,
+            isPracticeMode && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
+
+        if (isPracticeMode)
+        {
+            SetTextActive(controller.HintPcText, false);
+            SetTextActive(controller.HintPcSrcText, false);
+            SetTextActive(controller.HintBranchText, false);
+            SetTextActive(controller.HintJumpText, false);
+            SetTextActive(controller.HintShiftLeftTwoText, false);
+            SetTextActive(controller.HintZeroText, false);
+            return;
+        }
+
+        var selectedHint = controller.HintDropdown != null ? controller.HintDropdown.value : 0;
+        SetTextActive(controller.HintPcText, selectedHint == 1);
+        SetTextActive(controller.HintPcSrcText, selectedHint == 2);
+        SetTextActive(controller.HintBranchText, selectedHint == 3);
+        SetTextActive(controller.HintJumpText, selectedHint == 4);
+        SetTextActive(controller.HintShiftLeftTwoText, selectedHint == 5);
+        SetTextActive(controller.HintZeroText, selectedHint == 6);
     }
 
     /// <summary>

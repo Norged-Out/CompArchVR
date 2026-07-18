@@ -23,6 +23,9 @@ public sealed class SettingsMenuController : MonoBehaviour
     CpuLessonFlow m_LessonFlow;
 
     [SerializeField]
+    LessonGuideController m_LessonGuideController;
+
+    [SerializeField]
     TMP_Text m_InstructionText;
 
     [SerializeField]
@@ -41,6 +44,16 @@ public sealed class SettingsMenuController : MonoBehaviour
 
     [SerializeField]
     Toggle m_GuidanceToggle;
+
+    [Header("Dev Mode")]
+    [SerializeField]
+    Toggle m_DevModeToggle;
+
+    [SerializeField]
+    Button m_SkipPhaseButton;
+
+    [SerializeField]
+    TMP_Text m_SkipPhaseButtonText;
 
     [Header("Diagnostics")]
     [SerializeField]
@@ -64,6 +77,7 @@ public sealed class SettingsMenuController : MonoBehaviour
     {
         RefreshLessonStateText();
         RefreshGuidanceToggleUi();
+        RefreshDevModeUi();
         RefreshVolumeUiFromCurrentValue();
     }
 
@@ -73,6 +87,7 @@ public sealed class SettingsMenuController : MonoBehaviour
         ConfigureVolumeSlider();
         RefreshLessonStateText();
         RefreshGuidanceToggleUi();
+        RefreshDevModeUi();
         RefreshVolumeUiFromCurrentValue();
     }
 
@@ -124,6 +139,24 @@ public sealed class SettingsMenuController : MonoBehaviour
     }
 
     /// <summary>
+    /// Settings-menu callback for toggling centralized dev skip support.
+    /// </summary>
+    public void SetDevModeEnabled(bool isEnabled)
+    {
+        m_LessonGuideController?.SetDevModeEnabled(isEnabled);
+        RefreshDevModeUi();
+    }
+
+    /// <summary>
+    /// Settings-menu callback for skipping the currently active lesson phase.
+    /// </summary>
+    public void SkipCurrentPhase()
+    {
+        m_LessonGuideController?.SkipCurrentPhase();
+        RefreshDevModeUi();
+    }
+
+    /// <summary>
     /// UI slider callback. Expects a 0-100 whole-number value and maps it onto
     /// Unity's global 0-1 listener volume.
     /// </summary>
@@ -149,6 +182,7 @@ public sealed class SettingsMenuController : MonoBehaviour
     void HandleStepChanged(CpuLessonFlow _)
     {
         RefreshLessonStateText();
+        RefreshDevModeUi();
     }
 
     void BindLessonEvents()
@@ -199,6 +233,24 @@ public sealed class SettingsMenuController : MonoBehaviour
             return;
 
         m_GuidanceToggle.SetIsOnWithoutNotify(m_LessonGuidanceController.GuidanceEnabled);
+    }
+
+    void RefreshDevModeUi()
+    {
+        if (m_DevModeToggle != null && m_LessonGuideController != null)
+            m_DevModeToggle.SetIsOnWithoutNotify(m_LessonGuideController.DevModeEnabled);
+
+        var showSkipButton = m_LessonGuideController != null && m_LessonGuideController.DevModeEnabled;
+        if (m_SkipPhaseButton != null)
+        {
+            m_SkipPhaseButton.gameObject.SetActive(showSkipButton);
+            m_SkipPhaseButton.interactable = showSkipButton && m_LessonGuideController.CanDevSkipCurrentPhase();
+        }
+
+        if (m_SkipPhaseButtonText != null)
+            m_SkipPhaseButtonText.text = m_LessonGuideController != null
+                ? m_LessonGuideController.GetDevSkipButtonLabel()
+                : "Skip Current Phase";
     }
 
     void RefreshFpsText()
