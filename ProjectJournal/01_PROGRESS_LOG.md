@@ -30,8 +30,17 @@ Current stable feature set:
 - lesson-mode groundwork for:
   - `Learning`
   - `Practice`
-- first playable practice-mode end-to-end path for:
+- full playable practice-mode baseline for:
   - `add`
+  - `addi`
+  - `lw`
+  - `sw`
+  - `sub`
+  - `and`
+  - `or`
+  - `slt`
+  - `beq`
+  - `bne`
 - physical instruction fetch through:
   - `Instruction Module`
   - uploader `Instruction Terminal`
@@ -118,7 +127,8 @@ Current interaction systems that are already implemented:
   - fetch display in hex form
   - decode display in 32-bit binary form
   - staged opcode confirmation
-  - staged `rs` / `rt` / `rd` / `funct` validation for `add`
+  - staged field validation
+  - typed bitfield entry through TMP input fields + the spatial keyboard
   - limited hints
   - limited answer attempts
   - failed-state hold until explicit reset press
@@ -165,16 +175,17 @@ Current development priority:
 
 These are the live priorities from the current perspective:
 
-1. tutorial / onboarding decision and first proper pass
-2. practice mode implementation
-3. experiment mode without handholding
-4. optional settings refinements only where they materially help usability
-5. jump-family evaluation only if the above is already safe
-6. final polish
+1. add the info catalog
+2. record the updated tutorial video
+3. add background music
+4. address decode read-register priority / ordering
+5. add test mode
+6. add the game intro sequence
+7. final polish
+8. refactor oversized scripts later if time remains and only if it does not destabilize the current build
 
 Optional only if time remains:
 - helper NPC / guide presence
-- background music / ambient audio selection
 - in-world music player / ambient interaction
 - VFX pass using the Unity Asset Store pack already identified but not yet integrated
 
@@ -199,6 +210,7 @@ What should currently be treated as true:
 - the improved routed-map layout should now be treated as the active baseline rather than an unfinished first-pass map task
 - the current build direction is polish-first, not instruction-count-first
 - the next major build change in flight is practice-mode support layered onto the same lesson foundation
+- the practice instruction baseline now spans the same ten-instruction set as learning mode
 - temporary testing relief now exists through a centralized dev-mode skip path instead of ad-hoc scene edits
 - supported working instructions are:
   - `add`
@@ -1380,6 +1392,31 @@ Next:
 
 Risks / Notes:
 - spatial keyboard setup is sensitive to field configuration, especially character-limit handling and submission events
+
+
+### 2026-07-18 - Practice Instruction Coverage Expanded Across The Full Current Baseline
+
+Completed:
+- expanded Practice mode beyond the original `add`-only slice so authored practice instruction assets now exist for:
+  - `add`
+  - `addi`
+  - `lw`
+  - `sw`
+  - `sub`
+  - `and`
+  - `or`
+  - `slt`
+  - `beq`
+  - `bne`
+- kept those Practice assets on top of the shared learning-mode lesson flow instead of creating separate full lesson copies
+- diversified Practice operands so the mode no longer mirrors the learning-mode register usage too closely
+- preserved register-value persistence across ordinary instruction runs so Practice sequences can meaningfully observe changed register state between lessons
+- updated the settings-menu instruction readout so Practice mode no longer leaks decoded assembly text during `IF` / `ID`
+- treated the register bank and instruction bank as authored reference data worth documenting directly in the journal instead of repeatedly re-deriving them from prefabs and assets
+
+Changed:
+- Practice mode should now be treated as a real playable baseline for the current ten-instruction set, not as an `add`-only prototype path
+- the next Practice-mode work no longer needs to be "make Practice exist"; it should be refinement, stress-testing, and deciding how much further a later `Test` mode is worth pushing before the deadline
 - wrist-menu ergonomics still matter a lot when pairing keyboard use with the existing hand-menu presentation
 
 

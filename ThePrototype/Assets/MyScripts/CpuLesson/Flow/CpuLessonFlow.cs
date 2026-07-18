@@ -18,7 +18,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
     InstructionDefinition m_CurrentInstruction;
 
     [SerializeField]
-    string m_DefaultInstructionResourcePath = "InstructionDefinitions/AddInstructionDefinition";
+    string m_DefaultInstructionResourcePath = "InstructionDefinitions/Add";
 
     [SerializeField]
     LessonMode m_CurrentMode = LessonMode.Learning;
@@ -27,7 +27,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
     PracticeInstructionDefinition m_CurrentPracticeInstruction;
 
     [SerializeField]
-    string m_DefaultPracticeInstructionResourcePath = "PracticeInstructionDefinitions/PracticeAddInstructionDefinition";
+    string m_DefaultPracticeInstructionResourcePath = "PracticeInstructionDefinitions/Add";
 
     [SerializeField]
     RegisterBank m_RegisterBank;

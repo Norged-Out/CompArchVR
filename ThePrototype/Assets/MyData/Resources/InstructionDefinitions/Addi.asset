@@ -10,32 +10,30 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
-  m_Name: AddInstructionDefinition
+  m_Name: Addi
   m_EditorClassIdentifier: 
-  displayName: add
-  mnemonic: 0
-  format: 0
+  displayName: addi
+  mnemonic: 5
+  format: 1
   category: 0
-  summary: Add two registers and write the result into a destination register.
-  assemblyInstructionText: add t0, t1, t2
-  fieldBreakdownText: "opcode: 000000\nrs: t1\nrt: t2\nrd: t0\nfunct: 100000"
-  opcodeBits: 000000
-  functBits: 100000
-  expectedRs: t1
-  expectedRt: t2
-  expectedRd: t0
-  expectedImmediateValue: 0
+  summary: Add an immediate value to a source register and write the result into rt.
+  assemblyInstructionText: addi v1, t3, 4
+  fieldBreakdownText: "opcode: 001000\nrs: t3\nrt: v1\nimmediate: 4"
+  opcodeBits: 001000
+  functBits: 
+  expectedRs: t3
+  expectedRt: v1
+  expectedRd: 
+  expectedImmediateValue: 4
   touchesDataMemory: 0
   writesRegisterFile: 1
-  usesImmediate: 0
-  usesDestinationRegister: 1
+  usesImmediate: 1
+  usesDestinationRegister: 0
   initialRegisterValues:
-  - registerId: t1
-    value: 20
-  - registerId: t2
-    value: 30
-  - registerId: t0
-    value: 10
+  - registerId: t3
+    value: 40
+  - registerId: v1
+    value: 0
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
@@ -48,27 +46,26 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Instruction Memory
     highlightedNode: 2
-    explanation: Instruction Memory uses the PC value to fetch the add instruction. The lesson UI shows the field breakdown for reference.
+    explanation: addi is an I-type instruction, so the immediate field is used instead of rd and funct.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
-  - stepName: Register Selection
+  - stepName: Registers + Immediate
     highlightedNode: 3
-    explanation: Decode add by reading rs and rt. Their values will become Read Data 1 and Read Data 2 packets. The destination rd is saved for write-back.
+    explanation: Decode addi by reading rs and preparing the immediate value as the second ALU operand. The destination rt is saved for write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 2
     blockProgressUntilValidated: 1
     requiredRegisterSelections:
     - 1
-    - 2
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
   - stepName: ALU Execute
     highlightedNode: 4
-    explanation: The ALU adds the values from rs and rt. Because add is R-type, it does not use an immediate and it does not touch Data Memory.
+    explanation: addi uses the immediate input path into the ALU instead of a second register operand.
     advanceVisualHighlight: 1
     requiredInteraction: 3
     blockProgressUntilValidated: 1
@@ -77,7 +74,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Data Memory
     highlightedNode: 5
-    explanation: add does not read from or write to Data Memory. This phase is shown anyway so the learner can explicitly recognize that the memory path is skipped before moving to write-back.
+    explanation: addi does not touch Data Memory. This checkpoint still exists so the learner sees that the memory path is skipped before write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -86,7 +83,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Write Back
     highlightedNode: 6
-    explanation: The ALU result is written back to rd. Confirm the destination register and final value before continuing.
+    explanation: The ALU result writes back to rt rather than rd.
     advanceVisualHighlight: 1
     requiredInteraction: 4
     blockProgressUntilValidated: 1
@@ -104,7 +101,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Recap
     highlightedNode: 1
-    explanation: Recap: add fetched the instruction, read rs and rt, used the ALU to add them, skipped Data Memory, wrote the result to rd, and advanced the PC to the next instruction.
+    explanation: Recap: addi fetched the instruction, read rs, used the sign-extended immediate as the second ALU input, skipped Data Memory, wrote the result to rt, and advanced the PC to the next instruction.
     advanceVisualHighlight: 1
     requiredInteraction: 5
     blockProgressUntilValidated: 0

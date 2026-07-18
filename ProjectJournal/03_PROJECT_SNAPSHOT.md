@@ -24,8 +24,17 @@ Current prototype features:
 - lesson-mode groundwork for:
   - `Learning`
   - `Practice`
-- first real practice-mode full lesson slice for:
+- full practice-mode authored instruction set for:
   - `add`
+  - `addi`
+  - `lw`
+  - `sw`
+  - `sub`
+  - `and`
+  - `or`
+  - `slt`
+  - `beq`
+  - `bne`
 - scene-authored world-space UIs for:
   - `Intro UI`
   - `Instruction Decode UI`
@@ -109,12 +118,23 @@ Current supported instructions:
 - `beq`
 - `bne`
 
+Practice-mode counterparts now exist for the same full baseline:
+- `add`
+- `addi`
+- `lw`
+- `sw`
+- `sub`
+- `and`
+- `or`
+- `slt`
+- `beq`
+- `bne`
+
 Current build truth:
 - these instructions work through the current guided loop
+- these same ten instructions now also have authored practice-mode variants that feed the shared downstream phase flow
 - the project is now in polish/presentation mode more than raw datapath expansion mode
-- the next serious system extension in flight is practice mode, built on top of the same lesson foundation
-- the current practice-mode implementation is no longer just scaffolding; the first decode slice is now real, but still narrow
-- the current practice-mode implementation now reaches across the full `add` lesson path, though it is still the first narrow slice of the mode
+- the next serious system extension is no longer "getting Practice mode started" but refining and stress-testing the now-playable practice baseline
 - centralized dev-mode support now exists inside the settings menu so late-phase testing no longer depends on replaying the whole lesson every time
 
 More detailed current-state notes:
@@ -133,6 +153,7 @@ More detailed current-state notes:
   - remaining decode fields are then validated in a staged interaction
   - hints and answer attempts are limited inside that slice
   - bitfields are now typed into input fields instead of chosen from dropdowns
+- the settings-menu instruction readout no longer leaks the decoded assembly form during Practice `IF` / `ID`; it stays in hex until decode is behind the learner
 - later practice phases now also follow explicit limited-use rules for:
   - validation attempts
   - scanner attempts
@@ -174,7 +195,83 @@ What is current polish work versus already-solved systems:
   - experiment mode
   - optional background music / ambient tone
   - light route/gate readability tuning only if testing exposes issues
-  - optional settings refinement
+- optional settings refinement
+
+## Authored Register Bank Reference
+
+These are the current authored logical defaults in the `Register Zone` baseline:
+
+| Register | Value |
+| --- | ---: |
+| `$zero` | 0 |
+| `$at` | 1 |
+| `$v0` | 0 |
+| `$v1` | 0 |
+| `$a0` | 4 |
+| `$a1` | 8 |
+| `$a2` | 12 |
+| `$a3` | 16 |
+| `$t0` | 10 |
+| `$t1` | 20 |
+| `$t2` | 30 |
+| `$t3` | 40 |
+| `$t4` | 50 |
+| `$t5` | 60 |
+| `$t6` | 70 |
+| `$t7` | 80 |
+| `$s0` | 268500996 |
+| `$s1` | 268501008 |
+| `$s2` | 268501020 |
+| `$s3` | 268501032 |
+| `$s4` | 268501044 |
+| `$s5` | 268501056 |
+| `$s6` | 268501068 |
+| `$s7` | 268501080 |
+| `$t8` | 90 |
+| `$t9` | 100 |
+| `$k0` | 0 |
+| `$k1` | 0 |
+| `$gp` | 268500992 |
+| `$sp` | 8192 |
+| `$fp` | 8192 |
+| `$ra` | 0 |
+
+Notes:
+- the `s` registers plus `gp` are currently being used as stable data-memory-style base addresses
+- ordinary lesson resets do not wipe register values anymore
+- authored defaults are restored when the active lesson mode changes
+
+## Instruction Bank Reference
+
+### Learning Mode
+
+| Instruction | Assembly |
+| --- | --- |
+| `add` | `add t0, t1, t2` |
+| `addi` | `addi v1, t3, 4` |
+| `lw` | `lw at, 12(s2)` |
+| `sw` | `sw t6, 12(s4)` |
+| `sub` | `sub t5, t3, t6` |
+| `and` | `and t8, t4, t7` |
+| `or` | `or t9, a0, a1` |
+| `slt` | `slt v0, a2, a3` |
+| `beq` | `beq k0, k1, 8` |
+| `bne` | `bne a0, a1, 8` |
+
+### Practice Mode
+
+| Instruction | Encoded Display | Runtime Assembly |
+| --- | --- | --- |
+| `add` | `0x018D5820` | `add t3, t4, t5` |
+| `addi` | `0x201F0010` | `addi ra, zero, 16` |
+| `lw` | `0x8EA2000C` | `lw v0, 12(s5)` |
+| `sw` | `0xAE6F000C` | `sw t7, 12(s3)` |
+| `sub` | `0x03C15022` | `sub t2, fp, at` |
+| `and` | `0x03BE1824` | `and v1, sp, fp` |
+| `or` | `0x0026C025` | `or t8, at, a2` |
+| `slt` | `0x0008082A` | `slt at, zero, t0` |
+| `beq` | `0x105B0004` | `beq v0, k1, 4` |
+| `bne` | `0x14C70004` | `bne a2, a3, 4` |
 
 ## Most Important Scripts Right Now
 

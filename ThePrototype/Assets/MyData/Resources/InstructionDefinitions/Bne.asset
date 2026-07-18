@@ -10,36 +10,34 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
-  m_Name: OrInstructionDefinition
+  m_Name: Bne
   m_EditorClassIdentifier: 
-  displayName: or
-  mnemonic: 3
-  format: 0
-  category: 1
-  summary: Bitwise-OR rs and rt, then write the result into rd.
-  assemblyInstructionText: or t9, a0, a1
-  fieldBreakdownText: "opcode: 000000\nrs: a0\nrt: a1\nrd: t9\nfunct: 100101"
-  opcodeBits: 000000
-  functBits: 100101
+  displayName: bne
+  mnemonic: 11
+  format: 1
+  category: 3
+  summary: Compare two registers and branch when they are not equal.
+  assemblyInstructionText: bne a0, a1, 8
+  fieldBreakdownText: "opcode: 000101\nrs: a0\nrt: a1\nimmediate: 8"
+  opcodeBits: 000101
+  functBits: 
   expectedRs: a0
   expectedRt: a1
-  expectedRd: t9
-  expectedImmediateValue: 0
+  expectedRd: 
+  expectedImmediateValue: 8
   touchesDataMemory: 0
-  writesRegisterFile: 1
-  usesImmediate: 0
-  usesDestinationRegister: 1
+  writesRegisterFile: 0
+  usesImmediate: 1
+  usesDestinationRegister: 0
   initialRegisterValues:
   - registerId: a0
     value: 4
   - registerId: a1
     value: 8
-  - registerId: t9
-    value: 100
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
-    explanation: The Program Counter supplies the address of the next instruction so Instruction Memory can fetch or.
+    explanation: The Program Counter points at the next instruction. Fetch begins by using that address to retrieve bne from Instruction Memory.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -48,16 +46,16 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Instruction Memory
     highlightedNode: 2
-    explanation: or is an R-type instruction, so the funct field selects the bitwise OR operation.
+    explanation: bne is an I-type branch. rs and rt will be compared, and the immediate field becomes the branch offset.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
-  - stepName: Register Selection
+  - stepName: Register Comparison Setup
     highlightedNode: 3
-    explanation: Read rs and rt from the register file. rd is remembered for write-back.
+    explanation: Decode bne by reading rs and rt for comparison. The immediate packet is also prepared for the branch target calculation.
     advanceVisualHighlight: 1
     requiredInteraction: 2
     blockProgressUntilValidated: 1
@@ -66,36 +64,18 @@ MonoBehaviour:
     - 2
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
-  - stepName: ALU Execute
+  - stepName: ALU Compare
     highlightedNode: 4
-    explanation: The ALU performs a bitwise OR between rs and rt. Data Memory is skipped.
+    explanation: The ALU subtracts rt from rs. This branch uses the Zero output to decide whether the registers are different and the branch should be taken.
     advanceVisualHighlight: 1
     requiredInteraction: 3
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
-  - stepName: Data Memory
-    highlightedNode: 5
-    explanation: or does not touch Data Memory. The lesson will skip this phase and continue to write-back.
-    advanceVisualHighlight: 1
-    requiredInteraction: 1
-    blockProgressUntilValidated: 1
-    requiredRegisterSelections: []
-    confirmationRegisterRole: 0
-    expectedTargetObjectName: 
-  - stepName: Write Back
-    highlightedNode: 6
-    explanation: The bitwise-OR result is written back to rd.
-    advanceVisualHighlight: 1
-    requiredInteraction: 4
-    blockProgressUntilValidated: 1
-    requiredRegisterSelections: []
-    confirmationRegisterRole: 0
-    expectedTargetObjectName: 
   - stepName: Program Counter Update
     highlightedNode: 1
-    explanation: Finish the cycle by updating the Program Counter to PC + 4 so the CPU is ready to fetch the next instruction.
+    explanation: Use Branch, the Zero result, and the shifted immediate offset to decide whether the Program Counter stays on PC + 4 or takes the branch target.
     advanceVisualHighlight: 1
     requiredInteraction: 6
     blockProgressUntilValidated: 1
@@ -104,7 +84,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Recap
     highlightedNode: 1
-    explanation: Recap: or fetched the instruction, read rs and rt, combined them with a bitwise OR in the ALU, skipped Data Memory, wrote the result to rd, and advanced the PC to the next instruction.
+    explanation: Recap: bne fetched the instruction, compared rs and rt with the ALU, used the Zero output plus the branch offset to choose the next PC, and completed the branch decision.
     advanceVisualHighlight: 1
     requiredInteraction: 5
     blockProgressUntilValidated: 0

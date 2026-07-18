@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
-  m_Name: BeqInstructionDefinition
+  m_Name: Beq
   m_EditorClassIdentifier: 
   displayName: beq
   mnemonic: 10

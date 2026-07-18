@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc7213dfb6e305741b63e9fe4d81ce56, type: 3}
+  m_Name: Addi
+  m_EditorClassIdentifier: 
+  displayName: 0x201F0010
+  expectedMnemonic: 5
+  expectedFormat: 1
+  expectedCategory: 0
+  rawInstructionBits: 00100000000111110000000000010000
+  expectedOpcodeBits: 001000
+  expectedFunctBits: 
+  expectedRsBits: 00000
+  expectedRtBits: 11111
+  expectedRdBits: 
+  expectedImmediateBits: 0000000000010000
+  learningModeInstruction: {fileID: 11400000, guid: 2ac4e2c1db7648af90f9d7d2531e4ce0, type: 2}
+  runtimeAssemblyInstructionText: addi ra, zero, 16
+  runtimeRs: zero
+  runtimeRt: ra
+  runtimeRd: 
+  runtimeImmediateValue: 16

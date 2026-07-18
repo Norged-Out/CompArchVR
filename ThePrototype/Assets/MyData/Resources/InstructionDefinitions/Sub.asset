@@ -10,34 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
-  m_Name: AddiInstructionDefinition
+  m_Name: Sub
   m_EditorClassIdentifier: 
-  displayName: addi
-  mnemonic: 5
-  format: 1
+  displayName: sub
+  mnemonic: 1
+  format: 0
   category: 0
-  summary: Add an immediate value to a source register and write the result into rt.
-  assemblyInstructionText: addi v1, t3, 4
-  fieldBreakdownText: "opcode: 001000\nrs: t3\nrt: v1\nimmediate: 4"
-  opcodeBits: 001000
-  functBits: 
+  summary: Subtract rt from rs and write the result into rd.
+  assemblyInstructionText: sub t5, t3, t6
+  fieldBreakdownText: "opcode: 000000\nrs: t3\nrt: t6\nrd: t5\nfunct: 100010"
+  opcodeBits: 000000
+  functBits: 100010
   expectedRs: t3
-  expectedRt: v1
-  expectedRd: 
-  expectedImmediateValue: 4
+  expectedRt: t6
+  expectedRd: t5
+  expectedImmediateValue: 0
   touchesDataMemory: 0
   writesRegisterFile: 1
-  usesImmediate: 1
-  usesDestinationRegister: 0
+  usesImmediate: 0
+  usesDestinationRegister: 1
   initialRegisterValues:
   - registerId: t3
     value: 40
-  - registerId: v1
-    value: 0
+  - registerId: t6
+    value: 70
+  - registerId: t5
+    value: 60
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
-    explanation: The Program Counter holds the address of the next instruction. This is where the fetch phase begins.
+    explanation: The Program Counter supplies the address of the next instruction so Instruction Memory can fetch sub.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -46,26 +48,27 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Instruction Memory
     highlightedNode: 2
-    explanation: addi is an I-type instruction, so the immediate field is used instead of rd and funct.
+    explanation: sub is an R-type instruction, so rs, rt, rd, and the funct field together define the operation.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
     requiredRegisterSelections: []
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
-  - stepName: Registers + Immediate
+  - stepName: Register Selection
     highlightedNode: 3
-    explanation: Decode addi by reading rs and preparing the immediate value as the second ALU operand. The destination rt is saved for write-back.
+    explanation: Read rs and rt from the register file. rd is remembered as the later write-back destination.
     advanceVisualHighlight: 1
     requiredInteraction: 2
     blockProgressUntilValidated: 1
     requiredRegisterSelections:
     - 1
+    - 2
     confirmationRegisterRole: 0
     expectedTargetObjectName: 
   - stepName: ALU Execute
     highlightedNode: 4
-    explanation: addi uses the immediate input path into the ALU instead of a second register operand.
+    explanation: The ALU subtracts rt from rs. Data Memory is not used for this instruction.
     advanceVisualHighlight: 1
     requiredInteraction: 3
     blockProgressUntilValidated: 1
@@ -74,7 +77,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Data Memory
     highlightedNode: 5
-    explanation: addi does not touch Data Memory. This checkpoint still exists so the learner sees that the memory path is skipped before write-back.
+    explanation: sub does not touch Data Memory. The lesson will skip this phase and move directly to write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -83,7 +86,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Write Back
     highlightedNode: 6
-    explanation: The ALU result writes back to rt rather than rd.
+    explanation: The subtraction result is written back to rd.
     advanceVisualHighlight: 1
     requiredInteraction: 4
     blockProgressUntilValidated: 1
@@ -101,7 +104,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Recap
     highlightedNode: 1
-    explanation: Recap: addi fetched the instruction, read rs, used the sign-extended immediate as the second ALU input, skipped Data Memory, wrote the result to rt, and advanced the PC to the next instruction.
+    explanation: Recap: sub fetched the instruction, read rs and rt, subtracted them in the ALU, skipped Data Memory, wrote the result to rd, and advanced the PC to the next instruction.
     advanceVisualHighlight: 1
     requiredInteraction: 5
     blockProgressUntilValidated: 0

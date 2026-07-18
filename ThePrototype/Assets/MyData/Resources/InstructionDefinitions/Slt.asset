@@ -10,36 +10,36 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
-  m_Name: AndInstructionDefinition
+  m_Name: Slt
   m_EditorClassIdentifier: 
-  displayName: and
-  mnemonic: 2
+  displayName: slt
+  mnemonic: 4
   format: 0
-  category: 1
-  summary: Bitwise-AND rs and rt, then write the result into rd.
-  assemblyInstructionText: and t8, t4, t7
-  fieldBreakdownText: "opcode: 000000\nrs: t4\nrt: t7\nrd: t8\nfunct: 100100"
+  category: 0
+  summary: Set rd to 1 when rs is less than rt; otherwise set rd to 0.
+  assemblyInstructionText: slt v0, a2, a3
+  fieldBreakdownText: "opcode: 000000\nrs: a2\nrt: a3\nrd: v0\nfunct: 101010"
   opcodeBits: 000000
-  functBits: 100100
-  expectedRs: t4
-  expectedRt: t7
-  expectedRd: t8
+  functBits: 101010
+  expectedRs: a2
+  expectedRt: a3
+  expectedRd: v0
   expectedImmediateValue: 0
   touchesDataMemory: 0
   writesRegisterFile: 1
   usesImmediate: 0
   usesDestinationRegister: 1
   initialRegisterValues:
-  - registerId: t4
-    value: 50
-  - registerId: t7
-    value: 80
-  - registerId: t8
-    value: 90
+  - registerId: a2
+    value: 12
+  - registerId: a3
+    value: 16
+  - registerId: v0
+    value: 0
   flowSteps:
   - stepName: Fetch
     highlightedNode: 1
-    explanation: The Program Counter supplies the address of the next instruction so Instruction Memory can fetch and.
+    explanation: The Program Counter supplies the address of the next instruction so Instruction Memory can fetch slt.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -48,7 +48,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Instruction Memory
     highlightedNode: 2
-    explanation: and is an R-type instruction, so the funct field selects the bitwise AND operation.
+    explanation: slt is an R-type instruction. The funct field selects the set-on-less-than comparison.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -68,7 +68,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: ALU Execute
     highlightedNode: 4
-    explanation: The ALU performs a bitwise AND between rs and rt. Data Memory is skipped.
+    explanation: The ALU compares rs and rt. If rs is smaller, the ALU result becomes 1; otherwise it becomes 0. Data Memory is skipped.
     advanceVisualHighlight: 1
     requiredInteraction: 3
     blockProgressUntilValidated: 1
@@ -77,7 +77,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Data Memory
     highlightedNode: 5
-    explanation: and does not touch Data Memory. The lesson will skip this phase and continue to write-back.
+    explanation: slt does not touch Data Memory. The lesson will skip this phase and continue to write-back.
     advanceVisualHighlight: 1
     requiredInteraction: 1
     blockProgressUntilValidated: 1
@@ -86,7 +86,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Write Back
     highlightedNode: 6
-    explanation: The bitwise-AND result is written back to rd.
+    explanation: The comparison result, either 1 or 0, is written back to rd.
     advanceVisualHighlight: 1
     requiredInteraction: 4
     blockProgressUntilValidated: 1
@@ -104,7 +104,7 @@ MonoBehaviour:
     expectedTargetObjectName: 
   - stepName: Recap
     highlightedNode: 1
-    explanation: Recap: and fetched the instruction, read rs and rt, combined them with a bitwise AND in the ALU, skipped Data Memory, wrote the result to rd, and advanced the PC to the next instruction.
+    explanation: Recap: slt fetched the instruction, read rs and rt, compared them in the ALU, skipped Data Memory, wrote either 1 or 0 to rd, and advanced the PC to the next instruction.
     advanceVisualHighlight: 1
     requiredInteraction: 5
     blockProgressUntilValidated: 0

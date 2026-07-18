@@ -1132,6 +1132,20 @@ Why:
 Implication:
 - Practice decode should validate submitted bitstrings after normalization rather than rely on dropdown option values
 - future Practice / Test additions can reuse the same input normalization and field-wrapping helpers instead of rebuilding entry logic again
+
+
+## 2026-07-18 - Practice Mode Should Hide Decoded Assembly Until Decode Is Out Of The Way
+
+Decision:
+- when Practice mode is active, player-facing status readouts should keep showing the encoded instruction during `IF` and `ID`
+- the readable assembly form should only reappear once decode is behind the learner
+
+Why:
+- the whole point of Practice mode is to make the learner decode the instruction rather than receive the answer for free from a convenience status label
+- leaving the readable assembly exposed in the settings menu undermines the intended difficulty and turns the rest of decode into busywork
+
+Implication:
+- any future player-facing Practice readout should be checked for this same leak pattern before it is treated as safe
 - settings-menu dev access can safely follow the same text-submission pattern when a typed gate is more appropriate than a toggle
 
 

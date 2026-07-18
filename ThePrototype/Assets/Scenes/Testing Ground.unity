@@ -22947,7 +22947,6 @@ GameObject:
   - component: {fileID: 524028166}
   - component: {fileID: 524028165}
   - component: {fileID: 524028164}
-  - component: {fileID: 524028172}
   m_Layer: 0
   m_Name: Test
   m_TagString: Untagged
@@ -91642,8 +91641,8 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2093743685}
-  m_LocalRotation: {x: -0, y: -0.7071068, z: -0, w: -0.7071068}
-  m_LocalPosition: {x: 0, y: 0, z: -1890.7606}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -94082,10 +94081,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CurrentInstruction: {fileID: 0}
-  m_DefaultInstructionResourcePath: InstructionDefinitions/AddInstructionDefinition
+  m_DefaultInstructionResourcePath: InstructionDefinitions/Add
   m_CurrentMode: 0
   m_CurrentPracticeInstruction: {fileID: 0}
-  m_DefaultPracticeInstructionResourcePath: PracticeInstructionDefinitions/PracticeAddInstructionDefinition
+  m_DefaultPracticeInstructionResourcePath: PracticeInstructionDefinitions/Add
   m_RegisterBank: {fileID: 1247482117}
   m_ImmediateExtender: {fileID: 963121453}
   m_FetchUploadTerminal: {fileID: 578641185}

@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bc7213dfb6e305741b63e9fe4d81ce56, type: 3}
+  m_Name: Sub
+  m_EditorClassIdentifier: 
+  displayName: 0x03C15022
+  expectedMnemonic: 1
+  expectedFormat: 0
+  expectedCategory: 0
+  rawInstructionBits: 00000011110000010101000000100010
+  expectedOpcodeBits: 000000
+  expectedFunctBits: 100010
+  expectedRsBits: 11110
+  expectedRtBits: 00001
+  expectedRdBits: 01010
+  expectedImmediateBits: 
+  learningModeInstruction: {fileID: 11400000, guid: 2db8146d5a6346c79ce3fb40c5af2bb0, type: 2}
+  runtimeAssemblyInstructionText: sub t2, fp, at
+  runtimeRs: fp
+  runtimeRt: at
+  runtimeRd: t2
+  runtimeImmediateValue: 0

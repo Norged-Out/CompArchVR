@@ -294,7 +294,18 @@ public sealed class SettingsMenuController : MonoBehaviour
 
     string ResolveInstructionLabel()
     {
-        if (m_LessonFlow == null || !m_LessonFlow.HasStarted || m_LessonFlow.CurrentInstruction == null)
+        if (m_LessonFlow == null || !m_LessonFlow.HasStarted)
+            return k_NoneLabel;
+
+        if (m_LessonFlow.CurrentMode == LessonMode.Practice &&
+            m_LessonFlow.CurrentPracticeInstruction != null &&
+            (m_PhaseRouter.ShouldShowIntroPanel(m_LessonFlow) || m_PhaseRouter.ShouldShowDecodePanel(m_LessonFlow)))
+        {
+            var hexText = m_LessonFlow.CurrentPracticeInstruction.GetHexInstructionText();
+            return string.IsNullOrWhiteSpace(hexText) ? k_NoneLabel : hexText;
+        }
+
+        if (m_LessonFlow.CurrentInstruction == null)
             return k_NoneLabel;
 
         var assemblyText = m_LessonFlow.CurrentInstruction.assemblyInstructionText;
