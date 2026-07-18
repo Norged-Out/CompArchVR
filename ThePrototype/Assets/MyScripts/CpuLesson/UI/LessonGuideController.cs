@@ -125,8 +125,7 @@ public sealed class LessonGuideController : MonoBehaviour
             ref m_IsRefreshingDecodeDropdowns);
         m_DecodePanel?.PopulatePracticeControls(
             m_LessonFlow.CurrentPracticeInstruction,
-            m_PracticeDecodeFlow.IsOpcodeConfirmed,
-            ref m_IsRefreshingDecodeDropdowns);
+            m_PracticeDecodeFlow.IsOpcodeConfirmed);
     }
 
     /// <summary>
@@ -302,7 +301,7 @@ public sealed class LessonGuideController : MonoBehaviour
             return;
 
         if (m_LessonFlow.CurrentMode == LessonMode.Practice || m_LessonFlow.CurrentMode == LessonMode.Test)
-            m_PracticeDecodeFlow.Reset(m_DecodePanel, ref m_IsRefreshingDecodeDropdowns);
+            m_PracticeDecodeFlow.Reset(m_DecodePanel);
 
         m_DecodePanel?.PopulateDropdowns(
             m_SelectionState.LearningInstructions,
@@ -347,8 +346,8 @@ public sealed class LessonGuideController : MonoBehaviour
     }
 
     /// <summary>
-    /// Refreshes Practice decode presentation when any of its dropdowns or
-    /// toggles change in the scene.
+    /// Refreshes Practice decode presentation when any of its authored inputs
+    /// change in the scene.
     /// </summary>
     public void HandlePracticeDecodeChanged()
     {
@@ -356,6 +355,16 @@ public sealed class LessonGuideController : MonoBehaviour
             return;
 
         RefreshView();
+    }
+
+    public void HandlePracticeDecodeChanged(string _)
+    {
+        HandlePracticeDecodeChanged();
+    }
+
+    public void HandlePracticeDecodeChanged(bool _)
+    {
+        HandlePracticeDecodeChanged();
     }
 
     /// <summary>

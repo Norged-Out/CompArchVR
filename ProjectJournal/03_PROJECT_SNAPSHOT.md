@@ -24,7 +24,7 @@ Current prototype features:
 - lesson-mode groundwork for:
   - `Learning`
   - `Practice`
-- first real practice-mode decode slice for:
+- first real practice-mode full lesson slice for:
   - `add`
 - scene-authored world-space UIs for:
   - `Intro UI`
@@ -74,9 +74,12 @@ Current prototype features:
   - lesson restart
   - volume slider
   - route-guidance toggle
+  - password-gated dev-mode unlock
+  - current-phase skip action for testing
   - FPS / frame-time readout
   - quit support
 - left-controller menu-button access layered onto the existing XR hand-menu approach
+- spatial-keyboard-backed TMP input fields are now working in-scene
 - onboarding groundwork through:
   - the imported tutorial/video prefab from `VRTemplateAssets`
   - simple image-based tutorial surfaces
@@ -111,6 +114,8 @@ Current build truth:
 - the project is now in polish/presentation mode more than raw datapath expansion mode
 - the next serious system extension in flight is practice mode, built on top of the same lesson foundation
 - the current practice-mode implementation is no longer just scaffolding; the first decode slice is now real, but still narrow
+- the current practice-mode implementation now reaches across the full `add` lesson path, though it is still the first narrow slice of the mode
+- centralized dev-mode support now exists inside the settings menu so late-phase testing no longer depends on replaying the whole lesson every time
 
 More detailed current-state notes:
 - fetch is no longer just UI framing; it uses a physical instruction upload/download handoff
@@ -127,6 +132,12 @@ More detailed current-state notes:
   - opcode is confirmed first
   - remaining decode fields are then validated in a staged interaction
   - hints and answer attempts are limited inside that slice
+  - bitfields are now typed into input fields instead of chosen from dropdowns
+- later practice phases now also follow explicit limited-use rules for:
+  - validation attempts
+  - scanner attempts
+  - hints
+  - held restart-on-failure flow
 - when no lesson is active, the two decode-stage lesson scanners can now act as simple preview scanners instead of staying uselessly inactive
 - execute is currently responsible for:
   - ALU signal interaction
@@ -250,7 +261,7 @@ Before stopping:
 ## Current Open Questions
 
 - what the safest first playable slice of practice mode should be before deeper decode complexity is added
-- how quickly practice mode should grow beyond the current `add`-only decode slice
+- how quickly practice mode should grow beyond the current `add`-based first full lesson slice
 - how strong the door + arrow + audio guidance should be without becoming visually noisy
 - whether onboarding V1 should ship as:
   - a recorded custom tutorial video
@@ -261,6 +272,7 @@ Before stopping:
 - whether instruction choice should remain manually selected, become randomized, or support both
 - whether jump-family instructions are worth fitting in before the July 24 checkpoint
 - how much onboarding belongs in a dedicated tutorial versus just-in-time prompts in the map
+- how aggressively future typed-input interactions should be used outside of decode now that the spatial keyboard path works
 - how much post-meeting time should be reserved for participant prep instead of feature work
 - whether a helper NPC / guide would actually improve onboarding or only add scope/noise
 - whether an optional music player / ambient scene audio source would help presentation tone without distracting from the lesson

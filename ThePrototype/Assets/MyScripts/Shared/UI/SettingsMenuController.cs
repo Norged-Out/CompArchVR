@@ -47,7 +47,7 @@ public sealed class SettingsMenuController : MonoBehaviour
 
     [Header("Dev Mode")]
     [SerializeField]
-    Toggle m_DevModeToggle;
+    string m_DevModePassword = "devmode";
 
     [SerializeField]
     Button m_SkipPhaseButton;
@@ -139,12 +139,19 @@ public sealed class SettingsMenuController : MonoBehaviour
     }
 
     /// <summary>
-    /// Settings-menu callback for toggling centralized dev skip support.
+    /// Unlocks dev mode when the submitted password matches the authored value.
+    /// This is intended to be bound from the spatial keyboard display's text
+    /// submitted event.
     /// </summary>
-    public void SetDevModeEnabled(bool isEnabled)
+    public void SubmitDevModePassword(string submittedPassword)
     {
-        m_LessonGuideController?.SetDevModeEnabled(isEnabled);
-        RefreshDevModeUi();
+        if (string.IsNullOrEmpty(m_DevModePassword))
+            return;
+
+        if (!string.Equals(submittedPassword, m_DevModePassword, System.StringComparison.Ordinal))
+            return;
+
+        EnableDevMode();
     }
 
     /// <summary>
@@ -153,6 +160,12 @@ public sealed class SettingsMenuController : MonoBehaviour
     public void SkipCurrentPhase()
     {
         m_LessonGuideController?.SkipCurrentPhase();
+        RefreshDevModeUi();
+    }
+
+    void EnableDevMode()
+    {
+        m_LessonGuideController?.SetDevModeEnabled(true);
         RefreshDevModeUi();
     }
 
@@ -237,9 +250,6 @@ public sealed class SettingsMenuController : MonoBehaviour
 
     void RefreshDevModeUi()
     {
-        if (m_DevModeToggle != null && m_LessonGuideController != null)
-            m_DevModeToggle.SetIsOnWithoutNotify(m_LessonGuideController.DevModeEnabled);
-
         var showSkipButton = m_LessonGuideController != null && m_LessonGuideController.DevModeEnabled;
         if (m_SkipPhaseButton != null)
         {

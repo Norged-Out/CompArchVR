@@ -109,7 +109,7 @@ sealed class LessonGuideView
         {
             ResetPhasePanels();
             decodeGuideFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
-            practiceDecodeFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
+            practiceDecodeFlow.Reset(m_DecodePanel);
             m_IntroPanel.ShowBeforeStart(
                 lessonFlow.CurrentInstruction,
                 startButtonLabel,

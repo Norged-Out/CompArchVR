@@ -28,13 +28,13 @@ public sealed class PracticeDecodeFlow
         m_MaxHints = Math.Max(0, maxHints);
     }
 
-    public void Reset(DecodePanelController panel, ref bool isRefreshing)
+    public void Reset(DecodePanelController panel)
     {
         IsOpcodeConfirmed = false;
         IsFailed = false;
         m_RemainingAttempts = m_MaxAttempts;
         m_RemainingHints = m_MaxHints;
-        panel?.ResetPracticeControls(ref isRefreshing);
+        panel?.ResetPracticeControls();
         panel?.SetPracticeHintText(string.Empty);
     }
 
@@ -242,7 +242,7 @@ public sealed class PracticeDecodeFlow
 
     static bool BitsMatch(string selectedBits, string expectedBits)
     {
-        return string.Equals(NormalizeBits(selectedBits), NormalizeBits(expectedBits), StringComparison.Ordinal);
+        return string.Equals(PracticeDecodeBitText.Normalize(selectedBits), PracticeDecodeBitText.Normalize(expectedBits), StringComparison.Ordinal);
     }
 
     static string FormatFeedback(string message, int remainingAttempts)
@@ -255,10 +255,4 @@ public sealed class PracticeDecodeFlow
         return $"{message}\nHints remaining: {remainingHints}";
     }
 
-    static string NormalizeBits(string rawBits)
-    {
-        return string.IsNullOrWhiteSpace(rawBits)
-            ? string.Empty
-            : rawBits.Replace(" ", string.Empty).Replace("\n", string.Empty).Replace("\r", string.Empty).Trim();
-    }
 }

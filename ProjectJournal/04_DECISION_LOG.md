@@ -1064,6 +1064,77 @@ Implication:
 - additional practice instructions should extend the staged decode logic carefully rather than reopening the panel architecture each time
 
 
+## 2026-07-18 - Later Practice Phases Should Share A Common Budgeted Failure Rhythm
+
+Decision:
+- extend practice mode through the existing later phase stations with a shared budget/failure pattern instead of inventing a different punishment/reset rule per phase
+
+Why:
+- the first decode slice already proved that practice mode benefits from:
+  - limited answer attempts
+  - limited hints
+  - explicit held failure states
+- repeating a different failure grammar in every later phase would make the mode feel inconsistent and harder to test
+
+Implication:
+- `EX`, `MEM`, `WB`, and `PC Update` should all use the same broad practice expectations:
+  - validation attempts are limited
+  - scanner attempts are limited
+  - hint uses are limited
+  - failure should hold until an explicit restart press
+
+
+## 2026-07-18 - Dev Utilities Should Stay Centralized In The Settings Menu
+
+Decision:
+- put dev/testing relief in the settings menu instead of scattering separate skip/debug controls onto each phase UI
+
+Why:
+- testing the growing lesson repeatedly was already becoming a time sink
+- a centralized dev path is easier to find, easier to disable mentally, and less likely to pollute the actual learner-facing panels
+- per-phase debug buttons would add scene clutter and risk becoming accidental long-term UI baggage
+
+Implication:
+- if a dev-only phase skip exists, it should live behind a settings-menu dev gate
+- future testing helpers should prefer the same centralized location unless there is a very strong reason not to
+
+
+## 2026-07-18 - Practice Instructions Should Overlay Learning Instructions, Not Duplicate Them Whole
+
+Decision:
+- let practice instruction assets derive their runtime lesson definition by overriding a learning-mode base instruction instead of keeping a second full instruction-definition copy for every practice variant
+
+Why:
+- the project is already moving toward more practice instructions and may later add even more test-mode permutations
+- fully duplicating every instruction lesson asset would make maintenance worse and increase drift risk
+- the real differences for practice mode are mostly:
+  - encoded presentation
+  - decode expectations
+  - register/runtime operand overrides
+not an entirely different phase script flow
+
+Implication:
+- future practice instructions should stay lightweight where possible
+- learning-mode instruction definitions remain the main authoritative lesson path
+- practice-mode assets should override only what genuinely differs
+
+
+## 2026-07-18 - Practice Decode Should Use Typed Bitfields Instead Of Binary Dropdowns
+
+Decision:
+- move Practice decode entry from dropdown-selected binary fields to TMP input fields backed by the spatial keyboard flow
+
+Why:
+- the point of Practice mode is to break guided-selection muscle memory and make instruction decoding more deliberate
+- typed bitfields better fit the intended difficulty increase than selecting from tiny authored binary menus
+- the same keyboard-backed path can later support broader typed interactions if they are worth keeping
+
+Implication:
+- Practice decode should validate submitted bitstrings after normalization rather than rely on dropdown option values
+- future Practice / Test additions can reuse the same input normalization and field-wrapping helpers instead of rebuilding entry logic again
+- settings-menu dev access can safely follow the same text-submission pattern when a typed gate is more appropriate than a toggle
+
+
 ## Open Questions
 
 - how much instruction decoding should be interactive in V1

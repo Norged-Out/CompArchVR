@@ -1,91 +1,82 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-sealed class PracticeDecodeDropdownField
+/// <summary>
+/// Minimal wrapper around a required Practice decode input field. It owns only
+/// visibility, text reset, and the enforced bit-length limit for that field.
+/// </summary>
+sealed class PracticeDecodeInputField
 {
     readonly GameObject m_GroupRoot;
-    readonly TMP_Dropdown m_Dropdown;
+    readonly TMP_InputField m_InputField;
+    readonly int m_BitCount;
 
-    public PracticeDecodeDropdownField(GameObject groupRoot, TMP_Dropdown dropdown)
+    public PracticeDecodeInputField(GameObject groupRoot, TMP_InputField inputField, int bitCount)
     {
         m_GroupRoot = groupRoot;
-        m_Dropdown = dropdown;
+        m_InputField = inputField;
+        m_BitCount = bitCount;
     }
 
     public void SetVisible(bool isVisible)
     {
         if (m_GroupRoot != null)
             m_GroupRoot.SetActive(isVisible);
-        else if (m_Dropdown != null)
-            m_Dropdown.gameObject.SetActive(isVisible);
+        else if (m_InputField != null)
+            m_InputField.gameObject.SetActive(isVisible);
 
-        if (m_Dropdown != null)
-            m_Dropdown.interactable = isVisible;
+        if (m_InputField != null)
+            m_InputField.interactable = isVisible;
     }
 
-    public void Populate(IReadOnlyList<string> options, ref bool isRefreshing)
+    public void Configure()
     {
-        if (m_Dropdown == null || !ShouldRepopulate(options))
+        if (m_InputField == null)
             return;
 
-        isRefreshing = true;
-        m_Dropdown.ClearOptions();
-        m_Dropdown.AddOptions(new List<string>(options));
-        m_Dropdown.SetValueWithoutNotify(0);
-        isRefreshing = false;
+        if (m_InputField.characterLimit != m_BitCount)
+            m_InputField.characterLimit = m_BitCount;
     }
 
     public void Reset()
     {
-        if (m_Dropdown != null)
-            m_Dropdown.SetValueWithoutNotify(0);
+        if (m_InputField == null)
+            return;
+
+        m_InputField.SetTextWithoutNotify(string.Empty);
     }
 
-    public string GetSelectedValue()
+    public string GetSubmittedBits()
     {
-        if (m_Dropdown == null ||
-            m_Dropdown.options == null ||
-            m_Dropdown.value <= 0 ||
-            m_Dropdown.value >= m_Dropdown.options.Count)
-        {
+        if (m_InputField == null)
             return string.Empty;
-        }
 
-        return m_Dropdown.options[m_Dropdown.value].text.Trim();
-    }
-
-    bool ShouldRepopulate(IReadOnlyList<string> options)
-    {
-        if (m_Dropdown.options == null || m_Dropdown.options.Count != options.Count)
-            return true;
-
-        for (var index = 0; index < options.Count; index++)
-        {
-            if (m_Dropdown.options[index].text != options[index])
-                return true;
-        }
-
-        return false;
+        return PracticeDecodeBitText.Normalize(m_InputField.text);
     }
 }
 
-sealed class PracticeDecodeOptionalField
+/// <summary>
+/// Variant of the Practice decode field wrapper for inputs that are only valid
+/// when their matching toggle is enabled, such as rd, immediate, and funct.
+/// </summary>
+sealed class PracticeDecodeOptionalInputField
 {
     readonly GameObject m_GroupRoot;
     readonly Toggle m_Toggle;
-    readonly TMP_Dropdown m_Dropdown;
+    readonly TMP_InputField m_InputField;
+    readonly int m_BitCount;
 
-    public PracticeDecodeOptionalField(GameObject groupRoot, Toggle toggle, TMP_Dropdown dropdown)
+    public PracticeDecodeOptionalInputField(GameObject groupRoot, Toggle toggle, TMP_InputField inputField, int bitCount)
     {
         m_GroupRoot = groupRoot;
         m_Toggle = toggle;
-        m_Dropdown = dropdown;
+        m_InputField = inputField;
+        m_BitCount = bitCount;
     }
 
     public bool IsEnabled => m_Toggle != null && m_Toggle.isOn;
-    public string SelectedValue => GetSelectedValue();
+    public string SubmittedBits => GetSubmittedBits();
 
     public void RefreshVisibility(bool isVisible)
     {
@@ -95,59 +86,37 @@ sealed class PracticeDecodeOptionalField
         if (m_Toggle != null)
             m_Toggle.gameObject.SetActive(isVisible);
 
-        var showDropdown = isVisible && IsEnabled;
-        if (m_Dropdown != null)
+        var showInputField = isVisible && IsEnabled;
+        if (m_InputField != null)
         {
-            m_Dropdown.gameObject.SetActive(showDropdown);
-            m_Dropdown.interactable = showDropdown;
+            m_InputField.gameObject.SetActive(showInputField);
+            m_InputField.interactable = showInputField;
         }
     }
 
-    public void Populate(IReadOnlyList<string> options, ref bool isRefreshing)
+    public void Configure()
     {
-        if (m_Dropdown == null || !ShouldRepopulate(options))
+        if (m_InputField == null)
             return;
 
-        isRefreshing = true;
-        m_Dropdown.ClearOptions();
-        m_Dropdown.AddOptions(new List<string>(options));
-        m_Dropdown.SetValueWithoutNotify(0);
-        isRefreshing = false;
+        if (m_InputField.characterLimit != m_BitCount)
+            m_InputField.characterLimit = m_BitCount;
     }
 
     public void Reset()
     {
-        if (m_Dropdown != null)
-            m_Dropdown.SetValueWithoutNotify(0);
+        if (m_InputField != null)
+            m_InputField.SetTextWithoutNotify(string.Empty);
 
         if (m_Toggle != null)
             m_Toggle.SetIsOnWithoutNotify(false);
     }
 
-    string GetSelectedValue()
+    string GetSubmittedBits()
     {
-        if (m_Dropdown == null ||
-            m_Dropdown.options == null ||
-            m_Dropdown.value <= 0 ||
-            m_Dropdown.value >= m_Dropdown.options.Count)
-        {
+        if (m_InputField == null)
             return string.Empty;
-        }
 
-        return m_Dropdown.options[m_Dropdown.value].text.Trim();
-    }
-
-    bool ShouldRepopulate(IReadOnlyList<string> options)
-    {
-        if (m_Dropdown.options == null || m_Dropdown.options.Count != options.Count)
-            return true;
-
-        for (var index = 0; index < options.Count; index++)
-        {
-            if (m_Dropdown.options[index].text != options[index])
-                return true;
-        }
-
-        return false;
+        return PracticeDecodeBitText.Normalize(m_InputField.text);
     }
 }

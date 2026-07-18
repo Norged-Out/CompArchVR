@@ -1,84 +1,63 @@
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+/// <summary>
+/// Scene-side Practice decode presentation wrapper. It keeps the authored
+/// input-field groups synchronized with the current staged decode state.
+/// </summary>
 sealed class PracticeDecodeView
 {
-    static readonly List<string> s_OpcodeOptions = new()
-    {
-        "Choose Opcode",
-        "000000",
-        "000100",
-        "000101",
-        "001000",
-        "100011",
-        "101011",
-    };
-
-    static readonly List<string> s_FunctOptions = new()
-    {
-        "Choose Funct",
-        "100000",
-        "100010",
-        "100100",
-        "100101",
-        "101010",
-    };
-
     readonly GameObject m_PracticeRoot;
     readonly TMP_Text m_BinaryText;
     readonly TMP_Text m_StatusText;
     readonly TMP_Text m_HintText;
-    readonly PracticeDecodeDropdownField m_OpcodeField;
-    readonly PracticeDecodeDropdownField m_RsField;
-    readonly PracticeDecodeDropdownField m_RtField;
-    readonly PracticeDecodeOptionalField m_RdField;
-    readonly PracticeDecodeOptionalField m_ImmediateField;
-    readonly PracticeDecodeOptionalField m_FunctField;
-
-    readonly List<string> m_RegisterOptions = new();
-    readonly List<string> m_ImmediateOptions = new();
+    readonly PracticeDecodeInputField m_OpcodeField;
+    readonly PracticeDecodeInputField m_RsField;
+    readonly PracticeDecodeInputField m_RtField;
+    readonly PracticeDecodeOptionalInputField m_RdField;
+    readonly PracticeDecodeOptionalInputField m_ImmediateField;
+    readonly PracticeDecodeOptionalInputField m_FunctField;
 
     public PracticeDecodeView(
         GameObject practiceRoot,
         TMP_Text binaryText,
         TMP_Text statusText,
         GameObject opcodeGroupRoot,
-        TMP_Dropdown opcodeDropdown,
+        TMP_InputField opcodeInputField,
         GameObject rsGroupRoot,
-        TMP_Dropdown rsDropdown,
+        TMP_InputField rsInputField,
         GameObject rtGroupRoot,
-        TMP_Dropdown rtDropdown,
+        TMP_InputField rtInputField,
         GameObject rdGroupRoot,
         UnityEngine.UI.Toggle rdToggle,
-        TMP_Dropdown rdDropdown,
+        TMP_InputField rdInputField,
         GameObject immediateGroupRoot,
         UnityEngine.UI.Toggle immediateToggle,
-        TMP_Dropdown immediateDropdown,
+        TMP_InputField immediateInputField,
         GameObject functGroupRoot,
         UnityEngine.UI.Toggle functToggle,
-        TMP_Dropdown functDropdown,
+        TMP_InputField functInputField,
         TMP_Text hintText)
     {
         m_PracticeRoot = practiceRoot;
         m_BinaryText = binaryText;
         m_StatusText = statusText;
         m_HintText = hintText;
-        m_OpcodeField = new PracticeDecodeDropdownField(opcodeGroupRoot, opcodeDropdown);
-        m_RsField = new PracticeDecodeDropdownField(rsGroupRoot, rsDropdown);
-        m_RtField = new PracticeDecodeDropdownField(rtGroupRoot, rtDropdown);
-        m_RdField = new PracticeDecodeOptionalField(rdGroupRoot, rdToggle, rdDropdown);
-        m_ImmediateField = new PracticeDecodeOptionalField(immediateGroupRoot, immediateToggle, immediateDropdown);
-        m_FunctField = new PracticeDecodeOptionalField(functGroupRoot, functToggle, functDropdown);
+        m_OpcodeField = new PracticeDecodeInputField(opcodeGroupRoot, opcodeInputField, 6);
+        m_RsField = new PracticeDecodeInputField(rsGroupRoot, rsInputField, 5);
+        m_RtField = new PracticeDecodeInputField(rtGroupRoot, rtInputField, 5);
+        m_RdField = new PracticeDecodeOptionalInputField(rdGroupRoot, rdToggle, rdInputField, 5);
+        m_ImmediateField = new PracticeDecodeOptionalInputField(immediateGroupRoot, immediateToggle, immediateInputField, 16);
+        m_FunctField = new PracticeDecodeOptionalInputField(functGroupRoot, functToggle, functInputField, 6);
     }
 
-    public void Refresh(PracticeInstructionDefinition instruction, bool opcodeConfirmed, bool isFailed, ref bool isRefreshing)
+    public void Refresh(PracticeInstructionDefinition instruction, bool opcodeConfirmed, bool isFailed)
     {
         SetVisible(!isFailed);
         if (isFailed)
             return;
 
-        PopulateOptions(instruction, ref isRefreshing);
+        ConfigureFields();
         m_OpcodeField.SetVisible(!opcodeConfirmed);
         m_RsField.SetVisible(opcodeConfirmed);
         m_RtField.SetVisible(opcodeConfirmed);
@@ -93,7 +72,7 @@ sealed class PracticeDecodeView
                 : string.Empty);
     }
 
-    public void Reset(ref bool isRefreshing)
+    public void Reset()
     {
         m_OpcodeField.Reset();
         m_RsField.Reset();
@@ -101,7 +80,6 @@ sealed class PracticeDecodeView
         m_RdField.Reset();
         m_ImmediateField.Reset();
         m_FunctField.Reset();
-        isRefreshing = false;
         SetHintText(string.Empty);
         SetStatusText(string.Empty);
     }
@@ -125,48 +103,25 @@ sealed class PracticeDecodeView
     public PracticeDecodeInputState CaptureInputState()
     {
         return new PracticeDecodeInputState(
-            m_OpcodeField.GetSelectedValue(),
-            m_RsField.GetSelectedValue(),
-            m_RtField.GetSelectedValue(),
+            m_OpcodeField.GetSubmittedBits(),
+            m_RsField.GetSubmittedBits(),
+            m_RtField.GetSubmittedBits(),
             m_RdField.IsEnabled,
-            m_RdField.SelectedValue,
+            m_RdField.SubmittedBits,
             m_ImmediateField.IsEnabled,
-            m_ImmediateField.SelectedValue,
+            m_ImmediateField.SubmittedBits,
             m_FunctField.IsEnabled,
-            m_FunctField.SelectedValue);
+            m_FunctField.SubmittedBits);
     }
 
-    void PopulateOptions(PracticeInstructionDefinition instruction, ref bool isRefreshing)
+    void ConfigureFields()
     {
-        m_OpcodeField.Populate(s_OpcodeOptions, ref isRefreshing);
-        EnsureRegisterOptions();
-        m_RsField.Populate(m_RegisterOptions, ref isRefreshing);
-        m_RtField.Populate(m_RegisterOptions, ref isRefreshing);
-        m_RdField.Populate(m_RegisterOptions, ref isRefreshing);
-        PopulateImmediateOptions(instruction, ref isRefreshing);
-        m_FunctField.Populate(s_FunctOptions, ref isRefreshing);
-    }
-
-    void EnsureRegisterOptions()
-    {
-        if (m_RegisterOptions.Count > 0)
-            return;
-
-        m_RegisterOptions.Add("Choose Register");
-        for (var registerIndex = 0; registerIndex < 32; registerIndex++)
-            m_RegisterOptions.Add(System.Convert.ToString(registerIndex, 2).PadLeft(5, '0'));
-    }
-
-    void PopulateImmediateOptions(PracticeInstructionDefinition instruction, ref bool isRefreshing)
-    {
-        m_ImmediateOptions.Clear();
-        m_ImmediateOptions.Add("Choose Immediate");
-
-        var expectedImmediateBits = instruction != null ? instruction.expectedImmediateBits : string.Empty;
-        if (!string.IsNullOrWhiteSpace(expectedImmediateBits))
-            m_ImmediateOptions.Add(expectedImmediateBits.Trim());
-
-        m_ImmediateField.Populate(m_ImmediateOptions, ref isRefreshing);
+        m_OpcodeField.Configure();
+        m_RsField.Configure();
+        m_RtField.Configure();
+        m_RdField.Configure();
+        m_ImmediateField.Configure();
+        m_FunctField.Configure();
     }
 
     static void SetTextField(TMP_Text target, string text)

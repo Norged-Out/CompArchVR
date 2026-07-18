@@ -93,19 +93,19 @@ sealed class DecodePracticeInteractionRefs
     GameObject m_OpcodeGroupRoot;
 
     [SerializeField]
-    TMP_Dropdown m_OpcodeDropdown;
+    TMP_InputField m_OpcodeInputField;
 
     [SerializeField]
     GameObject m_RsGroupRoot;
 
     [SerializeField]
-    TMP_Dropdown m_RsDropdown;
+    TMP_InputField m_RsInputField;
 
     [SerializeField]
     GameObject m_RtGroupRoot;
 
     [SerializeField]
-    TMP_Dropdown m_RtDropdown;
+    TMP_InputField m_RtInputField;
 
     [SerializeField]
     GameObject m_RdGroupRoot;
@@ -114,7 +114,7 @@ sealed class DecodePracticeInteractionRefs
     Toggle m_RdToggle;
 
     [SerializeField]
-    TMP_Dropdown m_RdDropdown;
+    TMP_InputField m_RdInputField;
 
     [SerializeField]
     GameObject m_ImmediateGroupRoot;
@@ -123,7 +123,7 @@ sealed class DecodePracticeInteractionRefs
     Toggle m_ImmediateToggle;
 
     [SerializeField]
-    TMP_Dropdown m_ImmediateDropdown;
+    TMP_InputField m_ImmediateInputField;
 
     [SerializeField]
     GameObject m_FunctGroupRoot;
@@ -132,26 +132,26 @@ sealed class DecodePracticeInteractionRefs
     Toggle m_FunctToggle;
 
     [SerializeField]
-    TMP_Dropdown m_FunctDropdown;
+    TMP_InputField m_FunctInputField;
 
     public GameObject Root => m_Root;
     public TMP_Text BinaryText => m_BinaryText;
     public TMP_Text StatusText => m_StatusText;
     public GameObject OpcodeGroupRoot => m_OpcodeGroupRoot;
-    public TMP_Dropdown OpcodeDropdown => m_OpcodeDropdown;
+    public TMP_InputField OpcodeInputField => m_OpcodeInputField;
     public GameObject RsGroupRoot => m_RsGroupRoot;
-    public TMP_Dropdown RsDropdown => m_RsDropdown;
+    public TMP_InputField RsInputField => m_RsInputField;
     public GameObject RtGroupRoot => m_RtGroupRoot;
-    public TMP_Dropdown RtDropdown => m_RtDropdown;
+    public TMP_InputField RtInputField => m_RtInputField;
     public GameObject RdGroupRoot => m_RdGroupRoot;
     public Toggle RdToggle => m_RdToggle;
-    public TMP_Dropdown RdDropdown => m_RdDropdown;
+    public TMP_InputField RdInputField => m_RdInputField;
     public GameObject ImmediateGroupRoot => m_ImmediateGroupRoot;
     public Toggle ImmediateToggle => m_ImmediateToggle;
-    public TMP_Dropdown ImmediateDropdown => m_ImmediateDropdown;
+    public TMP_InputField ImmediateInputField => m_ImmediateInputField;
     public GameObject FunctGroupRoot => m_FunctGroupRoot;
     public Toggle FunctToggle => m_FunctToggle;
-    public TMP_Dropdown FunctDropdown => m_FunctDropdown;
+    public TMP_InputField FunctInputField => m_FunctInputField;
 }
 
 [System.Serializable]

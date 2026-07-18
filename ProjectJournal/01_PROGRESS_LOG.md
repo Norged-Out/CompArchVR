@@ -30,7 +30,7 @@ Current stable feature set:
 - lesson-mode groundwork for:
   - `Learning`
   - `Practice`
-- first playable practice-mode decode slice for:
+- first playable practice-mode end-to-end path for:
   - `add`
 - physical instruction fetch through:
   - `Instruction Module`
@@ -65,9 +65,12 @@ Current stable feature set:
   - lesson restart
   - volume control
   - route-guidance toggle
+  - password-gated dev-mode unlock
+  - current-phase skip for dev testing
   - FPS + frame-time readout
   - quit / restart support
 - controller-accessible wrist menu opening through the left controller menu-button path
+- spatial-keyboard-backed TMP input fields now work inside the lesson scene
 - lightweight onboarding groundwork in-scene through:
   - the imported tutorial/video prefab from `VRTemplateAssets`
   - simple image-based tutorial surfaces
@@ -119,6 +122,16 @@ Current interaction systems that are already implemented:
   - limited hints
   - limited answer attempts
   - failed-state hold until explicit reset press
+- later practice phases now support:
+  - per-phase validation-attempt budgets
+  - per-phase scanner-attempt budgets
+  - per-phase hint budgets
+  - held failure states that wait for explicit restart
+  - shared failure behavior across `EX`, `MEM`, `WB`, and `PC Update`
+- centralized dev-mode support now exists for:
+  - unlocking dev mode from the settings menu
+  - skipping the currently active phase from the settings menu
+  - force-completing `ID`, `EX`, `MEM`, `WB`, and `PC Update`
 
 Current architecture truths:
 - lesson UI is scene-authored and code-driven
@@ -186,6 +199,7 @@ What should currently be treated as true:
 - the improved routed-map layout should now be treated as the active baseline rather than an unfinished first-pass map task
 - the current build direction is polish-first, not instruction-count-first
 - the next major build change in flight is practice-mode support layered onto the same lesson foundation
+- temporary testing relief now exists through a centralized dev-mode skip path instead of ad-hoc scene edits
 - supported working instructions are:
   - `add`
   - `addi`
@@ -1250,6 +1264,123 @@ Next:
 Risks / Notes:
 - the current practice mode is still only a first slice, not the full intended mode
 - decode remains the highest-risk area for architecture sprawl, so future additions should keep honoring the split-responsibility direction established here
+
+
+### 2026-07-18 - Practice Mode Extended Through The Full add Lesson Path
+
+Completed:
+- extended the first practice-mode slice beyond decode so the `add` instruction can now be exercised through the later authored lesson phases too
+- carried the practice-mode split into:
+  - `ALU`
+  - `Memory`
+  - `WB`
+  - `PC Update`
+- added per-phase practice budgets for:
+  - validation attempts
+  - scanner attempts
+  - hint usage
+- updated practice failure behavior so later phases now hold on a failure end-state until the learner explicitly presses restart
+- created shared support helpers and panel-ref containers so the practice additions for later phases did not have to be duplicated ad hoc across every controller
+- changed the practice runtime-instruction path so practice definitions can clone/override learning definitions at runtime instead of depending on a second fully duplicated instruction-asset stack
+
+Changed:
+- practice mode is no longer just "decode with extra steps"; it now has a real first end-to-end lesson path for `add`
+- the later phase controllers now share more of the same practice-mode language:
+  - budgets
+  - hint flow
+  - held failure state
+  - restart rhythm
+- runtime practice instructions are now treated as lightweight overlays on top of learning-mode instruction definitions rather than separate hand-maintained full lesson copies
+
+Next:
+- test new practice instructions such as `lw` and `beq`
+- decide whether decode register scanning should remain order-sensitive or become order-free
+- continue widening practice mode only after the first complete path remains stable under testing
+
+Risks / Notes:
+- the first full practice path exists, but it is still the start of the mode rather than the final shape of it
+- later instruction families may still expose differences in how immediate, memory, and branch behavior should be surfaced during practice mode
+
+
+### 2026-07-18 - Centralized Dev Mode Added For Testing And Recovery
+
+Completed:
+- added a centralized dev-mode toggle to the wrist settings menu
+- added a single settings-menu button that can skip the currently active lesson phase during testing
+- implemented force-complete helpers for:
+  - decode
+  - execute
+  - memory
+  - write-back
+  - PC update
+- patched the first decode-skip implementation after it exposed a same-frame advancement freeze
+- updated the decode skip path so it now emits the expected datapackets instead of only stamping internal lesson state
+- kept dev tooling anchored to the settings menu rather than scattering separate skip controls onto every phase UI
+
+Changed:
+- rapid in-editor / in-headset testing now has a sanctioned path instead of requiring repeated full lesson replays for every late-phase check
+- dev support is now a player-facing utility inside the existing settings menu instead of a hidden scene-only workaround
+
+Next:
+- use dev mode to accelerate validation of new practice instructions and future scanner tweaks
+- decide later whether any extra dev-only utilities are truly necessary beyond phase skipping
+
+Risks / Notes:
+- dev mode is intentionally a testing aid, not part of the learner-facing intended experience
+- any future expansion of dev tooling should stay centralized and restrained so it does not pollute the actual lesson UX
+
+
+### 2026-07-18 - Scanner Failure Behavior Stabilized Across Practice Phases
+
+Completed:
+- normalized scanner-attempt failure behavior across the practice-enabled authored phases
+- ensured later-phase practice failures now shut scanners down when the failure end-state is reached instead of leaving them half-alive and spam-triggerable
+- fixed repeated scanner-failure budget draining in decode by deduplicating repeated charges for the same stable wrong placement
+- aligned decode more closely with the already safer scanner-failure behavior seen in later phases
+- preserved decode idle-preview utility behavior while still restoring lesson-owned scanner strictness once a lesson starts
+
+Changed:
+- scanner failure now behaves more like a true phase-end failure condition instead of an endlessly repeatable punishment loop
+- the difference between "wrong but still trying" and "failure state reached" is now cleaner for testing and presentation
+
+Next:
+- decide whether decode scanner validation should remain ordered by `rs` then `rt`, or become order-free for usability
+- keep an eye on scanner behavior when new practice instructions are introduced
+
+Risks / Notes:
+- decode still has the most unusual scanner behavior because it mixes operand collection, packet spawning, and lesson progression in one phase
+- scanner behavior may still need one more usability pass once `lw` and `beq` practice variants are exercised
+
+
+### 2026-07-18 - Spatial Keyboard And Input Fields Entered The Lesson Flow
+
+Completed:
+- imported the XR Interaction Toolkit spatial keyboard sample into the project workflow
+- verified world-space TMP input fields can now accept text correctly inside the authored lesson scene
+- identified and corrected the character-limit setup issue that was blocking keyboard text entry
+- replaced the settings-menu dev-mode toggle path with a password-backed input submission path
+- moved Practice decode away from binary dropdown selection and onto authored input fields for direct bit entry
+- removed the temporary one-off input-field debug helper after keyboard setup was confirmed working
+
+Changed:
+- Practice decode now expects typed bitfields instead of dropdown picking for:
+  - opcode
+  - `rs`
+  - `rt`
+  - optional `rd`
+  - optional immediate
+  - optional funct
+- dev-mode unlocking is now an intentional keyboard submission instead of a visible toggle in the settings menu
+- the lesson scene now has a validated path for future text-entry interactions
+
+Next:
+- widen the input-field-based Practice path beyond the first instruction slice
+- decide how much future practice / test content should rely on typed decode versus constrained authored choices
+- reuse the same keyboard-backed flow anywhere later text entry is genuinely worth the friction
+
+Risks / Notes:
+- spatial keyboard setup is sensitive to field configuration, especially character-limit handling and submission events
+- wrist-menu ergonomics still matter a lot when pairing keyboard use with the existing hand-menu presentation
 
 
 ## Current Working Baseline

@@ -64,17 +64,16 @@ public sealed class DecodePanelController : LessonPanelBase
 
     public void PopulatePracticeControls(
         PracticeInstructionDefinition currentInstruction,
-        bool opcodeConfirmed,
-        ref bool isRefreshing)
+        bool opcodeConfirmed)
     {
         EnsurePracticeView();
-        m_PracticeView.Refresh(currentInstruction, opcodeConfirmed, false, ref isRefreshing);
+        m_PracticeView.Refresh(currentInstruction, opcodeConfirmed, false);
     }
 
-    public void ResetPracticeControls(ref bool isRefreshing)
+    public void ResetPracticeControls()
     {
         EnsurePracticeView();
-        m_PracticeView.Reset(ref isRefreshing);
+        m_PracticeView.Reset();
     }
 
     public void Refresh(
@@ -160,11 +159,10 @@ public sealed class DecodePanelController : LessonPanelBase
         m_LearningView.HideAll();
         ApplyPracticeLessonText(practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed);
 
-        var isRefreshing = false;
         var opcodeConfirmed = practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed;
         var isFailed = practiceDecodeFlow != null && practiceDecodeFlow.IsFailed;
 
-        m_PracticeView.Refresh(currentPracticeInstruction, opcodeConfirmed, isFailed, ref isRefreshing);
+        m_PracticeView.Refresh(currentPracticeInstruction, opcodeConfirmed, isFailed);
         m_PracticeView.SetStatusText(
             practiceDecodeFlow != null
                 ? practiceDecodeFlow.GetDecodeStatusText(currentPracticeInstruction)
@@ -230,20 +228,20 @@ public sealed class DecodePanelController : LessonPanelBase
             m_PracticeInteraction.BinaryText,
             m_PracticeInteraction.StatusText,
             m_PracticeInteraction.OpcodeGroupRoot,
-            m_PracticeInteraction.OpcodeDropdown,
+            m_PracticeInteraction.OpcodeInputField,
             m_PracticeInteraction.RsGroupRoot,
-            m_PracticeInteraction.RsDropdown,
+            m_PracticeInteraction.RsInputField,
             m_PracticeInteraction.RtGroupRoot,
-            m_PracticeInteraction.RtDropdown,
+            m_PracticeInteraction.RtInputField,
             m_PracticeInteraction.RdGroupRoot,
             m_PracticeInteraction.RdToggle,
-            m_PracticeInteraction.RdDropdown,
+            m_PracticeInteraction.RdInputField,
             m_PracticeInteraction.ImmediateGroupRoot,
             m_PracticeInteraction.ImmediateToggle,
-            m_PracticeInteraction.ImmediateDropdown,
+            m_PracticeInteraction.ImmediateInputField,
             m_PracticeInteraction.FunctGroupRoot,
             m_PracticeInteraction.FunctToggle,
-            m_PracticeInteraction.FunctDropdown,
+            m_PracticeInteraction.FunctInputField,
             m_HintPanel.HintText);
     }
 
