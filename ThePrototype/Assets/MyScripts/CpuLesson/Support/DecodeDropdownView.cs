@@ -193,9 +193,7 @@ sealed class DecodeDropdownView
             return;
 
         isRefreshing = true;
-        m_HintDropdown.ClearOptions();
-        m_HintDropdown.AddOptions(new List<string> { "Choose Option", "Opcode", "Funct" });
-        m_HintDropdown.SetValueWithoutNotify(0);
+        InfoCatalog.Load().PopulateDropdown(PhaseInfoTopicGroup.Decode, m_HintDropdown);
         isRefreshing = false;
     }
 

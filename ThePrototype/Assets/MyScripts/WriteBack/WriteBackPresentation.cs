@@ -111,15 +111,7 @@ public static class WriteBackPresentation
             return;
 
         var selectedValue = Mathf.Clamp(hintDropdown.value, 0, 3);
-        hintDropdown.ClearOptions();
-        hintDropdown.AddOptions(new List<string>
-        {
-            "Choose Option",
-            "RegDst",
-            "RegWrite",
-            "MemToReg",
-        });
-        hintDropdown.SetValueWithoutNotify(selectedValue);
+        InfoCatalog.Load().PopulateDropdown(PhaseInfoTopicGroup.WriteBack, hintDropdown, selectedValue);
     }
 
     static string BuildLessonRuntimeText(InstructionDefinition instruction)

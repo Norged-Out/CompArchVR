@@ -89,14 +89,7 @@ public static class MemoryPresentation
             return;
 
         var selectedValue = Mathf.Clamp(hintDropdown.value, 0, 2);
-        hintDropdown.ClearOptions();
-        hintDropdown.AddOptions(new List<string>
-        {
-            "Choose Option",
-            "MemRead",
-            "MemWrite",
-        });
-        hintDropdown.SetValueWithoutNotify(selectedValue);
+        InfoCatalog.Load().PopulateDropdown(PhaseInfoTopicGroup.Memory, hintDropdown, selectedValue);
     }
 
     static string BuildAddressStatusText(MemoryController controller, MemoryTransferService transferService)

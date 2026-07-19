@@ -102,18 +102,7 @@ public static class PcUpdatePresentation
             return;
 
         var selectedValue = Mathf.Clamp(hintDropdown.value, 0, 6);
-        hintDropdown.ClearOptions();
-        hintDropdown.AddOptions(new List<string>
-        {
-            "Choose Option",
-            "PC",
-            "PCSrc",
-            "Branch",
-            "Jump",
-            "Shift Left 2",
-            "Zero",
-        });
-        hintDropdown.SetValueWithoutNotify(selectedValue);
+        InfoCatalog.Load().PopulateDropdown(PhaseInfoTopicGroup.PcUpdate, hintDropdown, selectedValue);
     }
 
     /// <summary>

@@ -6,7 +6,6 @@ using System.Collections.Generic;
 /// </summary>
 public sealed class GuideSelState
 {
-    readonly InstructionCatalog m_Catalog = new();
     readonly List<InstructionDefinition> m_LearningInstructions = new();
     readonly List<PracticeInstructionDefinition> m_PracticeInstructions = new();
     readonly List<string> m_IntroLabels = new();
@@ -24,11 +23,20 @@ public sealed class GuideSelState
         if (lessonFlow == null)
             return;
 
+        var instructionCatalog = lessonFlow.InstructionCatalog;
+
         m_LearningInstructions.Clear();
-        m_LearningInstructions.AddRange(m_Catalog.LoadAvailable(LessonMode.Learning, lessonFlow.CurrentInstruction));
+        if (instructionCatalog != null)
+            m_LearningInstructions.AddRange(instructionCatalog.GetLearningInstructions(lessonFlow.CurrentInstruction));
 
         m_PracticeInstructions.Clear();
-        m_PracticeInstructions.AddRange(m_Catalog.LoadPracticeAvailable(lessonFlow.CurrentPracticeInstruction));
+        if (instructionCatalog != null)
+        {
+            m_PracticeInstructions.AddRange(
+                instructionCatalog.GetModePracticeInstructions(
+                    lessonFlow.CurrentMode,
+                    lessonFlow.CurrentPracticeInstruction));
+        }
 
         BuildIntroLabels(lessonFlow);
     }

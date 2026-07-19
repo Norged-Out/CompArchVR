@@ -1,32 +1,89 @@
-using System;
 using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Loads and sorts the authored instruction definition assets used by the lesson UI.
+/// Authored bookkeeping asset for every instruction the lesson flow can expose.
+/// This replaces folder-wide resource discovery with one explicit source of truth
+/// that controls ordering and future mode expansion.
 /// </summary>
-public sealed class InstructionCatalog
+[CreateAssetMenu(fileName = "LessonInstructionCatalog", menuName = "CPU Lesson/Instruction Catalog")]
+public sealed class InstructionCatalog : ScriptableObject
 {
-    const string k_LearningInstructionResourcesPath = "InstructionDefinitions";
-    const string k_PracticeInstructionResourcesPath = "PracticeInstructionDefinitions";
+    const string k_DefaultCatalogResourcesPath = "LessonInstructionCatalog";
+
+    [SerializeField]
+    List<InstructionDefinition> m_LearningInstructions = new();
+
+    [SerializeField]
+    List<PracticeInstructionDefinition> m_PracticeInstructions = new();
+
+    [SerializeField]
+    List<PracticeInstructionDefinition> m_TestInstructions = new();
 
     /// <summary>
-    /// Builds the visible Learning instruction list from the Resources folder and
-    /// keeps the currently selected instruction available even if the asset list
-    /// is empty.
+    /// Loads the default catalog asset when a scene has not assigned one explicitly.
     /// </summary>
-    public List<InstructionDefinition> LoadAvailable(LessonMode mode, InstructionDefinition currentInstruction)
+    public static InstructionCatalog LoadDefaultCatalog()
     {
-        if (mode != LessonMode.Learning)
-            return new List<InstructionDefinition>();
+        return Resources.Load<InstructionCatalog>(k_DefaultCatalogResourcesPath);
+    }
 
-        var availableInstructions = new List<InstructionDefinition>();
-        var loadedInstructions = Resources.LoadAll<InstructionDefinition>(k_LearningInstructionResourcesPath);
+    /// <summary>
+    /// Returns the authored Learning instruction bank in editor-defined order.
+    /// </summary>
+    public List<InstructionDefinition> GetLearningInstructions(InstructionDefinition currentInstruction)
+    {
+        return BuildInstructionList(m_LearningInstructions, currentInstruction);
+    }
 
-        if (loadedInstructions != null && loadedInstructions.Length > 0)
+    /// <summary>
+    /// Returns the authored Practice or Test instruction bank. Test falls back
+    /// to the Practice pool until it gains its own dedicated authored list.
+    /// </summary>
+    public List<PracticeInstructionDefinition> GetModePracticeInstructions(LessonMode mode, PracticeInstructionDefinition currentInstruction)
+    {
+        var sourceList = mode == LessonMode.Test && HasAuthoredEntries(m_TestInstructions)
+            ? m_TestInstructions
+            : m_PracticeInstructions;
+
+        return BuildInstructionList(sourceList, currentInstruction);
+    }
+
+    /// <summary>
+    /// Returns the first valid Learning instruction in the authored bank.
+    /// </summary>
+    public InstructionDefinition GetDefaultLearningInstruction()
+    {
+        var availableInstructions = GetLearningInstructions(null);
+        return availableInstructions.Count > 0 ? availableInstructions[0] : InstructionDefaults.CreateFallbackAdd();
+    }
+
+    /// <summary>
+    /// Returns the first valid Practice/Test instruction in the authored bank.
+    /// </summary>
+    public PracticeInstructionDefinition GetDefaultPracticeInstruction(LessonMode mode)
+    {
+        var availableInstructions = GetModePracticeInstructions(mode, null);
+        return availableInstructions.Count > 0 ? availableInstructions[0] : null;
+    }
+
+    static List<TInstruction> BuildInstructionList<TInstruction>(
+        IReadOnlyList<TInstruction> sourceList,
+        TInstruction currentInstruction)
+        where TInstruction : Object
+    {
+        var availableInstructions = new List<TInstruction>();
+
+        if (sourceList != null)
         {
-            availableInstructions.AddRange(loadedInstructions);
-            availableInstructions.Sort(CompareInstructionsByDisplayName);
+            for (var index = 0; index < sourceList.Count; index++)
+            {
+                var instruction = sourceList[index];
+                if (instruction == null || availableInstructions.Contains(instruction))
+                    continue;
+
+                availableInstructions.Add(instruction);
+            }
         }
 
         if (availableInstructions.Count == 0 && currentInstruction != null)
@@ -35,44 +92,19 @@ public sealed class InstructionCatalog
         return availableInstructions;
     }
 
-    /// <summary>
-    /// Builds the visible Practice instruction list from its separate Resources
-    /// folder so encoded-instruction assets do not pollute guided lesson content.
-    /// </summary>
-    public List<PracticeInstructionDefinition> LoadPracticeAvailable(PracticeInstructionDefinition currentInstruction)
+    static bool HasAuthoredEntries<TInstruction>(IReadOnlyList<TInstruction> sourceList)
+        where TInstruction : Object
     {
-        var availableInstructions = new List<PracticeInstructionDefinition>();
-        var loadedInstructions = Resources.LoadAll<PracticeInstructionDefinition>(k_PracticeInstructionResourcesPath);
+        if (sourceList == null)
+            return false;
 
-        if (loadedInstructions != null && loadedInstructions.Length > 0)
+        for (var index = 0; index < sourceList.Count; index++)
         {
-            availableInstructions.AddRange(loadedInstructions);
-            availableInstructions.Sort(ComparePracticeInstructionsByDisplayName);
+            if (sourceList[index] != null)
+                return true;
         }
 
-        if (availableInstructions.Count == 0 && currentInstruction != null)
-            availableInstructions.Add(currentInstruction);
-
-        return availableInstructions;
-    }
-
-    /// <summary>
-    /// Keeps dropdown ordering human-readable and deterministic.
-    /// </summary>
-    static int CompareInstructionsByDisplayName(InstructionDefinition left, InstructionDefinition right)
-    {
-        return string.Compare(
-            left != null ? left.displayName : string.Empty,
-            right != null ? right.displayName : string.Empty,
-            StringComparison.OrdinalIgnoreCase);
-    }
-
-    static int ComparePracticeInstructionsByDisplayName(PracticeInstructionDefinition left, PracticeInstructionDefinition right)
-    {
-        return string.Compare(
-            left != null ? left.displayName : string.Empty,
-            right != null ? right.displayName : string.Empty,
-            StringComparison.OrdinalIgnoreCase);
+        return false;
     }
 }
 

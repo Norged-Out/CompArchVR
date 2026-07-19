@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -6,6 +7,8 @@ using UnityEngine;
 /// </summary>
 sealed class LessonState
 {
+    readonly HashSet<InstructionRegisterRole> m_SelectedRegisterRoles = new();
+
     /// <summary>
     /// Captures the runtime selection object that survives across lesson phases.
     /// </summary>
@@ -15,8 +18,9 @@ sealed class LessonState
     }
 
     public InstructionRuntimeSelection RuntimeSelection { get; }
+    public IReadOnlyCollection<InstructionRegisterRole> SelectedRegisterRoles => m_SelectedRegisterRoles;
     public int CurrentStepIndex { get; private set; } = -1;
-    public int CurrentRegisterSelectionIndex { get; private set; }
+    public int CurrentRegisterSelectionIndex => m_SelectedRegisterRoles.Count;
     public bool RegisterSelectionReadyToContinue { get; private set; }
     public int LastAdvanceFrame { get; private set; } = -1;
     public bool HasStarted => CurrentStepIndex >= 0;
@@ -29,8 +33,7 @@ sealed class LessonState
         RuntimeSelection.definition = instruction;
         RuntimeSelection.ResetOperands();
         CurrentStepIndex = 0;
-        CurrentRegisterSelectionIndex = 0;
-        RegisterSelectionReadyToContinue = false;
+        ClearRegisterSelectionProgress();
         LastAdvanceFrame = -1;
     }
 
@@ -42,26 +45,48 @@ sealed class LessonState
         RuntimeSelection.definition = instruction;
         RuntimeSelection.ResetOperands();
         CurrentStepIndex = -1;
-        CurrentRegisterSelectionIndex = 0;
-        RegisterSelectionReadyToContinue = false;
+        ClearRegisterSelectionProgress();
         LastAdvanceFrame = -1;
     }
 
     /// <summary>
-    /// Advances the decode register-selection pointer after a successful operand scan.
+    /// Marks one decode register role as satisfied.
     /// </summary>
-    public void AdvanceRegisterSelection()
+    public void MarkRegisterRoleSelected(InstructionRegisterRole registerRole)
     {
-        CurrentRegisterSelectionIndex++;
+        if (registerRole == InstructionRegisterRole.None)
+            return;
+
+        m_SelectedRegisterRoles.Add(registerRole);
+    }
+
+    /// <summary>
+    /// Returns whether a specific decode register role is already satisfied.
+    /// </summary>
+    public bool IsRegisterRoleSelected(InstructionRegisterRole registerRole)
+    {
+        return m_SelectedRegisterRoles.Contains(registerRole);
     }
 
     /// <summary>
     /// Marks decode register collection as fully satisfied without requiring
     /// each authored scanner callback to fire one by one.
     /// </summary>
-    public void ForceRegisterSelectionComplete(int requiredSelectionCount)
+    public void ForceRegisterSelectionComplete(IEnumerable<InstructionRegisterRole> requiredRoles)
     {
-        CurrentRegisterSelectionIndex = Mathf.Max(0, requiredSelectionCount);
+        m_SelectedRegisterRoles.Clear();
+
+        if (requiredRoles != null)
+        {
+            foreach (var requiredRole in requiredRoles)
+            {
+                if (requiredRole == InstructionRegisterRole.None)
+                    continue;
+
+                m_SelectedRegisterRoles.Add(requiredRole);
+            }
+        }
+
         RegisterSelectionReadyToContinue = true;
     }
 
@@ -91,8 +116,7 @@ sealed class LessonState
     public void AdvanceStep()
     {
         CurrentStepIndex++;
-        CurrentRegisterSelectionIndex = 0;
-        RegisterSelectionReadyToContinue = false;
+        ClearRegisterSelectionProgress();
     }
 
     /// <summary>
@@ -101,7 +125,15 @@ sealed class LessonState
     public void SkipToStep(int stepIndex)
     {
         CurrentStepIndex = stepIndex;
-        CurrentRegisterSelectionIndex = 0;
+        ClearRegisterSelectionProgress();
+    }
+
+    /// <summary>
+    /// Clears any decode register progress for the next lesson state.
+    /// </summary>
+    void ClearRegisterSelectionProgress()
+    {
+        m_SelectedRegisterRoles.Clear();
         RegisterSelectionReadyToContinue = false;
     }
 }

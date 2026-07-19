@@ -200,7 +200,7 @@ sealed class DecodeFlow
             return;
 
         Debug.Log(
-            $"{m_Flow.LogPrefix} HandleRegisterScanned | role={scannedRole} register={registerName} selectionIndex={m_State.CurrentRegisterSelectionIndex} step={m_Flow.CurrentStep.stepName} frame={Time.frameCount}",
+            $"{m_Flow.LogPrefix} HandleRegisterScanned | role={scannedRole} register={registerName} completedSelections={m_State.CurrentRegisterSelectionIndex} step={m_Flow.CurrentStep.stepName} frame={Time.frameCount}",
             m_Flow);
         ValidateRegisterSelection(scannedRole, registerName, true);
     }
@@ -213,16 +213,9 @@ sealed class DecodeFlow
         var result = LessonChecks.ValidateRegisterSelection(
             m_Flow.ActiveInstruction,
             m_Flow.CurrentStep,
-            m_State.CurrentRegisterSelectionIndex,
+            m_State.SelectedRegisterRoles,
+            scannedRole,
             registerName);
-
-        var expectedRole = result.expectedRole;
-        if (cameFromScanner && scannedRole != expectedRole)
-        {
-            m_Flow.RegisterBankRef?.FlashScannerFailure(scannedRole);
-            RaiseRegisterSelectionFailure("That operand does not belong on this scanner.", scannedRole, registerName, true);
-            return;
-        }
 
         if (!result.isCorrect)
         {
@@ -235,8 +228,8 @@ sealed class DecodeFlow
             return;
         }
 
-        m_State.RuntimeSelection.SetSelectedRegister(result.expectedRole, registerName);
-        m_State.AdvanceRegisterSelection();
+        m_State.RuntimeSelection.SetSelectedRegister(result.matchedRole, registerName);
+        m_State.MarkRegisterRoleSelected(result.matchedRole);
 
         // Only rs / rt emit packets during decode. The destination register is
         // still validated here, but write-back owns the actual result transfer.
@@ -332,7 +325,7 @@ sealed class DecodeFlow
             TrySpawnImmediatePacket();
         }
 
-        m_State.ForceRegisterSelectionComplete(requiredRoles.Length);
+        m_State.ForceRegisterSelectionComplete(requiredRoles);
     }
 
     string BuildPracticeScannerFailureKey(string failureMessage, InstructionRegisterRole scannedRole, string registerName)

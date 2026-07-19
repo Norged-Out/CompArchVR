@@ -29739,10 +29739,10 @@ MonoBehaviour:
     m_RtInputField: {fileID: 432165094}
     m_RdGroupRoot: {fileID: 911198805}
     m_RdToggle: {fileID: 772287905}
-    m_RdInputField: {fileID: 512598099}
+    m_RdInputField: {fileID: 792843374}
     m_ImmediateGroupRoot: {fileID: 1330352367}
     m_ImmediateToggle: {fileID: 2126405726}
-    m_ImmediateInputField: {fileID: 792843374}
+    m_ImmediateInputField: {fileID: 512598099}
     m_FunctGroupRoot: {fileID: 895697494}
     m_FunctToggle: {fileID: 988829240}
     m_FunctInputField: {fileID: 674246052}
@@ -94081,10 +94081,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_CurrentInstruction: {fileID: 0}
-  m_DefaultInstructionResourcePath: InstructionDefinitions/Add
   m_CurrentMode: 0
   m_CurrentPracticeInstruction: {fileID: 0}
-  m_DefaultPracticeInstructionResourcePath: PracticeInstructionDefinitions/Add
+  m_InstructionCatalog: {fileID: 11400000, guid: d740bd9d88e04e70883fce78b0a4a5fb, type: 2}
   m_RegisterBank: {fileID: 1247482117}
   m_ImmediateExtender: {fileID: 963121453}
   m_FetchUploadTerminal: {fileID: 578641185}

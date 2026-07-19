@@ -18,16 +18,13 @@ public sealed class CpuLessonFlow : MonoBehaviour
     InstructionDefinition m_CurrentInstruction;
 
     [SerializeField]
-    string m_DefaultInstructionResourcePath = "InstructionDefinitions/Add";
-
-    [SerializeField]
     LessonMode m_CurrentMode = LessonMode.Learning;
 
     [SerializeField]
     PracticeInstructionDefinition m_CurrentPracticeInstruction;
 
     [SerializeField]
-    string m_DefaultPracticeInstructionResourcePath = "PracticeInstructionDefinitions/Add";
+    InstructionCatalog m_InstructionCatalog;
 
     [SerializeField]
     RegisterBank m_RegisterBank;
@@ -58,6 +55,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
     public PracticeInstructionDefinition CurrentPracticeInstruction => m_CurrentPracticeInstruction;
     public LessonMode CurrentMode => m_CurrentMode;
+    public InstructionCatalog InstructionCatalog => ResolveInstructionCatalog();
     public InstructionRuntimeSelection RuntimeSelection => m_State.RuntimeSelection;
     public int CurrentStepIndex => m_State.CurrentStepIndex;
     public int CurrentRegisterSelectionIndex => m_State.CurrentRegisterSelectionIndex;
@@ -129,7 +127,10 @@ public sealed class CpuLessonFlow : MonoBehaviour
             m_CurrentInstruction = LoadDefaultInstruction();
 
         if (m_CurrentMode == LessonMode.Practice && m_CurrentPracticeInstruction == null)
-            m_CurrentPracticeInstruction = LoadDefaultPracticeInstruction();
+            m_CurrentPracticeInstruction = LoadDefaultPracticeInstruction(m_CurrentMode);
+
+        if (m_CurrentMode == LessonMode.Test && m_CurrentPracticeInstruction == null)
+            m_CurrentPracticeInstruction = LoadDefaultPracticeInstruction(m_CurrentMode);
 
         m_RegisterBank?.RestoreAuthoredRegisterValues();
 
@@ -162,7 +163,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
         EnsureServices();
 
         // Named instruction selection belongs only to Learning mode. Practice
-        // will use its own encoded-instruction asset path instead.
+        // and Test use their own encoded-instruction assets instead.
         if (m_CurrentMode != LessonMode.Learning ||
             instruction == null ||
             instruction == m_CurrentInstruction)
@@ -310,16 +311,22 @@ public sealed class CpuLessonFlow : MonoBehaviour
     /// </summary>
     internal InstructionDefinition LoadDefaultInstruction()
     {
-        return LessonInstrResolver.LoadDefaultLearning(m_DefaultInstructionResourcePath);
+        var instructionCatalog = ResolveInstructionCatalog();
+        return instructionCatalog != null
+            ? instructionCatalog.GetDefaultLearningInstruction()
+            : InstructionDefaults.CreateFallbackAdd();
     }
 
     /// <summary>
     /// Loads the fallback Practice instruction used when the scene has not yet
     /// been assigned one explicitly.
     /// </summary>
-    internal PracticeInstructionDefinition LoadDefaultPracticeInstruction()
+    internal PracticeInstructionDefinition LoadDefaultPracticeInstruction(LessonMode mode)
     {
-        return LessonInstrResolver.LoadDefaultPractice(m_DefaultPracticeInstructionResourcePath);
+        var instructionCatalog = ResolveInstructionCatalog();
+        return instructionCatalog != null
+            ? instructionCatalog.GetDefaultPracticeInstruction(mode)
+            : null;
     }
 
     /// <summary>
@@ -352,6 +359,16 @@ public sealed class CpuLessonFlow : MonoBehaviour
     }
 
     /// <summary>
+    /// Exposes decode register completion state to text builders without
+    /// leaking mutable lesson state out of the flow.
+    /// </summary>
+    public bool IsDecodeRegisterRoleSelected(InstructionRegisterRole registerRole)
+    {
+        EnsureServices();
+        return m_State.IsRegisterRoleSelected(registerRole);
+    }
+
+    /// <summary>
     /// Updates the active instruction and mirrors it into the runtime selection state.
     /// Internal services use this to keep authored instruction swaps centralized.
     /// </summary>
@@ -376,7 +393,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
             m_CurrentInstruction = LoadDefaultInstruction();
 
         if (m_CurrentPracticeInstruction == null)
-            m_CurrentPracticeInstruction = LoadDefaultPracticeInstruction();
+            m_CurrentPracticeInstruction = LoadDefaultPracticeInstruction(m_CurrentMode);
 
         m_State = new LessonState(m_RuntimeSelection);
         m_Fetch = new FetchFlow(this, m_State);
@@ -387,6 +404,14 @@ public sealed class CpuLessonFlow : MonoBehaviour
         m_RegisterBank?.SetLessonInactivePreviewMode(true);
     }
 
+    InstructionCatalog ResolveInstructionCatalog()
+    {
+        if (m_InstructionCatalog == null)
+            m_InstructionCatalog = InstructionCatalog.LoadDefaultCatalog();
+
+        return m_InstructionCatalog;
+    }
+
     /// <summary>
     /// Practice-mode runtime instructions are cloned on demand so they can
     /// carry per-practice operand overrides. Dispose the previous transient
@@ -394,7 +419,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
     /// </summary>
     void DisposeTransientPracticeInstruction()
     {
-        if (m_CurrentMode != LessonMode.Practice || m_CurrentInstruction == null)
+        if ((m_CurrentMode != LessonMode.Practice && m_CurrentMode != LessonMode.Test) || m_CurrentInstruction == null)
             return;
 
         if (m_CurrentInstruction.hideFlags != HideFlags.DontSave)

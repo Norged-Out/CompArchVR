@@ -38,7 +38,7 @@ public sealed class DecodeTextBuilder
             var role = requiredRoles[index];
             var registerName = instruction.GetExpectedRegisterName(role);
             var scannerName = GetScannerLabel(role);
-            var status = index < lessonFlow.CurrentRegisterSelectionIndex ? "done" : "pending";
+            var status = lessonFlow.IsDecodeRegisterRoleSelected(role) ? "done" : "pending";
             lines.Add($"{scannerName}: {registerName} [{status}]");
         }
 
@@ -52,7 +52,7 @@ public sealed class DecodeTextBuilder
             ? instruction.usesImmediate
                 ? "Press Continue to generate the immediate packet and proceed to Execution."
                 : "Press Continue to proceed to Execution."
-            : $"Current target: {GetCurrentDecodeTargetLabel(lessonFlow, instruction, step)}.";
+            : $"Remaining targets: {GetRemainingDecodeTargetLabel(lessonFlow, instruction, step)}.";
 
         return $"{string.Join("\n", lines)}\n\n{nextAction}";
     }
@@ -76,7 +76,7 @@ public sealed class DecodeTextBuilder
             var role = requiredRoles[index];
             var registerBits = practiceInstruction.GetExpectedRegisterBits(role);
             var registerNumber = practiceInstruction.GetExpectedRegisterNumber(role);
-            var status = index < lessonFlow.CurrentRegisterSelectionIndex ? "Scanned" : "Pending";
+            var status = lessonFlow.IsDecodeRegisterRoleSelected(role) ? "Scanned" : "Pending";
 
             if (!string.IsNullOrWhiteSpace(registerBits) && registerNumber >= 0)
                 lines.Add($"{index + 1}. {role.ToString().ToLowerInvariant()} = {registerBits} (#{registerNumber}) [{status}]");
@@ -87,8 +87,8 @@ public sealed class DecodeTextBuilder
         lines.Add(string.Empty);
         lines.Add(
             lessonFlow.RegisterSelectionReadyToContinue
-                ? "Current target: All required registers scanned. Press Continue."
-                : $"Current target: {GetPracticeCurrentTargetLabel(lessonFlow, step, instruction, practiceInstruction)}");
+                ? "Remaining targets: All required registers scanned. Press Continue."
+                : $"Remaining targets: {GetPracticeRemainingTargetLabel(lessonFlow, step, instruction, practiceInstruction)}");
 
         return string.Join("\n", lines);
     }
@@ -110,37 +110,55 @@ public sealed class DecodeTextBuilder
     /// <summary>
     /// Reports which register the learner must place next when the decode scan is still in progress.
     /// </summary>
-    static string GetCurrentDecodeTargetLabel(
+    static string GetRemainingDecodeTargetLabel(
         CpuLessonFlow lessonFlow,
         InstructionDefinition instruction,
         InstructionFlowStep step)
     {
         var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
-        var currentIndex = lessonFlow != null ? lessonFlow.CurrentRegisterSelectionIndex : 0;
-        if (currentIndex < 0 || currentIndex >= requiredRoles.Length)
+        if (requiredRoles == null || requiredRoles.Length == 0)
             return "Place the required register";
 
-        var role = requiredRoles[currentIndex];
-        return $"{instruction.GetExpectedRegisterName(role)} on {GetScannerLabel(role)}";
+        var pendingTargets = new List<string>();
+        foreach (var role in requiredRoles)
+        {
+            if (lessonFlow != null && lessonFlow.IsDecodeRegisterRoleSelected(role))
+                continue;
+
+            pendingTargets.Add($"{instruction.GetExpectedRegisterName(role)} on {GetScannerLabel(role)}");
+        }
+
+        return pendingTargets.Count > 0
+            ? string.Join("; ", pendingTargets)
+            : "All required registers are ready";
     }
 
-    static string GetPracticeCurrentTargetLabel(
+    static string GetPracticeRemainingTargetLabel(
         CpuLessonFlow lessonFlow,
         InstructionFlowStep step,
         InstructionDefinition instruction,
         PracticeInstructionDefinition practiceInstruction)
     {
         var requiredRoles = LessonChecks.GetRequiredRoles(instruction, step);
-        var currentIndex = lessonFlow != null ? lessonFlow.CurrentRegisterSelectionIndex : 0;
-        if (currentIndex < 0 || currentIndex >= requiredRoles.Length)
+        if (requiredRoles == null || requiredRoles.Length == 0)
             return "Scan the required register";
 
-        var role = requiredRoles[currentIndex];
-        var registerNumber = practiceInstruction.GetExpectedRegisterNumber(role);
-        var scannerLabel = GetScannerLabel(role);
+        var pendingTargets = new List<string>();
+        foreach (var role in requiredRoles)
+        {
+            if (lessonFlow != null && lessonFlow.IsDecodeRegisterRoleSelected(role))
+                continue;
 
-        return registerNumber >= 0
-            ? $"{role.ToString().ToLowerInvariant()} -> #{registerNumber} on {scannerLabel}"
-            : $"{role.ToString().ToLowerInvariant()} on {scannerLabel}";
+            var registerNumber = practiceInstruction.GetExpectedRegisterNumber(role);
+            var scannerLabel = GetScannerLabel(role);
+
+            pendingTargets.Add(registerNumber >= 0
+                ? $"{role.ToString().ToLowerInvariant()} -> #{registerNumber} on {scannerLabel}"
+                : $"{role.ToString().ToLowerInvariant()} on {scannerLabel}");
+        }
+
+        return pendingTargets.Count > 0
+            ? string.Join("; ", pendingTargets)
+            : "All required registers are ready";
     }
 }

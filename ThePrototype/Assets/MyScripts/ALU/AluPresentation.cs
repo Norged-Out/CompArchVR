@@ -108,15 +108,7 @@ public static class AluPresentation
             return;
 
         var selectedValue = Mathf.Clamp(hintDropdown.value, 0, 3);
-        hintDropdown.ClearOptions();
-        hintDropdown.AddOptions(new List<string>
-        {
-            "Choose Option",
-            "ALUOp",
-            "ALUSrc",
-            "ALU Control",
-        });
-        hintDropdown.SetValueWithoutNotify(selectedValue);
+        InfoCatalog.Load().PopulateDropdown(PhaseInfoTopicGroup.Alu, hintDropdown, selectedValue);
     }
 
     /// <summary>

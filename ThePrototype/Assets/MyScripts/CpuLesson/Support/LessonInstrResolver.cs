@@ -59,21 +59,4 @@ public static class LessonInstrResolver
 
         return learningInstruction != null ? learningInstruction.assemblyInstructionText : string.Empty;
     }
-
-    /// <summary>
-    /// Loads the default guided instruction from Resources.
-    /// </summary>
-    public static InstructionDefinition LoadDefaultLearning(string resourcesPath)
-    {
-        var loadedInstruction = Resources.Load<InstructionDefinition>(resourcesPath);
-        return loadedInstruction != null ? loadedInstruction : InstructionDefaults.CreateFallbackAdd();
-    }
-
-    /// <summary>
-    /// Loads the default practice instruction from Resources.
-    /// </summary>
-    public static PracticeInstructionDefinition LoadDefaultPractice(string resourcesPath)
-    {
-        return Resources.Load<PracticeInstructionDefinition>(resourcesPath);
-    }
 }

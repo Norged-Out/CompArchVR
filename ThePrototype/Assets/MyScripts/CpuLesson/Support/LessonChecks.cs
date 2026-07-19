@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 /// <summary>
 /// Small validation helpers for lesson steps.
@@ -21,8 +22,8 @@ public static class LessonChecks
     {
         public readonly bool isCorrect;
         public readonly bool completesStep;
-        public readonly InstructionRegisterRole expectedRole;
-        public readonly string expectedRegister;
+        public readonly InstructionRegisterRole matchedRole;
+        public readonly string matchedRegister;
         public readonly InstructionRegisterRole nextRole;
         public readonly string nextRegister;
 
@@ -32,15 +33,15 @@ public static class LessonChecks
         public RegisterSelectionResult(
             bool isCorrect,
             bool completesStep,
-            InstructionRegisterRole expectedRole,
-            string expectedRegister,
+            InstructionRegisterRole matchedRole,
+            string matchedRegister,
             InstructionRegisterRole nextRole,
             string nextRegister)
         {
             this.isCorrect = isCorrect;
             this.completesStep = completesStep;
-            this.expectedRole = expectedRole;
-            this.expectedRegister = expectedRegister;
+            this.matchedRole = matchedRole;
+            this.matchedRegister = matchedRegister;
             this.nextRole = nextRole;
             this.nextRegister = nextRegister;
         }
@@ -66,47 +67,122 @@ public static class LessonChecks
     public static RegisterSelectionResult ValidateRegisterSelection(
         InstructionDefinition instruction,
         InstructionFlowStep step,
-        int currentSelectionIndex,
+        IReadOnlyCollection<InstructionRegisterRole> completedRoles,
+        InstructionRegisterRole scannedRole,
         string registerName)
     {
         var requiredRoles = GetRequiredRoles(instruction, step);
-        if (currentSelectionIndex < 0 || currentSelectionIndex >= requiredRoles.Length)
+        if (instruction == null || requiredRoles == null || requiredRoles.Length == 0)
         {
             return new RegisterSelectionResult(
                 isCorrect: false,
                 completesStep: false,
-                expectedRole: InstructionRegisterRole.None,
-                expectedRegister: string.Empty,
+                matchedRole: InstructionRegisterRole.None,
+                matchedRegister: string.Empty,
                 nextRole: InstructionRegisterRole.None,
                 nextRegister: string.Empty);
         }
 
-        var expectedRole = requiredRoles[currentSelectionIndex];
-        var expectedRegister = instruction.GetExpectedRegisterName(expectedRole);
-        var isCorrect = string.Equals(expectedRegister, registerName, StringComparison.OrdinalIgnoreCase);
+        var remainingRoles = new List<InstructionRegisterRole>();
+        foreach (var requiredRole in requiredRoles)
+        {
+            if (ContainsRole(completedRoles, requiredRole))
+                continue;
 
-        if (!isCorrect)
+            remainingRoles.Add(requiredRole);
+        }
+
+        if (remainingRoles.Count == 0)
         {
             return new RegisterSelectionResult(
                 isCorrect: false,
-                completesStep: false,
-                expectedRole: expectedRole,
-                expectedRegister: expectedRegister,
-                nextRole: expectedRole,
-                nextRegister: expectedRegister);
+                completesStep: true,
+                matchedRole: InstructionRegisterRole.None,
+                matchedRegister: string.Empty,
+                nextRole: InstructionRegisterRole.None,
+                nextRegister: string.Empty);
         }
 
-        var nextIndex = currentSelectionIndex + 1;
-        var completesStep = nextIndex >= requiredRoles.Length;
-        var nextRole = completesStep ? InstructionRegisterRole.None : requiredRoles[nextIndex];
-        var nextRegister = completesStep ? string.Empty : instruction.GetExpectedRegisterName(nextRole);
+        var matchedRole = ResolveMatchedRole(instruction, remainingRoles, scannedRole, registerName);
+        if (matchedRole == InstructionRegisterRole.None)
+        {
+            var fallbackRole = scannedRole != InstructionRegisterRole.None && Array.IndexOf(requiredRoles, scannedRole) >= 0
+                ? scannedRole
+                : remainingRoles[0];
+
+            return new RegisterSelectionResult(
+                isCorrect: false,
+                completesStep: false,
+                matchedRole: fallbackRole,
+                matchedRegister: instruction.GetExpectedRegisterName(fallbackRole),
+                nextRole: remainingRoles[0],
+                nextRegister: instruction.GetExpectedRegisterName(remainingRoles[0]));
+        }
+
+        var nextRole = InstructionRegisterRole.None;
+        var nextRegister = string.Empty;
+        foreach (var remainingRole in remainingRoles)
+        {
+            if (remainingRole == matchedRole)
+                continue;
+
+            nextRole = remainingRole;
+            nextRegister = instruction.GetExpectedRegisterName(remainingRole);
+            break;
+        }
+
+        var completesStep = remainingRoles.Count == 1;
 
         return new RegisterSelectionResult(
             isCorrect: true,
             completesStep: completesStep,
-            expectedRole: expectedRole,
-            expectedRegister: expectedRegister,
+            matchedRole: matchedRole,
+            matchedRegister: instruction.GetExpectedRegisterName(matchedRole),
             nextRole: nextRole,
             nextRegister: nextRegister);
+    }
+
+    static InstructionRegisterRole ResolveMatchedRole(
+        InstructionDefinition instruction,
+        IReadOnlyList<InstructionRegisterRole> remainingRoles,
+        InstructionRegisterRole scannedRole,
+        string registerName)
+    {
+        if (instruction == null || remainingRoles == null || string.IsNullOrWhiteSpace(registerName))
+            return InstructionRegisterRole.None;
+
+        if (scannedRole != InstructionRegisterRole.None)
+        {
+            if (!ContainsRole(remainingRoles, scannedRole))
+                return InstructionRegisterRole.None;
+
+            var expectedRegister = instruction.GetExpectedRegisterName(scannedRole);
+            return string.Equals(expectedRegister, registerName, StringComparison.OrdinalIgnoreCase)
+                ? scannedRole
+                : InstructionRegisterRole.None;
+        }
+
+        foreach (var remainingRole in remainingRoles)
+        {
+            var expectedRegister = instruction.GetExpectedRegisterName(remainingRole);
+            if (string.Equals(expectedRegister, registerName, StringComparison.OrdinalIgnoreCase))
+                return remainingRole;
+        }
+
+        return InstructionRegisterRole.None;
+    }
+
+    static bool ContainsRole(IEnumerable<InstructionRegisterRole> roles, InstructionRegisterRole targetRole)
+    {
+        if (roles == null)
+            return false;
+
+        foreach (var role in roles)
+        {
+            if (role == targetRole)
+                return true;
+        }
+
+        return false;
     }
 }
