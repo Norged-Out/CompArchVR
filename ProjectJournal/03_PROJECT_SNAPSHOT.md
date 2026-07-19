@@ -105,6 +105,9 @@ Current prototype features:
   - `Support`
   - `UI`
   - shared UI helpers under `Assets/MyScripts/Shared/UI`
+- authored catalog assets now exist for:
+  - lesson instruction bookkeeping
+  - phase info dropdown bookkeeping
 
 Current supported instructions:
 - `add`
@@ -154,6 +157,7 @@ More detailed current-state notes:
   - hints and answer attempts are limited inside that slice
   - bitfields are now typed into input fields instead of chosen from dropdowns
 - the settings-menu instruction readout no longer leaks the decoded assembly form during Practice `IF` / `ID`; it stays in hex until decode is behind the learner
+- decode no longer forces `rs` to be scanned before `rt`; required source registers can now be satisfied in either order while still respecting scanner roles
 - later practice phases now also follow explicit limited-use rules for:
   - validation attempts
   - scanner attempts
@@ -285,6 +289,7 @@ Notes:
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonChecks.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonPhaseRouter.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\InstructionCatalog.cs`
+- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Shared\Info\InfoCatalog.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeTextBuilder.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeHintBuilder.cs`
 - `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeGuideFlow.cs`
@@ -400,6 +405,7 @@ The cleanest next work item is:
   - coaching-card walkthrough
 - add experiment mode only after the guided version feels presentation-safe
 - keep map changes to touch-up work unless testing exposes a real routing/readability issue
+- treat the authored instruction catalog and info catalog as the live source of truth for their respective bookkeeping roles
 
 Do not resume from an older assumption that gating or route guidance still needs first implementation; those systems now exist and should be refined, not reinvented.
 

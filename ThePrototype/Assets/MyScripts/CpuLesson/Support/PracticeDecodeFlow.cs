@@ -134,7 +134,7 @@ public sealed class PracticeDecodeFlow
         ValidateRequiredField(incorrectFields, "rs", input.RsBits, instruction.expectedRsBits);
         ValidateRequiredField(incorrectFields, "rt", input.RtBits, instruction.expectedRtBits);
         ValidateOptionalField(incorrectFields, "rd", input.UseRd, input.RdBits, instruction.expectedRdBits);
-        ValidateOptionalField(incorrectFields, "immediate", input.UseImmediate, input.ImmediateBits, instruction.expectedImmediateBits);
+        ValidateOptionalField(incorrectFields, "immediate", input.UseImmediate, input.ImmediateBits, instruction.expectedImmediateBits, true);
         ValidateOptionalField(incorrectFields, "funct", input.UseFunct, input.FunctBits, instruction.expectedFunctBits);
 
         if (incorrectFields.Count > 0)
@@ -160,7 +160,8 @@ public sealed class PracticeDecodeFlow
         string fieldLabel,
         bool useField,
         string selectedBits,
-        string expectedBits)
+        string expectedBits,
+        bool allowLeadingZeroTrim = false)
     {
         var shouldUseField = !string.IsNullOrWhiteSpace(expectedBits);
         if (useField != shouldUseField)
@@ -169,7 +170,7 @@ public sealed class PracticeDecodeFlow
             return;
         }
 
-        if (shouldUseField && !BitsMatch(selectedBits, expectedBits))
+        if (shouldUseField && !BitsMatch(selectedBits, expectedBits, allowLeadingZeroTrim))
             incorrectFields.Add(fieldLabel);
     }
 
@@ -240,9 +241,15 @@ public sealed class PracticeDecodeFlow
         };
     }
 
-    static bool BitsMatch(string selectedBits, string expectedBits)
+    static bool BitsMatch(string selectedBits, string expectedBits, bool allowLeadingZeroTrim = false)
     {
-        return string.Equals(PracticeDecodeBitText.Normalize(selectedBits), PracticeDecodeBitText.Normalize(expectedBits), StringComparison.Ordinal);
+        var normalizedSelectedBits = PracticeDecodeBitText.Normalize(selectedBits);
+        var normalizedExpectedBits = PracticeDecodeBitText.Normalize(expectedBits);
+
+        if (allowLeadingZeroTrim)
+            return string.Equals(normalizedSelectedBits.TrimStart('0'), normalizedExpectedBits.TrimStart('0'), StringComparison.Ordinal);
+
+        return string.Equals(normalizedSelectedBits, normalizedExpectedBits, StringComparison.Ordinal);
     }
 
     static string FormatFeedback(string message, int remainingAttempts)

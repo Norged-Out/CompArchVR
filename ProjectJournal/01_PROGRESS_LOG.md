@@ -142,12 +142,16 @@ Current interaction systems that are already implemented:
   - unlocking dev mode from the settings menu
   - skipping the currently active phase from the settings menu
   - force-completing `ID`, `EX`, `MEM`, `WB`, and `PC Update`
+- authored catalog assets now exist for:
+  - lesson instruction bookkeeping
+  - phase info dropdown bookkeeping
 
 Current architecture truths:
 - lesson UI is scene-authored and code-driven
 - core lesson objects are expected to be wired through serialized scene references
 - runtime scene lookup glue has been reduced and should not be reintroduced casually
 - Unity UI event hookups are now expected to be Inspector-bound instead of wired in code at runtime
+- instruction selection and phase-info dropdown population now read from authored catalog assets instead of folder-wide runtime discovery
 - the routed map is part of the lesson design, not just environment decoration
 - the current build direction is polish-first, not instruction-count-first
 - practice mode is now an active extension path and should be built by safely extending the existing lesson architecture, not replacing it
@@ -175,14 +179,12 @@ Current development priority:
 
 These are the live priorities from the current perspective:
 
-1. add the info catalog
-2. record the updated tutorial video
-3. add background music
-4. address decode read-register priority / ordering
-5. add test mode
-6. add the game intro sequence
-7. final polish
-8. refactor oversized scripts later if time remains and only if it does not destabilize the current build
+1. record the updated tutorial video
+2. add background music
+3. add test mode
+4. add the game intro sequence
+5. final polish
+6. refactor oversized scripts later if time remains and only if it does not destabilize the current build
 
 Optional only if time remains:
 - helper NPC / guide presence
@@ -212,6 +214,8 @@ What should currently be treated as true:
 - the next major build change in flight is practice-mode support layered onto the same lesson foundation
 - the practice instruction baseline now spans the same ten-instruction set as learning mode
 - temporary testing relief now exists through a centralized dev-mode skip path instead of ad-hoc scene edits
+- decode no longer forces `rs` to be scanned before `rt`; required source-register scans can complete in either order while still respecting scanner roles
+- instruction and phase-info bookkeeping now live in authored catalog assets under `Assets/MyData/Resources`
 - supported working instructions are:
   - `add`
   - `addi`
@@ -1418,6 +1422,30 @@ Changed:
 - Practice mode should now be treated as a real playable baseline for the current ten-instruction set, not as an `add`-only prototype path
 - the next Practice-mode work no longer needs to be "make Practice exist"; it should be refinement, stress-testing, and deciding how much further a later `Test` mode is worth pushing before the deadline
 - wrist-menu ergonomics still matter a lot when pairing keyboard use with the existing hand-menu presentation
+
+
+### 2026-07-19 - Decode Scanner Order Relaxed And Authored Catalogs Added
+
+Completed:
+- removed decode's forced `rs`-then-`rt` ordering so required source-register scans can now complete in either order
+- kept scanner-role correctness intact while removing the unnecessary ordering penalty from both `Learning` and `Practice`
+- replaced folder-wide instruction discovery with a real authored `LessonInstructionCatalog` asset
+- added a real authored `InfoCatalog` asset for phase info dropdown bookkeeping
+- wired the active lesson flow to the authored lesson catalog instead of relying on path-based runtime instruction discovery
+- verified both catalog assets load from `Resources` correctly and are safe for build use
+
+Changed:
+- instruction bookkeeping is now authored data rather than a `Resources.LoadAll` sweep
+- phase-info dropdown labels are now backed by an authored catalog asset rather than only code-side fallback values
+- decode register progress text now reflects remaining targets instead of implying a single mandatory next scanner
+
+Next:
+- move on to `Test` mode after the remaining onboarding / presentation priorities are addressed
+- keep journal changes local-only until the journal audit is finished and they are explicitly approved for push
+
+Risks / Notes:
+- the decode scanner-order change is shared behavior, so the successful `add` validation should carry across the other two-source decode instructions as well
+- both catalogs now live under `Assets/MyData/Resources`, which is valid because Unity keys off the `Resources` segment rather than the parent folder name
 
 
 ## Current Working Baseline

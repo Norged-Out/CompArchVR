@@ -1149,6 +1149,69 @@ Implication:
 - settings-menu dev access can safely follow the same text-submission pattern when a typed gate is more appropriate than a toggle
 
 
+## 2026-07-19 - Instruction And Info Bookkeeping Should Live In Authored Catalog Assets
+
+Decision:
+- keep instruction-selection bookkeeping and phase-info dropdown bookkeeping in authored `ScriptableObject` assets
+
+Why:
+- folder-wide runtime discovery stopped being the right shape once the project had multiple lesson modes, a larger instruction bank, and future `Test`-mode expectations
+- authored assets make ordering, expansion, and inspection clearer than implicit path-based loading
+- this keeps bookkeeping project-wide instead of tying it to one scene component
+
+Implication:
+- instruction selection should read from the authored lesson catalog asset
+- phase-info dropdown population should read from the authored info catalog asset
+- future expansion of either system should extend those assets rather than reintroduce path sweeps or scattered hardcoded lists
+
+
+## 2026-07-19 - Decode Register Scanning Should Not Force rs Before rt
+
+Decision:
+- decode should still validate scanner-role correctness, but it should not penalize the learner just for scanning the correct required source registers in the opposite order
+
+Why:
+- the old sequential rule added friction without improving the teaching value of decode
+- it was especially wasteful in Practice mode, where the user could lose an attempt even after decoding the right register pair
+- the meaningful check is which register belongs on which scanner, not whether the learner happened to place `Read Register 1` before `Read Register 2`
+
+Implication:
+- required decode source-register scans can now complete in either order
+- scanner-role validation still matters
+- future decode text should describe remaining targets instead of implying a single mandatory next scanner unless a later lesson truly requires that behavior
+
+
+## 2026-07-19 - Test Mode Should Be A Harsh Practice-Derived Assessment Mode
+
+Decision:
+- `Test` mode should reuse the Practice-style downstream mechanics, but strip away support and learner choice
+
+Locked behavior:
+- selecting `Test` on the intro panel should hide the instruction dropdown
+- the intro body text should explain that the learner will receive a random instruction and that support is minimal
+- pressing the intro action button should randomly choose one instruction from the Test pool and only then begin `IF`
+- once `Test` begins, only the interaction panel should remain active
+- the lesson panel should be hidden
+- the hint panel should be hidden
+- there should be no hints
+- each phase should allow only:
+  - `1` validation mistake
+  - `1` scanner mistake
+- any failure should end the full run immediately
+
+Why:
+- this keeps `Test` mode clearly distinct from `Practice`
+- removing the lesson and hint panels avoids fake support surfaces that exist but do nothing
+- the mode becomes a clean assessment path rather than a slightly stricter Practice clone
+
+Instruction-pool note:
+- `Test` mode should eventually get its own pool
+- however, it is acceptable for that pool to reference or reuse Practice-definition assets where the mechanics are identical
+
+Implication:
+- `Test` mode should be implemented later as a presentation/selection change plus stricter budget rules, not as a third unrelated lesson system
+
+
 ## Open Questions
 
 - how much instruction decoding should be interactive in V1
