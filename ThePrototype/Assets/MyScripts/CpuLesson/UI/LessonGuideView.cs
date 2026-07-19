@@ -111,6 +111,7 @@ sealed class LessonGuideView
             decodeGuideFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
             practiceDecodeFlow.Reset(m_DecodePanel);
             m_IntroPanel.ShowBeforeStart(
+                lessonFlow.CurrentMode,
                 lessonFlow.CurrentInstruction,
                 startButtonLabel,
                 lessonFlow.UsesInstructionSelection,

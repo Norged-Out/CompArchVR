@@ -11,7 +11,7 @@ public static class LessonInstrResolver
     /// </summary>
     public static bool UsesInstructionSelection(LessonMode mode)
     {
-        return mode == LessonMode.Learning || mode == LessonMode.Practice;
+        return LessonModePolicy.UsesInstructionSelection(mode);
     }
 
     /// <summary>
@@ -21,12 +21,16 @@ public static class LessonInstrResolver
     public static bool CanStart(
         LessonMode mode,
         InstructionDefinition learningInstruction,
-        PracticeInstructionDefinition practiceInstruction)
+        PracticeInstructionDefinition practiceInstruction,
+        InstructionCatalog instructionCatalog)
     {
         return mode switch
         {
-            LessonMode.Learning => learningInstruction != null,
-            LessonMode.Practice => practiceInstruction != null && practiceInstruction.learningModeInstruction != null,
+            LessonMode.Learning => learningInstruction != null ||
+                                   instructionCatalog != null && instructionCatalog.GetDefaultLearningInstruction() != null,
+            LessonMode.Practice => HasRuntimeTemplate(practiceInstruction) ||
+                                   HasRuntimeTemplate(instructionCatalog != null ? instructionCatalog.GetDefaultPracticeInstruction(LessonMode.Practice) : null),
+            LessonMode.Test => HasRuntimeTemplate(instructionCatalog != null ? instructionCatalog.GetDefaultPracticeInstruction(LessonMode.Test) : null),
             _ => false,
         };
     }
@@ -40,7 +44,7 @@ public static class LessonInstrResolver
         InstructionDefinition learningInstruction,
         PracticeInstructionDefinition practiceInstruction)
     {
-        return mode == LessonMode.Practice
+        return LessonModePolicy.IsAssessmentMode(mode)
             ? practiceInstruction != null ? practiceInstruction.CreateRuntimeInstruction() : null
             : learningInstruction;
     }
@@ -54,9 +58,14 @@ public static class LessonInstrResolver
         InstructionDefinition learningInstruction,
         PracticeInstructionDefinition practiceInstruction)
     {
-        if (mode == LessonMode.Practice && practiceInstruction != null)
+        if (LessonModePolicy.IsAssessmentMode(mode) && practiceInstruction != null)
             return practiceInstruction.GetHexInstructionText();
 
         return learningInstruction != null ? learningInstruction.assemblyInstructionText : string.Empty;
+    }
+
+    static bool HasRuntimeTemplate(PracticeInstructionDefinition instruction)
+    {
+        return instruction != null && instruction.learningModeInstruction != null;
     }
 }

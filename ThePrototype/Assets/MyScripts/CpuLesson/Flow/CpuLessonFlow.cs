@@ -66,7 +66,7 @@ public sealed class CpuLessonFlow : MonoBehaviour
     public bool IsInstructionReadyForDecode => !UsesInstructionTerminals || m_Fetch.HasDownloadedInstructionModule();
     public bool UsesLearningInstructionSelection => m_CurrentMode == LessonMode.Learning;
     public bool UsesInstructionSelection => LessonInstrResolver.UsesInstructionSelection(m_CurrentMode);
-    public bool CanStartSelectedMode => LessonInstrResolver.CanStart(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction);
+    public bool CanStartSelectedMode => LessonInstrResolver.CanStart(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction, ResolveInstructionCatalog());
     public bool IsFetchStepActive => m_Fetch.IsFetchStep(CurrentStep);
     public bool IsPracticeDecodeScannerFailureAwaitingReset => m_Decode != null && m_Decode.IsPracticeScannerFailureAwaitingReset;
     public string CurrentFetchDisplayText => LessonInstrResolver.GetFetchDisplayText(m_CurrentMode, m_CurrentInstruction, m_CurrentPracticeInstruction);
@@ -111,8 +111,9 @@ public sealed class CpuLessonFlow : MonoBehaviour
 
     /// <summary>
     /// Stores the selected top-level lesson mode.
-    /// For now only Learning is executable; Practice/Test stay disabled until
-    /// their dedicated startup and decode flows are implemented.
+    /// Each mode keeps its own instruction context so the intro UI can switch
+    /// between guided, assessment, and randomized flows without rebuilding the
+    /// rest of the lesson pipeline.
     /// </summary>
     public void SetLessonMode(LessonMode mode)
     {
@@ -209,6 +210,9 @@ public sealed class CpuLessonFlow : MonoBehaviour
                 this);
             return;
         }
+
+        if (m_CurrentMode == LessonMode.Test)
+            SelectRandomTestInstruction();
 
         m_Lifecycle.StartLesson();
     }
@@ -402,6 +406,17 @@ public sealed class CpuLessonFlow : MonoBehaviour
         m_Lifecycle = new LessonLifecycle(this, m_State, m_Decode, m_Fetch);
         m_Actions = new LessonStepActions(this, m_State, m_Decode, m_Fetch, m_Progress, m_Lifecycle);
         m_RegisterBank?.SetLessonInactivePreviewMode(true);
+    }
+
+    void SelectRandomTestInstruction()
+    {
+        var instructionCatalog = ResolveInstructionCatalog();
+        var randomInstruction = instructionCatalog != null
+            ? instructionCatalog.GetRandomTestInstruction()
+            : null;
+
+        if (randomInstruction != null)
+            m_CurrentPracticeInstruction = randomInstruction;
     }
 
     InstructionCatalog ResolveInstructionCatalog()

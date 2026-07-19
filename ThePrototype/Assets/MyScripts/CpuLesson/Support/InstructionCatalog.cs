@@ -67,6 +67,19 @@ public sealed class InstructionCatalog : ScriptableObject
         return availableInstructions.Count > 0 ? availableInstructions[0] : null;
     }
 
+    /// <summary>
+    /// Picks one authored Test instruction for the current run. Test falls back
+    /// to the Practice pool until it gains its own dedicated list.
+    /// </summary>
+    public PracticeInstructionDefinition GetRandomTestInstruction()
+    {
+        var availableInstructions = GetModePracticeInstructions(LessonMode.Test, null);
+        if (availableInstructions.Count == 0)
+            return null;
+
+        return availableInstructions[Random.Range(0, availableInstructions.Count)];
+    }
+
     static List<TInstruction> BuildInstructionList<TInstruction>(
         IReadOnlyList<TInstruction> sourceList,
         TInstruction currentInstruction)

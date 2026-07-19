@@ -59,12 +59,14 @@ public sealed class GuideSelState
                 return true;
 
             case LessonMode.Practice:
-            case LessonMode.Test:
                 if (selectedIndex < 0 || selectedIndex >= m_PracticeInstructions.Count)
                     return false;
 
                 lessonFlow.SetCurrentPracticeInstruction(m_PracticeInstructions[selectedIndex]);
                 return true;
+
+            case LessonMode.Test:
+                return false;
 
             default:
                 return false;
@@ -89,6 +91,9 @@ public sealed class GuideSelState
 
             return;
         }
+
+        if (!LessonModePolicy.UsesInstructionSelection(lessonFlow.CurrentMode))
+            return;
 
         for (var index = 0; index < m_PracticeInstructions.Count; index++)
         {

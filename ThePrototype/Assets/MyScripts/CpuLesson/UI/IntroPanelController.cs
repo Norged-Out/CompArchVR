@@ -115,20 +115,14 @@ public sealed class IntroPanelController : LessonPanelBase
     /// Shows the pre-start screen where the learner chooses an instruction and begins the walkthrough.
     /// </summary>
     public void ShowBeforeStart(
+        LessonMode lessonMode,
         InstructionDefinition currentInstruction,
         string startButtonLabel,
         bool showInstructionDropdown,
         bool canStartSelectedMode)
     {
         SetVisible(true);
-        SetTextField(
-            m_Body,
-            canStartSelectedMode
-                ? "Welcome to the MIPS Single-Cycle Datapath Virtual Reality Experience.\n\n" +
-                  "You are about to trace an instruction through the core stages of a single-cycle CPU and experience how each part of the datapath contributes to its completion.\n\n" +
-                  "Please select a mode, choose an instruction, and press Start Lesson to begin."
-                : "The selected mode now has its own selection path, but its runtime flow has not been wired yet.\n\n" +
-                  "You can still use the dropdowns to inspect the available content. Switch back to Learning mode when you want to run the current guided experience.");
+        SetTextField(m_Body, BuildBeforeStartBody(lessonMode, canStartSelectedMode));
         SetButtonState(m_ActionButton, m_ActionLabel, startButtonLabel, canStartSelectedMode);
         SetModeDropdownVisible(true);
         SetModeDropdownInteractable(true);
@@ -192,11 +186,11 @@ public sealed class IntroPanelController : LessonPanelBase
 
         if (IsFetchStep(step))
         {
-            if (lessonFlow.CurrentMode == LessonMode.Practice && lessonFlow.CurrentPracticeInstruction != null)
+            if (LessonModePolicy.IsAssessmentMode(lessonFlow.CurrentMode) && lessonFlow.CurrentPracticeInstruction != null)
             {
                 return
                     "Instruction fetch uses the Program Counter to locate the next instruction in memory.\n\n" +
-                    $"Encoded Instruction: {lessonFlow.CurrentPracticeInstruction.GetHexInstructionText()}\n\n" +
+                    $"{(lessonFlow.CurrentMode == LessonMode.Test ? "Random Encoded Instruction" : "Encoded Instruction")}: {lessonFlow.CurrentPracticeInstruction.GetHexInstructionText()}\n\n" +
                     "The selected encoded instruction has been uploaded to the fetch terminal. Pick up the module, carry it to the decode terminal, and dock it there to unlock Instruction Decode.";
             }
 
@@ -230,5 +224,27 @@ public sealed class IntroPanelController : LessonPanelBase
     {
         return step != null &&
                step.stepName.IndexOf("Fetch", StringComparison.OrdinalIgnoreCase) >= 0;
+    }
+
+    static string BuildBeforeStartBody(LessonMode lessonMode, bool canStartSelectedMode)
+    {
+        if (!canStartSelectedMode)
+            return "The selected mode does not currently have a valid authored instruction pool. Assign at least one compatible instruction, then try again.";
+
+        return lessonMode switch
+        {
+            LessonMode.Practice =>
+                "Practice Mode will present an encoded instruction instead of its assembly form.\n\n" +
+                "Decode it first, then complete the remaining datapath phases with limited guidance.\n\n" +
+                "Select a mode, choose an instruction, and press Start Lesson to begin.",
+            LessonMode.Test =>
+                "Test Mode removes lesson guidance and hint support.\n\n" +
+                "A random encoded instruction will be chosen for you. You will have one validation attempt and one scanner mistake per phase.\n\n" +
+                "Select Test Mode and press Start Lesson to begin.",
+            _ =>
+                "Welcome to the MIPS Single-Cycle Datapath Virtual Reality Experience.\n\n" +
+                "You are about to trace an instruction through the core stages of a single-cycle CPU and experience how each part of the datapath contributes to its completion.\n\n" +
+                "Please select a mode, choose an instruction, and press Start Lesson to begin.",
+        };
     }
 }
