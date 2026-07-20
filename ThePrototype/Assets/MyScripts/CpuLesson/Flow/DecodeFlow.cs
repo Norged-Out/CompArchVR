@@ -268,7 +268,7 @@ sealed class DecodeFlow
 
     void RaiseRegisterSelectionFailure(string failureMessage, InstructionRegisterRole scannedRole, string registerName, bool cameFromScanner)
     {
-        if (m_Flow.CurrentMode == LessonMode.Practice && cameFromScanner)
+        if (LessonModePolicy.IsAssessmentMode(m_Flow.CurrentMode) && cameFromScanner)
         {
             ConsumePracticeScannerFailure(failureMessage, scannedRole, registerName);
             return;

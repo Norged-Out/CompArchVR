@@ -27,7 +27,7 @@ public sealed class DecodeTextBuilder
         if (step.requiredInteraction != InstructionStepInteractionType.RegisterSelection)
             return step.explanation;
 
-        if (lessonFlow.CurrentMode == LessonMode.Practice && lessonFlow.CurrentPracticeInstruction != null)
+        if (LessonModePolicy.IsAssessmentMode(lessonFlow.CurrentMode) && lessonFlow.CurrentPracticeInstruction != null)
             return BuildPracticeRegisterSelectionText(lessonFlow, step, instruction, lessonFlow.CurrentPracticeInstruction);
 
         var lines = new List<string>();

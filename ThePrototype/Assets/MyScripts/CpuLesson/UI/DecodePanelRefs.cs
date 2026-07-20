@@ -6,6 +6,9 @@ using UnityEngine.UI;
 sealed class DecodeLessonPanelRefs
 {
     [SerializeField]
+    GameObject m_Root;
+
+    [SerializeField]
     TMP_Text m_OpcodeText;
 
     [SerializeField]
@@ -17,6 +20,7 @@ sealed class DecodeLessonPanelRefs
     [SerializeField]
     TMP_Text m_FunctText;
 
+    public GameObject Root => m_Root;
     public TMP_Text OpcodeText => m_OpcodeText;
     public TMP_Text PracticeDecodingText => m_PracticeDecodingText;
     public TMP_Text RegisterText => m_RegisterText;
@@ -26,6 +30,9 @@ sealed class DecodeLessonPanelRefs
 [System.Serializable]
 sealed class DecodeHintPanelRefs
 {
+    [SerializeField]
+    GameObject m_Root;
+
     [SerializeField]
     GameObject m_InfoRoot;
 
@@ -41,6 +48,7 @@ sealed class DecodeHintPanelRefs
     [SerializeField]
     TMP_Text m_HintText;
 
+    public GameObject Root => m_Root;
     public GameObject InfoRoot => m_InfoRoot;
     public TMP_Dropdown InfoDropdown => m_InfoDropdown;
     public Button HintButton => m_HintButton;

@@ -91,14 +91,18 @@ public sealed class DecodePanelController : LessonPanelBase
 
         SetVisible(true);
 
-        var isPracticeMode = lessonFlow.CurrentMode == LessonMode.Practice;
         m_IsShowingPracticeDecode = IsPracticeDecodeStep(lessonFlow, step);
 
-        ApplyHintPanelMode(isPracticeMode);
+        ApplyHintPanelMode(lessonFlow.CurrentMode);
 
         if (m_IsShowingPracticeDecode)
         {
-            RefreshPracticeDecode(currentPracticeInstruction, practiceDecodeFlow, continueLabel, restartLabel);
+            RefreshPracticeDecode(
+                lessonFlow.CurrentMode,
+                currentPracticeInstruction,
+                practiceDecodeFlow,
+                continueLabel,
+                restartLabel);
             return;
         }
 
@@ -148,6 +152,7 @@ public sealed class DecodePanelController : LessonPanelBase
     }
 
     void RefreshPracticeDecode(
+        LessonMode lessonMode,
         PracticeInstructionDefinition currentPracticeInstruction,
         PracticeDecodeFlow practiceDecodeFlow,
         string continueLabel,
@@ -157,7 +162,7 @@ public sealed class DecodePanelController : LessonPanelBase
         EnsurePracticeView();
 
         m_LearningView.HideAll();
-        ApplyPracticeLessonText(practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed);
+        ApplyPracticeLessonText(practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed, lessonMode);
 
         var opcodeConfirmed = practiceDecodeFlow != null && practiceDecodeFlow.IsOpcodeConfirmed;
         var isFailed = practiceDecodeFlow != null && practiceDecodeFlow.IsFailed;
@@ -186,13 +191,13 @@ public sealed class DecodePanelController : LessonPanelBase
     {
         EnsureLearningView();
         m_LearningView.Refresh(lessonFlow, step, availableInstructions, selectionMode);
-        ApplyPracticeLessonText(false);
+        ApplyPracticeLessonText(false, lessonFlow.CurrentMode);
 
         if (m_PracticeInteraction.Root != null)
             m_PracticeInteraction.Root.SetActive(false);
 
         var isPracticeDecodeScannerFailure =
-            lessonFlow.CurrentMode == LessonMode.Practice &&
+            LessonModePolicy.IsAssessmentMode(lessonFlow.CurrentMode) &&
             lessonFlow.IsPracticeDecodeScannerFailureAwaitingReset;
 
         SetButtonState(
@@ -245,19 +250,25 @@ public sealed class DecodePanelController : LessonPanelBase
             m_HintPanel.HintText);
     }
 
-    void ApplyHintPanelMode(bool isPracticeMode)
+    void ApplyHintPanelMode(LessonMode lessonMode)
     {
-        SetObjectActive(m_HintPanel.InfoRoot, !isPracticeMode);
-        SetTextFieldActive(m_HintPanel.InfoText, !isPracticeMode);
+        SetObjectActive(m_HintPanel.Root, LessonModePolicy.UsesHintPanel(lessonMode));
+        SetObjectActive(m_HintPanel.InfoRoot, lessonMode == LessonMode.Learning);
+        SetTextFieldActive(m_HintPanel.InfoText, lessonMode == LessonMode.Learning);
 
         if (m_HintPanel.HintButton != null)
-            m_HintPanel.HintButton.gameObject.SetActive(isPracticeMode);
+            m_HintPanel.HintButton.gameObject.SetActive(lessonMode != LessonMode.Learning && LessonModePolicy.UsesHintPanel(lessonMode));
 
-        SetTextFieldActive(m_HintPanel.HintText, isPracticeMode && !string.IsNullOrWhiteSpace(m_HintPanel.HintText.text));
+        SetTextFieldActive(
+            m_HintPanel.HintText,
+            lessonMode != LessonMode.Learning &&
+            LessonModePolicy.UsesHintPanel(lessonMode) &&
+            !string.IsNullOrWhiteSpace(m_HintPanel.HintText.text));
     }
 
-    void ApplyPracticeLessonText(bool showDecodingLesson)
+    void ApplyPracticeLessonText(bool showDecodingLesson, LessonMode lessonMode)
     {
+        SetObjectActive(m_LessonPanel.Root, LessonModePolicy.UsesLessonPanel(lessonMode));
         SetTextFieldActive(m_LessonPanel.OpcodeText, !showDecodingLesson);
         SetTextFieldActive(m_LessonPanel.PracticeDecodingText, showDecodingLesson);
         SetTextFieldActive(m_LessonPanel.FunctText, false);
@@ -266,7 +277,7 @@ public sealed class DecodePanelController : LessonPanelBase
 
     static bool IsPracticeDecodeStep(CpuLessonFlow lessonFlow, InstructionFlowStep step)
     {
-        return lessonFlow.CurrentMode == LessonMode.Practice &&
+        return LessonModePolicy.IsAssessmentMode(lessonFlow.CurrentMode) &&
                step.highlightedNode == DatapathNodeId.InstructionMemory &&
                step.requiredInteraction != InstructionStepInteractionType.RegisterSelection;
     }

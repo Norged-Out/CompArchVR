@@ -269,14 +269,14 @@ public sealed class LessonGuideController : MonoBehaviour
             return;
         }
 
-        if (m_LessonFlow.CurrentMode == LessonMode.Practice &&
+        if (LessonModePolicy.IsAssessmentMode(m_LessonFlow.CurrentMode) &&
             m_LessonFlow.IsPracticeDecodeScannerFailureAwaitingReset)
         {
             m_LessonFlow.ResetLesson();
             return;
         }
 
-        if (m_LessonFlow.CurrentMode == LessonMode.Practice &&
+        if (LessonModePolicy.IsAssessmentMode(m_LessonFlow.CurrentMode) &&
             m_LessonFlow.CurrentStep != null &&
             m_LessonFlow.CurrentStep.highlightedNode == DatapathNodeId.InstructionMemory)
         {
@@ -460,7 +460,7 @@ public sealed class LessonGuideController : MonoBehaviour
         if (isFailure &&
             !string.IsNullOrWhiteSpace(message) &&
             !(m_LessonFlow != null &&
-              m_LessonFlow.CurrentMode == LessonMode.Practice &&
+              LessonModePolicy.IsAssessmentMode(m_LessonFlow.CurrentMode) &&
               (m_PracticeDecodeFlow.IsFailed || m_LessonFlow.IsPracticeDecodeScannerFailureAwaitingReset)))
         {
             PlayIncorrectCueForCurrentOwner();
@@ -472,8 +472,12 @@ public sealed class LessonGuideController : MonoBehaviour
 
     void ConfigurePracticeDecodeFlow()
     {
-        m_PracticeDecodeFlow.Configure(m_PracticeDecodeChances, m_PracticeDecodeHints);
-        m_LessonFlow?.ConfigurePracticeDecodeScannerAttempts(m_PracticeDecodeScannerAttempts);
+        var lessonMode = m_LessonFlow != null ? m_LessonFlow.CurrentMode : LessonMode.Learning;
+        m_PracticeDecodeFlow.Configure(
+            LessonModePolicy.ResolveValidationAttempts(lessonMode, m_PracticeDecodeChances),
+            LessonModePolicy.ResolveHintAttempts(lessonMode, m_PracticeDecodeHints));
+        m_LessonFlow?.ConfigurePracticeDecodeScannerAttempts(
+            LessonModePolicy.ResolveScannerAttempts(lessonMode, m_PracticeDecodeScannerAttempts));
     }
 
     void InitializeGuideState()
