@@ -112,7 +112,9 @@ public sealed class MemoryController : MonoBehaviour
 
     /// <summary>True while the memory station is the active lesson phase.</summary>
     public bool IsPhaseActive => m_IsPhaseActive;
+    public LessonMode CurrentMode => m_CurrentMode;
     public bool IsPracticeMode => m_CurrentMode == LessonMode.Practice;
+    public bool IsAssessmentMode => LessonModePolicy.IsAssessmentMode(m_CurrentMode);
     public bool IsPracticeAwaitingReset => m_PracticeFlow.IsAwaitingReset;
 
     /// <summary>True after a successful memory transfer, when the button becomes Continue.</summary>
@@ -174,6 +176,8 @@ public sealed class MemoryController : MonoBehaviour
     public Button PracticeHintButton => m_HintPanel.HintButton;
     public TMP_Text PracticeHintText => m_HintPanel.HintText;
     public PhaseHintPanelRefs HintPanel => m_HintPanel;
+    public GameObject LessonPanelRoot => m_LessonPanel.Root;
+    public GameObject HintPanelRoot => m_HintPanel.Root;
     public string ExecuteButtonText => m_ExecuteButtonText;
     public string ContinueButtonText => m_ContinueButtonText;
     public GameObject MemUiRoot => m_MemUiRoot;
@@ -218,6 +222,7 @@ public sealed class MemoryController : MonoBehaviour
 
         if (isEnteringPhase || instructionChanged || modeChanged)
         {
+            ConfigurePracticeFlow();
             m_PracticeFlow.Reset();
             m_TransferService.PrepareForMemoryStep(this);
         }
@@ -295,7 +300,7 @@ public sealed class MemoryController : MonoBehaviour
 
         if (!m_TransferService.TryValidateSetup(this, out var validationMessage))
         {
-            if (IsPracticeMode)
+            if (IsAssessmentMode)
             {
                 var didFail = m_PracticeFlow.HandleValidationFailure(validationMessage, out var practiceFeedback);
                 if (didFail)
@@ -429,7 +434,7 @@ public sealed class MemoryController : MonoBehaviour
 
     public void ShowPracticeBudgetSummary()
     {
-        if (!IsPracticeMode)
+        if (!IsAssessmentMode)
             return;
 
         SetFeedback(m_PracticeFlow.BuildBudgetSummary("Set the memory path and packet inputs, then validate."), false);
@@ -504,7 +509,7 @@ public sealed class MemoryController : MonoBehaviour
 
     void HandleAddressRejected(MemoryAddressScanner _, DataPacketToken packetToken)
     {
-        if (!IsPracticeMode || !m_IsPhaseActive || m_HasCompletedMemoryAccess || IsPracticeAwaitingReset)
+        if (!IsAssessmentMode || !m_IsPhaseActive || m_HasCompletedMemoryAccess || IsPracticeAwaitingReset)
             return;
 
         var didFail = m_PracticeFlow.HandleScannerFailure("Address", packetToken, out var feedbackText);
@@ -517,7 +522,7 @@ public sealed class MemoryController : MonoBehaviour
 
     void HandleDataRejected(MemoryPacketScanner _, DataPacketToken packetToken)
     {
-        if (!IsPracticeMode || !m_IsPhaseActive || m_HasCompletedMemoryAccess || IsPracticeAwaitingReset)
+        if (!IsAssessmentMode || !m_IsPhaseActive || m_HasCompletedMemoryAccess || IsPracticeAwaitingReset)
             return;
 
         var didFail = m_PracticeFlow.HandleScannerFailure("Data", packetToken, out var feedbackText);
@@ -580,7 +585,10 @@ public sealed class MemoryController : MonoBehaviour
 
     void ConfigurePracticeFlow()
     {
-        m_PracticeFlow.Configure(m_PracticeValidationAttempts, m_PracticeScannerAttempts, m_PracticeHints);
+        m_PracticeFlow.Configure(
+            LessonModePolicy.ResolveValidationAttempts(m_CurrentMode, m_PracticeValidationAttempts),
+            LessonModePolicy.ResolveScannerAttempts(m_CurrentMode, m_PracticeScannerAttempts),
+            LessonModePolicy.ResolveHintAttempts(m_CurrentMode, m_PracticeHints));
     }
 
     /// <summary>

@@ -17,9 +17,12 @@ public static class WriteBackPresentation
         if (controller == null)
             return;
 
+        SetObjectActive(controller.LessonPanelRoot, LessonModePolicy.UsesLessonPanel(controller.CurrentMode));
+        SetObjectActive(controller.HintPanelRoot, LessonModePolicy.UsesHintPanel(controller.CurrentMode));
+
         if (controller.LessonRuntimeText != null)
-            controller.LessonRuntimeText.text = controller.IsPracticeMode
-                ? "Practice Mode\nComplete the Write Back phase using the instruction you decoded earlier."
+            controller.LessonRuntimeText.text = controller.IsAssessmentMode
+                ? "Assessment Mode\nComplete the Write Back phase using the instruction you decoded earlier."
                 : BuildLessonRuntimeText(controller.CurrentInstruction);
 
         if (controller.RegWriteStatusText != null)
@@ -39,13 +42,13 @@ public static class WriteBackPresentation
                     controller.LastTargetRegister,
                     controller.RegisterBank != null ? controller.RegisterBank.GetRegisterValue(controller.LastTargetRegister) : 0,
                     false,
-                    controller.IsPracticeMode);
+                    controller.IsAssessmentMode);
             }
             else if (controller.AcceptedRegister == null)
             {
                 var expectedRegisterId = controller.GetExpectedRegisterIdFromControlState();
                 var currentValue = controller.RegisterBank != null ? controller.RegisterBank.GetRegisterValue(expectedRegisterId) : 0;
-                controller.RegisterStatusText.text = BuildRegisterStatusText(expectedRegisterId, currentValue, true, controller.IsPracticeMode);
+                controller.RegisterStatusText.text = BuildRegisterStatusText(expectedRegisterId, currentValue, true, controller.IsAssessmentMode);
             }
             else
             {
@@ -53,7 +56,7 @@ public static class WriteBackPresentation
                     controller.AcceptedRegister.RegisterId,
                     controller.AcceptedRegister.RegisterValue,
                     false,
-                    controller.IsPracticeMode);
+                    controller.IsAssessmentMode);
             }
         }
 
@@ -62,17 +65,17 @@ public static class WriteBackPresentation
             if (controller.HasAppliedWriteBack)
             {
                 controller.DataStatusText.text =
-                    controller.IsPracticeMode ? $"Packet Value: {controller.LastTransferredValue}" : $"Write Data: {controller.LastTransferredValue}";
+                    controller.IsAssessmentMode ? $"Packet Value: {controller.LastTransferredValue}" : $"Write Data: {controller.LastTransferredValue}";
             }
             else if (controller.AcceptedPacket == null)
             {
                 controller.DataStatusText.text =
-                    controller.IsPracticeMode ? "Packet Value: waiting" : "Write Data: waiting";
+                    controller.IsAssessmentMode ? "Packet Value: waiting" : "Write Data: waiting";
             }
             else
             {
                 controller.DataStatusText.text =
-                    controller.IsPracticeMode ? $"Packet Value: {controller.AcceptedPacket.Value}" : $"Write Data: {controller.AcceptedPacket.Value}";
+                    controller.IsAssessmentMode ? $"Packet Value: {controller.AcceptedPacket.Value}" : $"Write Data: {controller.AcceptedPacket.Value}";
             }
         }
 
@@ -123,17 +126,17 @@ public static class WriteBackPresentation
 
     static void RefreshHintBlocks(WriteBackController controller)
     {
-        var isPracticeMode = controller.IsPracticeMode;
-        SetObjectActive(controller.HintPanel.InfoRoot, !isPracticeMode);
+        var usesAssessmentHints = controller.IsAssessmentMode && LessonModePolicy.UsesHintPanel(controller.CurrentMode);
+        SetObjectActive(controller.HintPanel.InfoRoot, !usesAssessmentHints);
 
         if (controller.PracticeHintButton != null)
-            controller.PracticeHintButton.gameObject.SetActive(isPracticeMode);
+            controller.PracticeHintButton.gameObject.SetActive(usesAssessmentHints);
 
         SetHintBlockActive(
             controller.PracticeHintText,
-            isPracticeMode && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
+            usesAssessmentHints && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
 
-        if (isPracticeMode)
+        if (usesAssessmentHints)
         {
             SetHintBlockActive(controller.HintRegDstText, false);
             SetHintBlockActive(controller.HintRegWriteText, false);

@@ -235,16 +235,13 @@ public sealed class IntroPanelController : LessonPanelBase
         {
             LessonMode.Practice =>
                 "Practice Mode will present an encoded instruction instead of its assembly form.\n\n" +
-                "Decode it first, then complete the remaining datapath phases with limited guidance.\n\n" +
-                "Select a mode, choose an instruction, and press Start Lesson to begin.",
+                "Decode it first, then complete the remaining datapath phases with limited guidance.",
             LessonMode.Test =>
                 "Test Mode removes lesson guidance and hint support.\n\n" +
-                "A random encoded instruction will be chosen for you. You will have one validation attempt and one scanner mistake per phase.\n\n" +
-                "Select Test Mode and press Start Lesson to begin.",
+                "A random encoded instruction will be chosen for you. You will have one validation attempt and one scanner mistake per phase.",
             _ =>
                 "Welcome to the MIPS Single-Cycle Datapath Virtual Reality Experience.\n\n" +
-                "You are about to trace an instruction through the core stages of a single-cycle CPU and experience how each part of the datapath contributes to its completion.\n\n" +
-                "Please select a mode, choose an instruction, and press Start Lesson to begin.",
+                "You are about to trace an instruction through the core stages of a single-cycle CPU and experience how each part of the datapath contributes to its completion.",
         };
     }
 }

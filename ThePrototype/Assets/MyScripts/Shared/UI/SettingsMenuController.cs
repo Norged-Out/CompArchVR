@@ -297,12 +297,19 @@ public sealed class SettingsMenuController : MonoBehaviour
         if (m_LessonFlow == null || !m_LessonFlow.HasStarted)
             return k_NoneLabel;
 
-        if (m_LessonFlow.CurrentMode == LessonMode.Practice &&
+        if (LessonModePolicy.IsAssessmentMode(m_LessonFlow.CurrentMode) &&
             m_LessonFlow.CurrentPracticeInstruction != null &&
             (m_PhaseRouter.ShouldShowIntroPanel(m_LessonFlow) || m_PhaseRouter.ShouldShowDecodePanel(m_LessonFlow)))
         {
             var hexText = m_LessonFlow.CurrentPracticeInstruction.GetHexInstructionText();
             return string.IsNullOrWhiteSpace(hexText) ? k_NoneLabel : hexText;
+        }
+
+        if (LessonModePolicy.IsAssessmentMode(m_LessonFlow.CurrentMode) &&
+            m_LessonFlow.CurrentInstruction != null)
+        {
+            var mnemonicText = m_LessonFlow.CurrentInstruction.displayName;
+            return string.IsNullOrWhiteSpace(mnemonicText) ? k_NoneLabel : mnemonicText;
         }
 
         if (m_LessonFlow.CurrentInstruction == null)

@@ -21,6 +21,9 @@ public static class PcUpdatePresentation
         var showFailureResetState = controller.IsPracticeAwaitingReset;
         var showBranchSpecificGroups = controller.IsPhaseActive && controller.BranchValue == "1" && !showEndState && !showFailureResetState;
 
+        SetObjectActive(controller.LessonPanelRoot, LessonModePolicy.UsesLessonPanel(controller.CurrentMode));
+        SetObjectActive(controller.HintPanelRoot, LessonModePolicy.UsesHintPanel(controller.CurrentMode));
+
         SetObjectActive(controller.PcUpdateGroupRoot, !showEndState && !showFailureResetState);
         SetObjectActive(controller.SignalsGroupRoot, !showEndState && !showFailureResetState);
         SetObjectActive(controller.ImmediateGroupRoot, showBranchSpecificGroups);
@@ -112,15 +115,15 @@ public static class PcUpdatePresentation
     static void RefreshLessonBlocks(PcUpdateController controller, PcBranchService branchService, bool showEndState)
     {
         SetTextActive(controller.LessonRuntimeText, !showEndState);
-        SetTextActive(controller.LessonBranchText, !controller.IsPracticeMode && !showEndState && ShouldShowBranchLesson(controller.CurrentInstruction));
-        SetTextActive(controller.LessonShiftText, !controller.IsPracticeMode && !showEndState && ShouldShowShiftLesson(controller.CurrentInstruction));
-        SetTextActive(controller.LessonResultText, !controller.IsPracticeMode && !showEndState && ShouldShowResultLesson(controller.CurrentInstruction));
+        SetTextActive(controller.LessonBranchText, !controller.IsAssessmentMode && !showEndState && ShouldShowBranchLesson(controller.CurrentInstruction));
+        SetTextActive(controller.LessonShiftText, !controller.IsAssessmentMode && !showEndState && ShouldShowShiftLesson(controller.CurrentInstruction));
+        SetTextActive(controller.LessonResultText, !controller.IsAssessmentMode && !showEndState && ShouldShowResultLesson(controller.CurrentInstruction));
         SetTextActive(controller.LessonEndText, showEndState);
 
         if (controller.LessonRuntimeText != null)
         {
-            controller.LessonRuntimeText.text = controller.IsPracticeMode
-                ? "Practice Mode\nComplete the Program Counter Update phase using the instruction you decoded earlier."
+            controller.LessonRuntimeText.text = controller.IsAssessmentMode
+                ? "Assessment Mode\nComplete the Program Counter Update phase using the instruction you decoded earlier."
                 : branchService.BuildLessonRuntimeText(controller.CurrentInstruction);
         }
 
@@ -176,12 +179,12 @@ public static class PcUpdatePresentation
     static string BuildZeroStatusText(PcUpdateController controller)
     {
         if (controller.BranchValue != "1")
-            return controller.IsPracticeMode ? "Waiting" : "Zero: n/a";
+            return controller.IsAssessmentMode ? "Waiting" : "Zero: n/a";
 
         if (controller.ZeroScanner == null || controller.ZeroScanner.AcceptedPacket == null)
-            return controller.IsPracticeMode ? "Waiting" : "Zero: waiting";
+            return controller.IsAssessmentMode ? "Waiting" : "Zero: waiting";
 
-        return controller.IsPracticeMode ? controller.ZeroScanner.AcceptedPacket.Value.ToString() : $"Zero: {controller.ZeroScanner.AcceptedPacket.Value}";
+        return controller.IsAssessmentMode ? controller.ZeroScanner.AcceptedPacket.Value.ToString() : $"Zero: {controller.ZeroScanner.AcceptedPacket.Value}";
     }
 
     /// <summary>
@@ -193,7 +196,7 @@ public static class PcUpdatePresentation
         var pcIncrement = controller.GetPcIncrementValue();
 
         if (controller.CurrentInstruction == null || !controller.CurrentInstruction.UsesBranchDecision())
-            return controller.IsPracticeMode
+            return controller.IsAssessmentMode
                 ? $"PC + {pcIncrement}"
                 : $"PCSrc = 0\nNext PC: PC + {pcIncrement}";
 
@@ -208,7 +211,7 @@ public static class PcUpdatePresentation
             zeroValue,
             controller.GetSelectedBranchCondition());
 
-        return controller.IsPracticeMode
+        return controller.IsAssessmentMode
             ? evaluation.NextPcText
             : $"PCSrc = Branch({controller.BranchValue}) AND ConditionMet({(evaluation.ConditionMet ? 1 : 0)}) = {evaluation.PcSrc}\nNext PC: {evaluation.NextPcText}";
     }
@@ -219,17 +222,17 @@ public static class PcUpdatePresentation
     /// </summary>
     static void RefreshHintBlocks(PcUpdateController controller)
     {
-        var isPracticeMode = controller.IsPracticeMode;
-        SetObjectActive(controller.HintPanel.InfoRoot, !isPracticeMode);
+        var usesAssessmentHints = controller.IsAssessmentMode && LessonModePolicy.UsesHintPanel(controller.CurrentMode);
+        SetObjectActive(controller.HintPanel.InfoRoot, !usesAssessmentHints);
 
         if (controller.PracticeHintButton != null)
-            controller.PracticeHintButton.gameObject.SetActive(isPracticeMode);
+            controller.PracticeHintButton.gameObject.SetActive(usesAssessmentHints);
 
         SetTextActive(
             controller.PracticeHintText,
-            isPracticeMode && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
+            usesAssessmentHints && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
 
-        if (isPracticeMode)
+        if (usesAssessmentHints)
         {
             SetTextActive(controller.HintPcText, false);
             SetTextActive(controller.HintPcSrcText, false);

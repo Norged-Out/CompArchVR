@@ -135,7 +135,9 @@ public class WriteBackController : MonoBehaviour
     /// Exposes the current MemToReg signal state for presentation.
     /// </summary>
     public string MemToRegValue => m_MemToRegValue;
+    public LessonMode CurrentMode => m_CurrentMode;
     public bool IsPracticeMode => m_CurrentMode == LessonMode.Practice;
+    public bool IsAssessmentMode => LessonModePolicy.IsAssessmentMode(m_CurrentMode);
     public bool IsPracticeAwaitingReset => m_PracticeFlow.IsAwaitingReset;
 
     /// <summary>
@@ -222,6 +224,7 @@ public class WriteBackController : MonoBehaviour
 
         if (enteringPhase || instructionChanged || modeChanged)
         {
+            ConfigurePracticeFlow();
             PrepareForWriteBackStep();
             m_PracticeFlow.Reset();
         }
@@ -308,7 +311,7 @@ public class WriteBackController : MonoBehaviour
                 m_PacketScanner,
                 out var validationMessage))
         {
-            if (IsPracticeMode)
+            if (IsAssessmentMode)
             {
                 var didFail = m_PracticeFlow.HandleValidationFailure(validationMessage, out var practiceFeedback);
                 if (didFail)
@@ -392,7 +395,7 @@ public class WriteBackController : MonoBehaviour
         m_PacketScanner?.ResetScanner();
         StartWaitingPipeVisuals();
         SetFeedback(string.Empty, false);
-        if (IsPracticeMode)
+        if (IsAssessmentMode)
             SetFeedback(m_PracticeFlow.BuildBudgetSummary("Set the write-back path, then validate."), false);
         RefreshExpectedTargets();
         RefreshPresentation();
@@ -554,7 +557,7 @@ public class WriteBackController : MonoBehaviour
 
     void HandleRegisterRejected(WriteBackRegisterScanner _, RegisterToken registerToken)
     {
-        if (!IsPracticeMode || !m_IsPhaseActive || m_HasAppliedWriteBack || IsPracticeAwaitingReset)
+        if (!IsAssessmentMode || !m_IsPhaseActive || m_HasAppliedWriteBack || IsPracticeAwaitingReset)
             return;
 
         var didFail = m_PracticeFlow.HandleRegisterScannerFailure(registerToken, out var feedbackText);
@@ -567,7 +570,7 @@ public class WriteBackController : MonoBehaviour
 
     void HandlePacketRejected(WriteBackPacketScanner _, DataPacketToken packetToken)
     {
-        if (!IsPracticeMode || !m_IsPhaseActive || m_HasAppliedWriteBack || IsPracticeAwaitingReset)
+        if (!IsAssessmentMode || !m_IsPhaseActive || m_HasAppliedWriteBack || IsPracticeAwaitingReset)
             return;
 
         var didFail = m_PracticeFlow.HandlePacketScannerFailure(packetToken, out var feedbackText);
@@ -695,6 +698,8 @@ public class WriteBackController : MonoBehaviour
     public Button PracticeHintButton => m_HintPanel.HintButton;
     public TMP_Text PracticeHintText => m_HintPanel.HintText;
     public PhaseHintPanelRefs HintPanel => m_HintPanel;
+    public GameObject LessonPanelRoot => m_LessonPanel.Root;
+    public GameObject HintPanelRoot => m_HintPanel.Root;
     public bool IsPhaseActive => m_IsPhaseActive;
     public bool IsTransferRunning => m_TransferRoutine != null;
     public string ExecuteButtonText => m_ExecuteButtonText;
@@ -702,7 +707,10 @@ public class WriteBackController : MonoBehaviour
 
     void ConfigurePracticeFlow()
     {
-        m_PracticeFlow.Configure(m_PracticeValidationAttempts, m_PracticeScannerAttempts, m_PracticeHints);
+        m_PracticeFlow.Configure(
+            LessonModePolicy.ResolveValidationAttempts(m_CurrentMode, m_PracticeValidationAttempts),
+            LessonModePolicy.ResolveScannerAttempts(m_CurrentMode, m_PracticeScannerAttempts),
+            LessonModePolicy.ResolveHintAttempts(m_CurrentMode, m_PracticeHints));
     }
 
     /// <summary>

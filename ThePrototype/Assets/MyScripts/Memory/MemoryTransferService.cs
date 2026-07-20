@@ -30,7 +30,7 @@ public sealed class MemoryTransferService
         RefreshExpectedTargets(controller);
         controller.SetFeedback(string.Empty, false);
 
-        if (controller.IsPracticeMode)
+        if (controller.IsAssessmentMode)
             controller.ShowPracticeBudgetSummary();
     }
 

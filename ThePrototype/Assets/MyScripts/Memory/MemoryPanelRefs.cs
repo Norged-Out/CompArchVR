@@ -5,6 +5,9 @@ using UnityEngine;
 public sealed class MemoryLessonPanelRefs
 {
     [SerializeField]
+    GameObject m_Root;
+
+    [SerializeField]
     TMP_Text m_RuntimeText;
 
     [SerializeField]
@@ -13,6 +16,7 @@ public sealed class MemoryLessonPanelRefs
     [SerializeField]
     TMP_Text m_StoreText;
 
+    public GameObject Root => m_Root;
     public TMP_Text RuntimeText => m_RuntimeText;
     public TMP_Text LoadText => m_LoadText;
     public TMP_Text StoreText => m_StoreText;

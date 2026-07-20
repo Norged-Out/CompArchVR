@@ -6,6 +6,9 @@ using UnityEngine.UI;
 public sealed class PcUpdateLessonPanelRefs
 {
     [SerializeField]
+    GameObject m_Root;
+
+    [SerializeField]
     TMP_Text m_RuntimeText;
 
     [SerializeField]
@@ -20,6 +23,7 @@ public sealed class PcUpdateLessonPanelRefs
     [SerializeField]
     TMP_Text m_EndText;
 
+    public GameObject Root => m_Root;
     public TMP_Text RuntimeText => m_RuntimeText;
     public TMP_Text BranchText => m_BranchText;
     public TMP_Text ShiftText => m_ShiftText;

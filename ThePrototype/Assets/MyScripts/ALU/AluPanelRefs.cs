@@ -5,8 +5,12 @@ using UnityEngine;
 public sealed class AluLessonPanelRefs
 {
     [SerializeField]
+    GameObject m_Root;
+
+    [SerializeField]
     TMP_Text m_RuntimeText;
 
+    public GameObject Root => m_Root;
     public TMP_Text RuntimeText => m_RuntimeText;
 }
 

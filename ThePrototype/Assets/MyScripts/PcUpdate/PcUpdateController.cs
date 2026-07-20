@@ -85,6 +85,7 @@ public class PcUpdateController : MonoBehaviour
     public event System.Action ContinueRequested;
     public event System.Action PcUpdateConfirmed;
     public event System.Action PracticeResetRequested;
+    public LessonMode CurrentMode => m_CurrentMode;
 
     /// <summary>
     /// Builds the authored services and wires every authored UI / scanner event
@@ -142,6 +143,7 @@ public class PcUpdateController : MonoBehaviour
 
         if (isEnteringPhase || instructionChanged || modeChanged)
         {
+            ConfigurePracticeFlow();
             PrepareForPcUpdate();
             m_PracticeFlow.Reset();
         }
@@ -221,7 +223,7 @@ public class PcUpdateController : MonoBehaviour
                 GetSelectedBranchCondition(),
                 out var validationMessage))
         {
-            if (IsPracticeMode)
+            if (IsAssessmentMode)
             {
                 var didFail = m_PracticeFlow.HandleValidationFailure(validationMessage, out var practiceFeedback);
                 if (didFail)
@@ -271,7 +273,7 @@ public class PcUpdateController : MonoBehaviour
         m_ImmediateScanner?.ResetScanner();
         m_ZeroScanner?.ResetScanner();
         SetFeedback(
-            IsPracticeMode
+            IsAssessmentMode
                 ? m_PracticeFlow.BuildBudgetSummary("Build the next PC path, then validate.")
                 : "Move the PC update control from 0 to 4, then confirm the next PC path.",
             false);
@@ -492,7 +494,7 @@ public class PcUpdateController : MonoBehaviour
 
     void HandleImmediateRejected(PcUpdatePacketScanner _, DataPacketToken packetToken, PcUpdatePacketScanner.PacketIssue issue)
     {
-        if (!IsPracticeMode || !m_IsPhaseActive || m_IsAwaitingContinue || IsPracticeAwaitingReset)
+        if (!IsAssessmentMode || !m_IsPhaseActive || m_IsAwaitingContinue || IsPracticeAwaitingReset)
             return;
 
         var didFail = m_PracticeFlow.HandleImmediateScannerFailure(packetToken, issue, out var feedbackText);
@@ -505,7 +507,7 @@ public class PcUpdateController : MonoBehaviour
 
     void HandleZeroRejected(PcUpdatePacketScanner _, DataPacketToken packetToken, PcUpdatePacketScanner.PacketIssue issue)
     {
-        if (!IsPracticeMode || !m_IsPhaseActive || m_IsAwaitingContinue || IsPracticeAwaitingReset)
+        if (!IsAssessmentMode || !m_IsPhaseActive || m_IsAwaitingContinue || IsPracticeAwaitingReset)
             return;
 
         var didFail = m_PracticeFlow.HandleZeroScannerFailure(packetToken, out var feedbackText);
@@ -519,6 +521,7 @@ public class PcUpdateController : MonoBehaviour
     public InstructionDefinition CurrentInstruction => m_CurrentInstruction;
     public bool IsPhaseActive => m_IsPhaseActive;
     public bool IsPracticeMode => m_CurrentMode == LessonMode.Practice;
+    public bool IsAssessmentMode => LessonModePolicy.IsAssessmentMode(m_CurrentMode);
     public bool IsPracticeAwaitingReset => m_PracticeFlow.IsAwaitingReset;
     public bool IsAwaitingContinue => m_IsAwaitingContinue;
     public string BranchValue => m_BranchValue;
@@ -555,6 +558,8 @@ public class PcUpdateController : MonoBehaviour
     public Button PracticeHintButton => m_HintPanel.HintButton;
     public TMP_Text PracticeHintText => m_HintPanel.HintText;
     public PhaseHintPanelRefs HintPanel => m_HintPanel;
+    public GameObject LessonPanelRoot => m_LessonPanel.Root;
+    public GameObject HintPanelRoot => m_HintPanel.Root;
     public string ConfirmButtonText => m_ConfirmButtonText;
     public string ContinueButtonText => m_ContinueButtonText;
 
@@ -598,7 +603,10 @@ public class PcUpdateController : MonoBehaviour
 
     void ConfigurePracticeFlow()
     {
-        m_PracticeFlow.Configure(m_PracticeValidationAttempts, m_PracticeScannerAttempts, m_PracticeHints);
+        m_PracticeFlow.Configure(
+            LessonModePolicy.ResolveValidationAttempts(m_CurrentMode, m_PracticeValidationAttempts),
+            LessonModePolicy.ResolveScannerAttempts(m_CurrentMode, m_PracticeScannerAttempts),
+            LessonModePolicy.ResolveHintAttempts(m_CurrentMode, m_PracticeHints));
     }
 
     /// <summary>

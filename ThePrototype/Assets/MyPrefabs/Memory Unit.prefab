@@ -1290,10 +1290,12 @@ MonoBehaviour:
   m_MemReadButtonRoot: {fileID: 1364021660308291361}
   m_MemWriteButtonRoot: {fileID: 3582767479301052988}
   m_LessonPanel:
+    m_Root: {fileID: 0}
     m_RuntimeText: {fileID: 0}
     m_LoadText: {fileID: 0}
     m_StoreText: {fileID: 0}
   m_HintPanel:
+    m_Root: {fileID: 0}
     m_InfoRoot: {fileID: 0}
     m_InfoDropdown: {fileID: 0}
     m_HintButton: {fileID: 0}

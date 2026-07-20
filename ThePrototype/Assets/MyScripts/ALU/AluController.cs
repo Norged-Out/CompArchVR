@@ -118,6 +118,7 @@ public sealed class AluController : MonoBehaviour
     public int LastResultValue => m_LastResultValue;
     public LessonMode CurrentMode => m_CurrentMode;
     public bool IsPracticeMode => m_CurrentMode == LessonMode.Practice;
+    public bool IsAssessmentMode => LessonModePolicy.IsAssessmentMode(m_CurrentMode);
     public bool IsPracticeAwaitingReset => m_PracticeFlow.IsAwaitingReset;
     public AluInputScanner InputA => m_InputA;
     public AluInputScanner InputB => m_InputB;
@@ -138,6 +139,8 @@ public sealed class AluController : MonoBehaviour
     public Button PracticeHintButton => m_HintPanel.HintButton;
     public TMP_Text PracticeHintText => m_HintPanel.HintText;
     public PhaseHintPanelRefs HintPanel => m_HintPanel;
+    public GameObject LessonPanelRoot => m_LessonPanel.Root;
+    public GameObject HintPanelRoot => m_HintPanel.Root;
     public string ExecuteButtonText => m_ExecuteButtonText;
     public string ResultReadyButtonText => m_ResultReadyButtonText;
     public float ResultSpawnDelaySeconds => m_ResultSpawnDelaySeconds;
@@ -202,6 +205,7 @@ public sealed class AluController : MonoBehaviour
 
         if (isEnteringPhase || instructionChanged || modeChanged)
         {
+            ConfigurePracticeFlow();
             m_PracticeFlow.Reset();
             m_ExecutionService.PrepareForExecution(this);
         }
@@ -279,7 +283,7 @@ public sealed class AluController : MonoBehaviour
 
         if (!m_ExecutionService.TryValidateExecutionSetup(this, out var validationMessage))
         {
-            if (IsPracticeMode)
+            if (IsAssessmentMode)
             {
                 var didFail = m_PracticeFlow.HandleValidationFailure(validationMessage, out var practiceFeedback);
                 if (didFail)
@@ -386,7 +390,7 @@ public sealed class AluController : MonoBehaviour
     /// </summary>
     public void HandlePacketRejected(AluInputScanner scanner, DataPacketToken packetToken, AluInputScanner.PacketIssue issue)
     {
-        if (!IsPracticeMode || !m_IsPhaseActive || m_HasProducedResult || IsPracticeAwaitingReset)
+        if (!IsAssessmentMode || !m_IsPhaseActive || m_HasProducedResult || IsPracticeAwaitingReset)
             return;
 
         var didFail = m_PracticeFlow.HandleScannerFailure(scanner, packetToken, issue, out var feedbackText);
@@ -438,7 +442,7 @@ public sealed class AluController : MonoBehaviour
 
     public void ShowPracticeBudgetSummary()
     {
-        if (!IsPracticeMode)
+        if (!IsAssessmentMode)
             return;
 
         SetFeedback(m_PracticeFlow.BuildBudgetSummary("Set the ALU controls and inputs, then validate."), false);
@@ -537,7 +541,10 @@ public sealed class AluController : MonoBehaviour
 
     void ConfigurePracticeFlow()
     {
-        m_PracticeFlow.Configure(m_PracticeValidationAttempts, m_PracticeScannerAttempts, m_PracticeHints);
+        m_PracticeFlow.Configure(
+            LessonModePolicy.ResolveValidationAttempts(m_CurrentMode, m_PracticeValidationAttempts),
+            LessonModePolicy.ResolveScannerAttempts(m_CurrentMode, m_PracticeScannerAttempts),
+            LessonModePolicy.ResolveHintAttempts(m_CurrentMode, m_PracticeHints));
     }
 
     public void PlayPhaseActivatedCue()

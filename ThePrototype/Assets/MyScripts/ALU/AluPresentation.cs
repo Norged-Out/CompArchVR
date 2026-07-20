@@ -27,10 +27,13 @@ public static class AluPresentation
         if (controller == null || executionService == null)
             return;
 
+        SetObjectActive(controller.LessonPanelRoot, LessonModePolicy.UsesLessonPanel(controller.CurrentMode));
+        SetObjectActive(controller.HintPanelRoot, LessonModePolicy.UsesHintPanel(controller.CurrentMode));
+
         if (controller.LessonRuntimeText != null)
         {
-            if (controller.IsPracticeMode)
-                controller.LessonRuntimeText.text = "Practice Mode\nComplete the Execute phase using the instruction you decoded earlier.";
+            if (controller.IsAssessmentMode)
+                controller.LessonRuntimeText.text = "Assessment Mode\nComplete the Execute phase using the instruction you decoded earlier.";
             else
             {
                 var instructionName = controller.CurrentInstruction != null ? controller.CurrentInstruction.displayName : "instruction";
@@ -51,10 +54,10 @@ public static class AluPresentation
             controller.AluSrcStatusText.text = $"ALUSrc: {controller.CurrentAluSrcValue}";
 
         if (controller.Input1StatusText != null)
-            controller.Input1StatusText.text = BuildInputStatusText("Input 1", DataPacketRole.ReadData1, controller.InputA, controller.IsPracticeMode);
+            controller.Input1StatusText.text = BuildInputStatusText("Input 1", DataPacketRole.ReadData1, controller.InputA, controller.IsAssessmentMode);
 
         if (controller.Input2StatusText != null)
-            controller.Input2StatusText.text = BuildInputStatusText("Input 2", executionService.GetExpectedInput2Role(controller), controller.InputB, controller.IsPracticeMode);
+            controller.Input2StatusText.text = BuildInputStatusText("Input 2", executionService.GetExpectedInput2Role(controller), controller.InputB, controller.IsAssessmentMode);
 
         if (controller.FunctDropdown != null)
         {
@@ -215,17 +218,17 @@ public static class AluPresentation
 
     static void RefreshHintBlocks(AluController controller)
     {
-        var isPracticeMode = controller.IsPracticeMode;
-        SetObjectActive(controller.HintPanel.InfoRoot, !isPracticeMode);
+        var usesAssessmentHints = controller.IsAssessmentMode && LessonModePolicy.UsesHintPanel(controller.CurrentMode);
+        SetObjectActive(controller.HintPanel.InfoRoot, !usesAssessmentHints);
 
         if (controller.PracticeHintButton != null)
-            controller.PracticeHintButton.gameObject.SetActive(isPracticeMode);
+            controller.PracticeHintButton.gameObject.SetActive(usesAssessmentHints);
 
         SetHintBlockActive(
             controller.PracticeHintText,
-            isPracticeMode && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
+            usesAssessmentHints && !string.IsNullOrWhiteSpace(controller.PracticeHintText != null ? controller.PracticeHintText.text : string.Empty));
 
-        if (isPracticeMode)
+        if (usesAssessmentHints)
         {
             SetHintBlockActive(controller.HintAluOpText, false);
             SetHintBlockActive(controller.HintAluSrcText, false);

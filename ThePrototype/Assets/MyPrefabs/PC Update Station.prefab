@@ -1023,12 +1023,14 @@ MonoBehaviour:
     m_LessonCompletedClip: {fileID: 8300000, guid: f84e071ebd67c6e49b9fb6e25cf6f5f7, type: 3}
     m_FailureClip: {fileID: 0}
   m_LessonPanel:
+    m_Root: {fileID: 0}
     m_RuntimeText: {fileID: 0}
     m_BranchText: {fileID: 0}
     m_ShiftText: {fileID: 0}
     m_ResultText: {fileID: 0}
     m_EndText: {fileID: 0}
   m_HintPanel:
+    m_Root: {fileID: 0}
     m_InfoRoot: {fileID: 0}
     m_InfoDropdown: {fileID: 0}
     m_HintButton: {fileID: 0}
