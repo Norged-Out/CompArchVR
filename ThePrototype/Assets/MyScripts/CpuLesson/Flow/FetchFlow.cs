@@ -74,16 +74,19 @@ sealed class FetchFlow
     }
 
     /// <summary>
-    /// Resets both terminals and uploads the currently selected instruction into the fetch station.
+    /// Resets both terminals and optionally uploads the currently selected
+    /// instruction into the fetch station.
     /// </summary>
-    public void PrepareTerminals()
+    public void PrepareTerminals(bool uploadInstruction = true)
     {
         if (!UsesTerminals || m_Flow.ActiveInstruction == null)
             return;
 
         m_Flow.DecodeDownloadTerminal.ResetTerminal(false);
         m_Flow.FetchUploadTerminal.ResetTerminal(true);
-        m_Flow.FetchUploadTerminal.UploadCurrentInstruction();
+
+        if (uploadInstruction)
+            m_Flow.FetchUploadTerminal.UploadCurrentInstruction();
     }
 
     /// <summary>

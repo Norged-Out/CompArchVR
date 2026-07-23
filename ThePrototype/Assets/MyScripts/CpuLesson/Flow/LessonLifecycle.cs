@@ -70,7 +70,7 @@ sealed class LessonLifecycle
         m_State.ResetLesson(m_Flow.ActiveInstruction);
         m_Flow.RegisterBankRef?.SetLessonInactivePreviewMode(true);
         m_Flow.ImmediateExtenderRef?.ResetScanner();
-        m_Fetch.PrepareTerminals();
+        m_Fetch.PrepareTerminals(false);
         m_Flow.RaiseStepChanged();
         m_Flow.RaiseFeedback(string.Empty, false);
     }

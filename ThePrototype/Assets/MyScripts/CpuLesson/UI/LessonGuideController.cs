@@ -34,6 +34,9 @@ public sealed class LessonGuideController : MonoBehaviour
     [SerializeField]
     DecodePanelController m_DecodePanel;
 
+    [SerializeField]
+    SettingsMenuController m_SettingsMenuController;
+
     [Header("Practice Decode")]
     [SerializeField]
     int m_PracticeDecodeChances = 4;
@@ -138,6 +141,7 @@ public sealed class LessonGuideController : MonoBehaviour
             return;
 
         m_LessonFlow.SetLessonModeFromDropdown(selectedMode);
+        m_SettingsMenuController?.ApplyGuidancePreferenceForMode(m_LessonFlow.CurrentMode);
         RefreshInstructionLibrary();
         SyncLessonCueState();
         RefreshView();

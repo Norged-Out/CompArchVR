@@ -139,6 +139,24 @@ public sealed class SettingsMenuController : MonoBehaviour
     }
 
     /// <summary>
+    /// Applies authored guidance defaults when the learner changes lesson mode
+    /// from the intro dropdown. Learning forces guidance on, Test forces it
+    /// off, and Practice keeps the current manual preference.
+    /// </summary>
+    public void ApplyGuidancePreferenceForMode(LessonMode lessonMode)
+    {
+        switch (lessonMode)
+        {
+            case LessonMode.Learning:
+                SetGuidanceEnabled(true);
+                break;
+            case LessonMode.Test:
+                SetGuidanceEnabled(false);
+                break;
+        }
+    }
+
+    /// <summary>
     /// Unlocks dev mode when the submitted password matches the authored value.
     /// This is intended to be bound from the spatial keyboard display's text
     /// submitted event.
