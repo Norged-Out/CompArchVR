@@ -1,0 +1,69 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c3dcb87c7fe24f58ad5bf7a170f7e46d, type: 3}
+  m_Name: J
+  m_EditorClassIdentifier: 
+  displayName: j
+  mnemonic: 12
+  format: 2
+  category: 4
+  summary: Follow the jump control path and redirect the Program Counter.
+  assemblyInstructionText: j target
+  fieldBreakdownText: "opcode: 000010\ntarget: 00000000000000000000000100"
+  opcodeBits: 000010
+  functBits: 
+  expectedRs: 
+  expectedRt: 
+  expectedRd: 
+  expectedImmediateValue: 4
+  touchesDataMemory: 0
+  writesRegisterFile: 0
+  usesImmediate: 0
+  usesDestinationRegister: 0
+  initialRegisterValues: []
+  flowSteps:
+  - stepName: Fetch
+    highlightedNode: 1
+    explanation: The Program Counter points to the next instruction. Fetch begins by using that address to retrieve the jump instruction from Instruction Memory.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Instruction Memory
+    highlightedNode: 2
+    explanation: j is a J-type instruction. For this lesson, decode focuses on recognizing the jump opcode and then following the control path that redirects the Program Counter.
+    advanceVisualHighlight: 1
+    requiredInteraction: 1
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Program Counter Update
+    highlightedNode: 1
+    explanation: Set the Program Counter update controls so the CPU takes the jump path instead of the normal sequential path.
+    advanceVisualHighlight: 1
+    requiredInteraction: 6
+    blockProgressUntilValidated: 1
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
+  - stepName: Recap
+    highlightedNode: 1
+    explanation: Recap: j fetched the instruction, decoded the jump opcode, and redirected the Program Counter through the jump control path.
+    advanceVisualHighlight: 1
+    requiredInteraction: 5
+    blockProgressUntilValidated: 0
+    requiredRegisterSelections: []
+    confirmationRegisterRole: 0
+    expectedTargetObjectName: 
