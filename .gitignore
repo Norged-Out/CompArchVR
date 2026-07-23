@@ -159,3 +159,6 @@ ThePrototype/.vsconfig
 # Local-only journal files
 ProjectJournal/00_README.md
 ProjectJournal/03_GUIDELINES.md
+
+# Local-only recruitment mailing list
+Documents/recruitment_bcc_list.txt

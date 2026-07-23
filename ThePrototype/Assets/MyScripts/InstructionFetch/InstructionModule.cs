@@ -1,4 +1,3 @@
-using System;
 using TMPro;
 using UnityEngine;
 using UnityEngine.XR.Interaction.Toolkit;
@@ -7,7 +6,7 @@ using UnityEngine.XR.Interaction.Toolkit;
 /// Physical lesson object that carries one instruction through the early
 /// datapath flow. It owns:
 /// - the currently loaded <see cref="InstructionDefinition"/>
-/// - the mirrored front/back display text
+/// - one optional display text
 /// - simple visual state changes for idle / uploaded / downloaded / grabbed
 /// </summary>
 [DisallowMultipleComponent]
@@ -23,7 +22,7 @@ public class InstructionModule : MonoBehaviour
 
     [Header("Scene References")]
     [SerializeField]
-    TMP_Text[] m_DisplayTexts = Array.Empty<TMP_Text>();
+    TMP_Text m_DisplayText;
 
     [SerializeField]
     Renderer m_BodyRenderer;
@@ -164,14 +163,6 @@ public class InstructionModule : MonoBehaviour
 
     void CacheReferences()
     {
-        if (m_DisplayTexts == null || m_DisplayTexts.Length == 0)
-        {
-            var frontText = FindText("Text F");
-            var backText = FindText("Text B");
-            if (frontText != null && backText != null)
-                m_DisplayTexts = new[] { frontText, backText };
-        }
-
         if (m_BodyRenderer == null)
         {
             var bodyTransform = FindChildTransform("Body");
@@ -218,15 +209,8 @@ public class InstructionModule : MonoBehaviour
 
     void RefreshPresentation()
     {
-        var displayText = CurrentDisplayText;
-        if (m_DisplayTexts != null)
-        {
-            foreach (var textField in m_DisplayTexts)
-            {
-                if (textField != null)
-                    textField.text = displayText;
-            }
-        }
+        if (m_DisplayText != null)
+            m_DisplayText.text = CurrentDisplayText;
 
         if (m_BodyRenderer != null)
             m_BodyRenderer.sharedMaterial = ResolveVisualMaterial();
@@ -249,17 +233,6 @@ public class InstructionModule : MonoBehaviour
         return m_InitialBodyMaterial;
     }
 
-    TMP_Text FindText(string objectName)
-    {
-        foreach (var textField in GetComponentsInChildren<TMP_Text>(true))
-        {
-            if (textField != null && textField.name.Equals(objectName, StringComparison.Ordinal))
-                return textField;
-        }
-
-        return null;
-    }
-
     Transform FindChildTransform(string childName)
     {
         foreach (var childTransform in GetComponentsInChildren<Transform>(true))
@@ -267,7 +240,7 @@ public class InstructionModule : MonoBehaviour
             if (childTransform == null || childTransform == transform)
                 continue;
 
-            if (childTransform.name.Equals(childName, StringComparison.Ordinal))
+            if (childTransform.name == childName)
                 return childTransform;
         }
 
