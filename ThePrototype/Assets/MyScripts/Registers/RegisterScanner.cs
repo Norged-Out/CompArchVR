@@ -1,6 +1,8 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Pedestal-style scanner used during lesson phases that need a specific
@@ -40,6 +42,9 @@ public class RegisterScanner : PedestalScannerBase
     [SerializeField]
     BoxCollider m_ScanZone;
 
+    [SerializeField]
+    XRSocketInteractor m_ScanSocket;
+
     [Header("Data Packet Output")]
 
     [SerializeField]
@@ -63,6 +68,7 @@ public class RegisterScanner : PedestalScannerBase
     float m_SupportColliderHeightPadding = 0.01f;
 
     readonly System.Collections.Generic.HashSet<RegisterToken> m_TokensInZone = new();
+    RegisterToken m_SocketedRegister;
 
     DataPacketToken m_SpawnedPacket;
     int m_LastResolvedValue;
@@ -78,9 +84,12 @@ public class RegisterScanner : PedestalScannerBase
     protected override void Awake()
     {
         base.Awake();
+        AlignBodyToBase(true);
+        RefreshBodyRestPose();
         ConfigureSupportCollider();
         ConfigureScanZone();
         BindZoneHelper();
+        ConfigureSocketState();
         EnsureStaticPedestalPhysics();
     }
 
@@ -88,15 +97,23 @@ public class RegisterScanner : PedestalScannerBase
     {
         base.OnEnable();
         BindZoneHelper();
+        ConfigureSocketState();
+        HookSocketEvents(true);
 
         if (m_AlwaysActiveInspector || m_IsInLessonInactivePreviewMode || !m_UseInLessonFlow)
             SetStepActive(true);
     }
 
+    void OnDisable()
+    {
+        HookSocketEvents(false);
+    }
+
     protected override void OnValidate()
     {
         base.OnValidate();
-        RestoreEditorRestPose();
+        AlignBodyToBase(false);
+        RefreshBodyRestPose();
         ConfigureSupportCollider();
         ConfigureScanZone();
         EnsureStaticPedestalPhysics();
@@ -131,6 +148,9 @@ public class RegisterScanner : PedestalScannerBase
 
     protected override Component GetStableCandidate()
     {
+        if (m_SocketedRegister != null)
+            return m_SocketedRegister;
+
         m_TokensInZone.RemoveWhere(token => token == null);
         foreach (var registerToken in m_TokensInZone)
         {
@@ -169,6 +189,9 @@ public class RegisterScanner : PedestalScannerBase
 
         var scanZoneTransform = FindChildTransform("Scan Zone");
         m_ScanZone = scanZoneTransform != null ? scanZoneTransform.GetComponent<BoxCollider>() : null;
+
+        if (m_ScanSocket == null)
+            m_ScanSocket = GetComponent<XRSocketInteractor>();
     }
 
     /// <summary>
@@ -251,6 +274,41 @@ public class RegisterScanner : PedestalScannerBase
         helper.Bind(this);
     }
 
+    void ConfigureSocketState()
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.socketActive = true;
+    }
+
+    void HookSocketEvents(bool subscribe)
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
+
+        if (!subscribe)
+            return;
+
+        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
+    }
+
+    void HandleSocketSelectEntered(SelectEnterEventArgs args)
+    {
+        m_SocketedRegister = args.interactableObject?.transform.GetComponentInParent<RegisterToken>();
+    }
+
+    void HandleSocketSelectExited(SelectExitEventArgs args)
+    {
+        var register = args.interactableObject?.transform.GetComponentInParent<RegisterToken>();
+        if (register != null && register == m_SocketedRegister)
+            m_SocketedRegister = null;
+    }
+
     void EnsureStaticPedestalPhysics()
     {
         var rigidbody = GetComponent<Rigidbody>();
@@ -260,19 +318,12 @@ public class RegisterScanner : PedestalScannerBase
         rigidbody.isKinematic = true;
         rigidbody.useGravity = false;
         rigidbody.constraints = RigidbodyConstraints.FreezeAll;
-        rigidbody.linearVelocity = Vector3.zero;
-        rigidbody.angularVelocity = Vector3.zero;
         rigidbody.Sleep();
     }
 
-    void RememberBodyPose()
+    void AlignBodyToBase(bool allowDuringPlay)
     {
-        // handled by base
-    }
-
-    void RestoreEditorRestPose()
-    {
-        if (Application.isPlaying || BaseRenderer == null || BodyRenderer == null || BodyTransform == null)
+        if ((!allowDuringPlay && Application.isPlaying) || BaseRenderer == null || BodyRenderer == null || BodyTransform == null)
             return;
 
         var baseBounds = GetRendererBoundsInRootSpace(BaseRenderer);
@@ -333,6 +384,7 @@ public class RegisterScanner : PedestalScannerBase
     protected override void HandleScannerReset()
     {
         m_TokensInZone.Clear();
+        m_SocketedRegister = null;
         ClearSpawnedPacket();
         m_LastResolvedValue = 0;
         m_HasResolvedValue = false;

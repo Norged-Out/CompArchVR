@@ -59,10 +59,14 @@ public static class AluPresentation
         if (controller.Input2StatusText != null)
             controller.Input2StatusText.text = BuildInputStatusText("Input 2", executionService.GetExpectedInput2Role(controller), controller.InputB, controller.IsAssessmentMode);
 
+        var showFunctDropdown = controller.CurrentAluOpValue == "10";
+        if (controller.FunctRoot != null)
+            controller.FunctRoot.SetActive(showFunctDropdown);
+        else if (controller.FunctDropdown != null)
+            controller.FunctDropdown.gameObject.SetActive(showFunctDropdown);
+
         if (controller.FunctDropdown != null)
         {
-            var showFunctDropdown = controller.CurrentAluOpValue == "10";
-            controller.FunctDropdown.gameObject.SetActive(showFunctDropdown);
             controller.FunctDropdown.interactable = showFunctDropdown && !controller.HasProducedResult;
 
             if (showFunctDropdown && controller.HasExplicitFunctSelection)

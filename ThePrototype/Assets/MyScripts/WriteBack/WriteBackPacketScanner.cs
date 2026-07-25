@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Physical write-back pedestal that accepts the data packet to be written into
@@ -13,6 +15,9 @@ public class WriteBackPacketScanner : PedestalScannerBase
     Collider m_ScanZone;
 
     [SerializeField]
+    XRSocketInteractor m_ScanSocket;
+
+    [SerializeField]
     float m_RequiredStableSeconds = 1f;
 
     [SerializeField]
@@ -22,6 +27,7 @@ public class WriteBackPacketScanner : PedestalScannerBase
     DataPacketRole m_ExpectedPacketRole = DataPacketRole.AluResult;
 
     readonly HashSet<DataPacketToken> m_PacketsInZone = new();
+    DataPacketToken m_SocketedPacket;
 
     public DataPacketToken AcceptedPacket { get; private set; }
     public DataPacketRole ExpectedPacketRole => m_ExpectedPacketRole;
@@ -36,12 +42,20 @@ public class WriteBackPacketScanner : PedestalScannerBase
     {
         base.Awake();
         BindZoneHelper();
+        ConfigureSocketState();
     }
 
     protected override void OnEnable()
     {
         base.OnEnable();
         BindZoneHelper();
+        ConfigureSocketState();
+        HookSocketEvents(true);
+    }
+
+    void OnDisable()
+    {
+        HookSocketEvents(false);
     }
 
     public void SetActive(bool isActive)
@@ -60,6 +74,7 @@ public class WriteBackPacketScanner : PedestalScannerBase
     public new void ResetScanner()
     {
         m_PacketsInZone.Clear();
+        m_SocketedPacket = null;
         if (AcceptedPacket != null)
             AcceptedPacket.ReleaseFromLatch();
 
@@ -95,6 +110,9 @@ public class WriteBackPacketScanner : PedestalScannerBase
 
     protected override Component GetStableCandidate()
     {
+        if (m_SocketedPacket != null)
+            return m_SocketedPacket;
+
         m_PacketsInZone.RemoveWhere(packet => packet == null);
 
         foreach (var dataPacket in m_PacketsInZone)
@@ -118,6 +136,44 @@ public class WriteBackPacketScanner : PedestalScannerBase
             helper = m_ScanZone.gameObject.AddComponent<WriteBackPacketScannerZone>();
 
         helper.Bind(this);
+    }
+
+    void ConfigureSocketState()
+    {
+        if (m_ScanSocket == null)
+            m_ScanSocket = GetComponent<XRSocketInteractor>();
+
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.socketActive = true;
+    }
+
+    void HookSocketEvents(bool subscribe)
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
+
+        if (!subscribe)
+            return;
+
+        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
+    }
+
+    void HandleSocketSelectEntered(SelectEnterEventArgs args)
+    {
+        m_SocketedPacket = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+    }
+
+    void HandleSocketSelectExited(SelectExitEventArgs args)
+    {
+        var packet = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+        if (packet != null && packet == m_SocketedPacket)
+            m_SocketedPacket = null;
     }
 
     protected override void HandleScannerReset()

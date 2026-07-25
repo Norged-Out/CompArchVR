@@ -218,11 +218,11 @@ public class InstructionModule : MonoBehaviour
 
     Material ResolveVisualMaterial()
     {
-        if (m_IsGrabbed && m_GrabbedMaterial != null)
-            return m_GrabbedMaterial;
-
         if (m_IsDownloaded && m_DownloadedMaterial != null)
             return m_DownloadedMaterial;
+
+        if (m_IsGrabbed && m_GrabbedMaterial != null)
+            return m_GrabbedMaterial;
 
         if (HasInstruction && m_UploadedMaterial != null)
             return m_UploadedMaterial;

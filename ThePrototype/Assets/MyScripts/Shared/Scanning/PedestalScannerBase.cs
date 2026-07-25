@@ -103,7 +103,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
     {
         CacheVisualReferences();
         ApplyDefaultMaterials();
-        RememberBodyPose();
+        RefreshBodyRestPose();
         ApplyCurrentVisualState();
     }
 
@@ -117,7 +117,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
         CacheVisualReferences();
         ApplyDefaultMaterials();
         ResetEditorState();
-        RememberBodyPose();
+        RefreshBodyRestPose();
         ApplyCurrentVisualState();
     }
 
@@ -295,7 +295,7 @@ public abstract class PedestalScannerBase : MonoBehaviour
             m_BodyRenderer.sharedMaterial = m_InactiveMaterial;
     }
 
-    void RememberBodyPose()
+    protected void RefreshBodyRestPose()
     {
         if (m_BodyTransform != null)
             m_BodyRestLocalPosition = m_BodyTransform.localPosition;

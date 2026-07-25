@@ -10,6 +10,8 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class IntroPanelController : LessonPanelBase
 {
+    const string k_LogPrefix = "[IntroPanelController]";
+
     readonly LessonPhaseRouter m_PhaseRouter = new();
 
     [SerializeField]
@@ -108,6 +110,7 @@ public sealed class IntroPanelController : LessonPanelBase
     /// </summary>
     public void SetVisible(bool isVisible)
     {
+        Debug.Log($"{k_LogPrefix} SetVisible | visible={isVisible} frame={Time.frameCount}", this);
         SetPanelVisible(isVisible);
     }
 
@@ -121,6 +124,9 @@ public sealed class IntroPanelController : LessonPanelBase
         bool showInstructionDropdown,
         bool canStartSelectedMode)
     {
+        Debug.Log(
+            $"{k_LogPrefix} ShowBeforeStart | mode={lessonMode} showInstructionDropdown={showInstructionDropdown} canStart={canStartSelectedMode} instruction={(currentInstruction != null ? currentInstruction.displayName : "<null>")} frame={Time.frameCount}",
+            this);
         SetVisible(true);
         SetTextField(m_Body, BuildBeforeStartBody(lessonMode, canStartSelectedMode));
         SetButtonState(m_ActionButton, m_ActionLabel, startButtonLabel, canStartSelectedMode);
@@ -143,6 +149,10 @@ public sealed class IntroPanelController : LessonPanelBase
     {
         if (lessonFlow == null || step == null)
             return;
+
+        Debug.Log(
+            $"{k_LogPrefix} ShowStep | step={step.stepName} mode={lessonFlow.CurrentMode} hasStarted={lessonFlow.HasStarted} interaction={step.requiredInteraction} frame={Time.frameCount}",
+            this);
 
         var isFetchStep = IsFetchStep(step);
         var buttonLabel = isFetchStep
@@ -171,6 +181,7 @@ public sealed class IntroPanelController : LessonPanelBase
     /// </summary>
     public void HideAction()
     {
+        Debug.Log($"{k_LogPrefix} HideAction | frame={Time.frameCount}", this);
         SetButtonState(m_ActionButton, m_ActionLabel, string.Empty, false);
         RefreshPanelLayout(m_ActionButton);
     }

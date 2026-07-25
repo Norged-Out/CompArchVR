@@ -35,6 +35,9 @@ public sealed class AluHintInfoRefs
 public sealed class AluInteractionPanelRefs
 {
     [SerializeField]
+    GameObject m_FunctRoot;
+
+    [SerializeField]
     TMP_Text m_AluOpStatusText;
 
     [SerializeField]
@@ -49,6 +52,7 @@ public sealed class AluInteractionPanelRefs
     [SerializeField]
     TMP_Dropdown m_FunctDropdown;
 
+    public GameObject FunctRoot => m_FunctRoot;
     public TMP_Text AluOpStatusText => m_AluOpStatusText;
     public TMP_Text AluSrcStatusText => m_AluSrcStatusText;
     public TMP_Text Input1StatusText => m_Input1StatusText;

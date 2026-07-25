@@ -6,6 +6,8 @@ using UnityEngine.UI;
 [DisallowMultipleComponent]
 public sealed class DecodePanelController : LessonPanelBase
 {
+    const string k_LogPrefix = "[DecodePanelController]";
+
     [Header("Lesson Panel")]
     [SerializeField]
     DecodeLessonPanelRefs m_LessonPanel;
@@ -32,11 +34,13 @@ public sealed class DecodePanelController : LessonPanelBase
 
     public void SetVisible(bool isVisible)
     {
+        Debug.Log($"{k_LogPrefix} SetVisible | visible={isVisible} frame={Time.frameCount}", this);
         SetPanelVisible(isVisible);
     }
 
     public void HideAction()
     {
+        Debug.Log($"{k_LogPrefix} HideAction | frame={Time.frameCount}", this);
         SetButtonState(m_SharedInteraction.ActionButton, m_SharedInteraction.ActionLabel, string.Empty, false);
         RefreshPanelLayout(m_SharedInteraction.ActionButton);
     }
@@ -66,6 +70,9 @@ public sealed class DecodePanelController : LessonPanelBase
         PracticeInstructionDefinition currentInstruction,
         bool opcodeConfirmed)
     {
+        Debug.Log(
+            $"{k_LogPrefix} PopulatePracticeControls | instruction={(currentInstruction != null ? currentInstruction.displayName : "<null>")} opcodeConfirmed={opcodeConfirmed} frame={Time.frameCount}",
+            this);
         EnsurePracticeView();
         m_PracticeView.Refresh(currentInstruction, opcodeConfirmed, false);
     }
@@ -89,6 +96,10 @@ public sealed class DecodePanelController : LessonPanelBase
         if (lessonFlow == null || step == null)
             return;
 
+        Debug.Log(
+            $"{k_LogPrefix} Refresh | step={step.stepName} mode={lessonFlow.CurrentMode} interaction={step.requiredInteraction} frame={Time.frameCount}",
+            this);
+
         SetVisible(true);
 
         m_IsShowingPracticeDecode = IsPracticeDecodeStep(lessonFlow, step);
@@ -111,6 +122,9 @@ public sealed class DecodePanelController : LessonPanelBase
 
     public void SetFeedback(string message, bool isFailure, IReadOnlyList<InstructionDefinition> availableInstructions)
     {
+        Debug.Log(
+            $"{k_LogPrefix} SetFeedback | failure={isFailure} message={(string.IsNullOrWhiteSpace(message) ? "<empty>" : message)} frame={Time.frameCount}",
+            this);
         SetFeedbackField(m_SharedInteraction.Feedback, message, isFailure);
 
         if (!m_IsShowingPracticeDecode)
@@ -158,6 +172,9 @@ public sealed class DecodePanelController : LessonPanelBase
         string continueLabel,
         string restartLabel)
     {
+        Debug.Log(
+            $"{k_LogPrefix} RefreshPracticeDecode | mode={lessonMode} instruction={(currentPracticeInstruction != null ? currentPracticeInstruction.displayName : "<null>")} frame={Time.frameCount}",
+            this);
         EnsureLearningView();
         EnsurePracticeView();
 
@@ -189,6 +206,9 @@ public sealed class DecodePanelController : LessonPanelBase
         string continueLabel,
         string restartLabel)
     {
+        Debug.Log(
+            $"{k_LogPrefix} RefreshLearningDecode | step={step.stepName} selectionMode={selectionMode} mode={lessonFlow.CurrentMode} frame={Time.frameCount}",
+            this);
         EnsureLearningView();
         m_LearningView.Refresh(lessonFlow, step, availableInstructions, selectionMode);
         ApplyPracticeLessonText(false, lessonFlow.CurrentMode);
@@ -252,6 +272,7 @@ public sealed class DecodePanelController : LessonPanelBase
 
     void ApplyHintPanelMode(LessonMode lessonMode)
     {
+        Debug.Log($"{k_LogPrefix} ApplyHintPanelMode | mode={lessonMode} frame={Time.frameCount}", this);
         SetObjectActive(m_HintPanel.Root, LessonModePolicy.UsesHintPanel(lessonMode));
         SetObjectActive(m_HintPanel.InfoRoot, lessonMode == LessonMode.Learning);
         SetTextFieldActive(m_HintPanel.InfoText, lessonMode == LessonMode.Learning);
@@ -268,6 +289,9 @@ public sealed class DecodePanelController : LessonPanelBase
 
     void ApplyPracticeLessonText(bool showDecodingLesson, LessonMode lessonMode)
     {
+        Debug.Log(
+            $"{k_LogPrefix} ApplyPracticeLessonText | showDecodingLesson={showDecodingLesson} mode={lessonMode} frame={Time.frameCount}",
+            this);
         SetObjectActive(m_LessonPanel.Root, LessonModePolicy.UsesLessonPanel(lessonMode));
         SetTextFieldActive(m_LessonPanel.OpcodeText, !showDecodingLesson);
         SetTextFieldActive(m_LessonPanel.PracticeDecodingText, showDecodingLesson);

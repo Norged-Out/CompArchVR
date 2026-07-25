@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Packet receiver used by the Program Counter update station.
@@ -20,12 +22,16 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
     Collider m_ScanZone;
 
     [SerializeField]
+    XRSocketInteractor m_ScanSocket;
+
+    [SerializeField]
     DataPacketRole m_ExpectedPacketRole = DataPacketRole.Immediate;
 
     [SerializeField]
     bool m_RequireSignExtended = true;
 
     readonly System.Collections.Generic.HashSet<DataPacketToken> m_PacketsInZone = new();
+    DataPacketToken m_SocketedPacket;
     PacketIssue m_CurrentIssue;
 
     public DataPacketToken AcceptedPacket { get; private set; }
@@ -39,12 +45,20 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
     {
         base.Awake();
         BindZoneHelper();
+        ConfigureSocketState();
     }
 
     protected override void OnEnable()
     {
         base.OnEnable();
         BindZoneHelper();
+        ConfigureSocketState();
+        HookSocketEvents(true);
+    }
+
+    void OnDisable()
+    {
+        HookSocketEvents(false);
     }
 
     /// <summary>
@@ -95,6 +109,7 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
     public new void ResetScanner()
     {
         m_PacketsInZone.Clear();
+        m_SocketedPacket = null;
         if (AcceptedPacket != null)
             AcceptedPacket.ReleaseFromLatch();
 
@@ -160,6 +175,9 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
             if (scanZoneTransform != null)
                 m_ScanZone = scanZoneTransform.GetComponent<Collider>();
         }
+
+        if (m_ScanSocket == null)
+            m_ScanSocket = GetComponent<XRSocketInteractor>();
     }
 
     /// <summary>
@@ -168,6 +186,9 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
     /// </summary>
     protected override Component GetStableCandidate()
     {
+        if (m_SocketedPacket != null)
+            return m_SocketedPacket;
+
         m_PacketsInZone.RemoveWhere(packet => packet == null);
 
         foreach (var dataPacket in m_PacketsInZone)
@@ -278,5 +299,40 @@ public class PcUpdatePacketScanner : MemoryPillarScannerBase
             helper = m_ScanZone.gameObject.AddComponent<PcUpdatePacketScannerZone>();
 
         helper.Bind(this);
+    }
+
+    void ConfigureSocketState()
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.socketActive = true;
+    }
+
+    void HookSocketEvents(bool subscribe)
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
+
+        if (!subscribe)
+            return;
+
+        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
+    }
+
+    void HandleSocketSelectEntered(SelectEnterEventArgs args)
+    {
+        m_SocketedPacket = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+    }
+
+    void HandleSocketSelectExited(SelectExitEventArgs args)
+    {
+        var packet = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+        if (packet != null && packet == m_SocketedPacket)
+            m_SocketedPacket = null;
     }
 }

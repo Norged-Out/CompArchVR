@@ -88,65 +88,99 @@ sealed class LessonGuideView
         string restartButtonLabel,
         ref bool isRefreshingDecodeDropdowns)
     {
+        var stage = "ValidateDependencies";
+
         if (lessonFlow == null || m_IntroPanel == null)
             return;
 
-        var showDecodePanel = m_PhaseRouter.ShouldShowDecodePanel(lessonFlow);
-        var showExecutionPanel = m_PhaseRouter.ShouldShowExecutionPanel(lessonFlow);
-        var showMemoryPanel = m_PhaseRouter.ShouldShowMemoryPanel(lessonFlow);
-        var showWriteBackPanel = m_PhaseRouter.ShouldShowWriteBackPanel(lessonFlow);
-        var showPcUpdatePanel = m_PhaseRouter.ShouldShowPcUpdatePanel(lessonFlow);
-
-        ApplyExecutionPanelState(showExecutionPanel, lessonFlow);
-        ApplyMemoryPanelState(showMemoryPanel, lessonFlow);
-        ApplyWriteBackPanelState(showWriteBackPanel, lessonFlow);
-        ApplyPcUpdatePanelState(showPcUpdatePanel, lessonFlow);
-
-        m_IntroPanel.SetVisible(m_PhaseRouter.ShouldShowIntroPanel(lessonFlow));
-        m_DecodePanel?.SetVisible(showDecodePanel);
-
-        if (!lessonFlow.HasStarted)
+        try
         {
-            ResetPhasePanels();
-            decodeGuideFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
-            practiceDecodeFlow.Reset(m_DecodePanel);
-            m_IntroPanel.ShowBeforeStart(
-                lessonFlow.CurrentMode,
-                lessonFlow.CurrentInstruction,
-                startButtonLabel,
-                lessonFlow.UsesInstructionSelection,
-                lessonFlow.CanStartSelectedMode);
-            return;
+            stage = "ResolvePanelVisibility";
+            var showDecodePanel = m_PhaseRouter.ShouldShowDecodePanel(lessonFlow);
+            var showExecutionPanel = m_PhaseRouter.ShouldShowExecutionPanel(lessonFlow);
+            var showMemoryPanel = m_PhaseRouter.ShouldShowMemoryPanel(lessonFlow);
+            var showWriteBackPanel = m_PhaseRouter.ShouldShowWriteBackPanel(lessonFlow);
+            var showPcUpdatePanel = m_PhaseRouter.ShouldShowPcUpdatePanel(lessonFlow);
+
+            stage = "ApplyExecutionPanelState";
+            ApplyExecutionPanelState(showExecutionPanel, lessonFlow);
+
+            stage = "ApplyMemoryPanelState";
+            ApplyMemoryPanelState(showMemoryPanel, lessonFlow);
+
+            stage = "ApplyWriteBackPanelState";
+            ApplyWriteBackPanelState(showWriteBackPanel, lessonFlow);
+
+            stage = "ApplyPcUpdatePanelState";
+            ApplyPcUpdatePanelState(showPcUpdatePanel, lessonFlow);
+
+            stage = "SetIntroPanelVisible";
+            m_IntroPanel.SetVisible(m_PhaseRouter.ShouldShowIntroPanel(lessonFlow));
+
+            stage = "SetDecodePanelVisible";
+            m_DecodePanel?.SetVisible(showDecodePanel);
+
+            if (!lessonFlow.HasStarted)
+            {
+                stage = "ResetPhasePanels";
+                ResetPhasePanels();
+
+                stage = "ResetDecodeGuideFlow";
+                decodeGuideFlow.Reset(m_DecodePanel, ref isRefreshingDecodeDropdowns);
+
+                stage = "ResetPracticeDecodeFlow";
+                practiceDecodeFlow.Reset(m_DecodePanel);
+
+                stage = "ShowBeforeStart";
+                m_IntroPanel.ShowBeforeStart(
+                    lessonFlow.CurrentMode,
+                    lessonFlow.CurrentInstruction,
+                    startButtonLabel,
+                    lessonFlow.UsesInstructionSelection,
+                    lessonFlow.CanStartSelectedMode);
+                return;
+            }
+
+            stage = "ReadCurrentStep";
+            var step = lessonFlow.CurrentStep;
+            if (step == null)
+                return;
+
+            stage = "SetInstructionDropdownInteractable";
+            m_IntroPanel.SetInstructionDropdownInteractable(false);
+
+            if (showExecutionPanel || showMemoryPanel || showWriteBackPanel || showPcUpdatePanel)
+            {
+                stage = "HideSharedActions";
+                m_IntroPanel.HideAction();
+                m_DecodePanel?.HideAction();
+                return;
+            }
+
+            if (!showDecodePanel)
+            {
+                stage = "ShowIntroStep";
+                m_IntroPanel.ShowStep(lessonFlow, step, continueButtonLabel, goBackButtonLabel, restartButtonLabel);
+                return;
+            }
+
+            stage = "RefreshDecodePanel";
+            m_DecodePanel?.Refresh(
+                lessonFlow,
+                step,
+                availableInstructions,
+                currentPracticeInstruction,
+                decodeGuideFlow.GetSelectionMode(lessonFlow),
+                practiceDecodeFlow,
+                continueButtonLabel,
+                restartButtonLabel);
         }
-
-        var step = lessonFlow.CurrentStep;
-        if (step == null)
-            return;
-
-        m_IntroPanel.SetInstructionDropdownInteractable(false);
-
-        if (showExecutionPanel || showMemoryPanel || showWriteBackPanel || showPcUpdatePanel)
+        catch (System.Exception exception)
         {
-            m_IntroPanel.HideAction();
-            m_DecodePanel?.HideAction();
-            return;
+            Debug.LogError(
+                $"[LessonGuideView] Refresh failed at stage={stage} | step={lessonFlow.CurrentStep?.stepName} mode={lessonFlow.CurrentMode} hasStarted={lessonFlow.HasStarted} frame={Time.frameCount}\n{exception}");
+            throw;
         }
-
-        if (!showDecodePanel)
-        {
-            m_IntroPanel.ShowStep(lessonFlow, step, continueButtonLabel, goBackButtonLabel, restartButtonLabel);
-            return;
-        }
-
-        m_DecodePanel?.Refresh(
-            lessonFlow,
-            step,
-            availableInstructions,
-            currentPracticeInstruction,
-            decodeGuideFlow.GetSelectionMode(lessonFlow),
-            practiceDecodeFlow,
-            continueButtonLabel,
-            restartButtonLabel);
     }
 
     /// <summary>

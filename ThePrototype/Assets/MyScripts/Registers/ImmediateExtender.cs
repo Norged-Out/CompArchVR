@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Small authored station that accepts an Immediate datapacket and marks it as
@@ -32,6 +34,9 @@ public class ImmediateExtender : PedestalScannerBase
     BoxCollider m_ScanZone;
 
     [SerializeField]
+    XRSocketInteractor m_ScanSocket;
+
+    [SerializeField]
     Vector3 m_ScanZonePadding = new(0.12f, 0.18f, 0.12f);
 
     [SerializeField]
@@ -41,6 +46,7 @@ public class ImmediateExtender : PedestalScannerBase
     float m_SupportColliderHeightPadding = 0.01f;
 
     readonly HashSet<DataPacketToken> m_PacketsInZone = new();
+    DataPacketToken m_SocketedPacket;
 
     int m_LastResolvedValue;
     DataPacketToken m_SpawnedImmediatePacket;
@@ -53,6 +59,7 @@ public class ImmediateExtender : PedestalScannerBase
         ConfigureSupportCollider();
         ConfigureScanZone();
         BindZoneHelper();
+        ConfigureSocketState();
         EnsureStaticPedestalPhysics();
     }
 
@@ -60,9 +67,16 @@ public class ImmediateExtender : PedestalScannerBase
     {
         base.OnEnable();
         BindZoneHelper();
+        ConfigureSocketState();
+        HookSocketEvents(true);
 
         if (m_AlwaysActive)
             SetStepActive(true);
+    }
+
+    void OnDisable()
+    {
+        HookSocketEvents(false);
     }
 
     protected override void OnValidate()
@@ -103,6 +117,9 @@ public class ImmediateExtender : PedestalScannerBase
 
     protected override Component GetStableCandidate()
     {
+        if (m_SocketedPacket != null)
+            return m_SocketedPacket;
+
         m_PacketsInZone.RemoveWhere(packet => packet == null);
 
         foreach (var dataPacket in m_PacketsInZone)
@@ -139,6 +156,9 @@ public class ImmediateExtender : PedestalScannerBase
 
         var scanZoneTransform = FindChildTransform("Scan Zone");
         m_ScanZone = scanZoneTransform != null ? scanZoneTransform.GetComponent<BoxCollider>() : null;
+
+        if (m_ScanSocket == null)
+            m_ScanSocket = GetComponent<XRSocketInteractor>();
     }
 
     protected override bool IsImmediateMismatch(Component candidate)
@@ -188,6 +208,7 @@ public class ImmediateExtender : PedestalScannerBase
     protected override void HandleScannerReset()
     {
         m_PacketsInZone.Clear();
+        m_SocketedPacket = null;
         AcceptedPacket = null;
         ClearSpawnedImmediatePacket();
         m_LastResolvedValue = 0;
@@ -297,6 +318,41 @@ public class ImmediateExtender : PedestalScannerBase
             helper = m_ScanZone.gameObject.AddComponent<ImmediateExtenderZone>();
 
         helper.Bind(this);
+    }
+
+    void ConfigureSocketState()
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.socketActive = true;
+    }
+
+    void HookSocketEvents(bool subscribe)
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
+
+        if (!subscribe)
+            return;
+
+        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
+    }
+
+    void HandleSocketSelectEntered(SelectEnterEventArgs args)
+    {
+        m_SocketedPacket = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+    }
+
+    void HandleSocketSelectExited(SelectExitEventArgs args)
+    {
+        var packet = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+        if (packet != null && packet == m_SocketedPacket)
+            m_SocketedPacket = null;
     }
 
     void ClearSpawnedImmediatePacket()

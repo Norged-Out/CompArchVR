@@ -2,6 +2,8 @@ using System;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Shared prefab script for both instruction-platform behaviors:
@@ -42,6 +44,9 @@ public class InstructionTerminal : MonoBehaviour
 
     [SerializeField]
     ParticleSystem m_ParticleSystem;
+
+    [SerializeField]
+    XRSocketInteractor m_DownloadSocket;
 
     [SerializeField]
     float m_ParticleBurstSeconds = 1.25f;
@@ -92,20 +97,29 @@ public class InstructionTerminal : MonoBehaviour
     void Awake()
     {
         CacheReferences();
+        ConfigureSocketState();
     }
 
     void OnEnable()
     {
         CacheReferences();
+        ConfigureSocketState();
+        HookSocketEvents(true);
 
         // The uploader owns the baseline empty module for each lesson run.
         if (m_Mode == TerminalMode.Uploader && m_SpawnEmptyModuleOnEnable)
             EnsureSpawnedModule();
     }
 
+    void OnDisable()
+    {
+        HookSocketEvents(false);
+    }
+
     void OnValidate()
     {
         CacheReferences();
+        ConfigureSocketState();
     }
 
     /// <summary>
@@ -210,7 +224,7 @@ public class InstructionTerminal : MonoBehaviour
 
     void OnTriggerStay(Collider other)
     {
-        if (m_Mode != TerminalMode.Downloader)
+        if (m_Mode != TerminalMode.Downloader || UsesDownloadSocket())
             return;
 
         var module = other.GetComponentInParent<InstructionModule>();
@@ -233,7 +247,7 @@ public class InstructionTerminal : MonoBehaviour
 
     void OnTriggerExit(Collider other)
     {
-        if (m_Mode != TerminalMode.Downloader)
+        if (m_Mode != TerminalMode.Downloader || UsesDownloadSocket())
             return;
 
         var module = other.GetComponentInParent<InstructionModule>();
@@ -261,15 +275,26 @@ public class InstructionTerminal : MonoBehaviour
         return true;
     }
 
+    bool CanAcceptSocketedModule(InstructionModule module)
+    {
+        if (module == null)
+            return false;
+
+        if (m_RequireInstructionBeforeDownload && !module.HasInstruction)
+            return false;
+
+        return true;
+    }
+
     void DockModule(InstructionModule module)
     {
         m_DownloadedModule = module;
         m_CurrentCandidate = null;
         m_CurrentCandidateTime = 0f;
 
-        // Decode uses the module like a physical gate key. Once it is accepted,
-        // it snaps into place so the learner can clearly see the handoff finish.
-        if (m_LockModuleOnDownload && m_SpawnPoint != null)
+        // Trigger fallback still uses the authored anchor directly. When a real
+        // socket is present, the socket itself already owns the alignment.
+        if (!UsesDownloadSocket() && m_LockModuleOnDownload && m_SpawnPoint != null)
             module.SnapToAnchor(m_SpawnPoint, true);
 
         PlayActionAudio();
@@ -297,6 +322,62 @@ public class InstructionTerminal : MonoBehaviour
 
         if (m_ParticleSystem == null)
             m_ParticleSystem = GetComponentInChildren<ParticleSystem>(true);
+
+        if (m_DownloadSocket == null)
+            m_DownloadSocket = GetComponent<XRSocketInteractor>();
+    }
+
+    void ConfigureSocketState()
+    {
+        if (m_DownloadSocket == null)
+            return;
+
+        m_DownloadSocket.socketActive = m_Mode == TerminalMode.Downloader;
+    }
+
+    void HookSocketEvents(bool subscribe)
+    {
+        if (m_DownloadSocket == null)
+            return;
+
+        m_DownloadSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
+        m_DownloadSocket.selectExited.RemoveListener(HandleSocketSelectExited);
+
+        if (!subscribe || m_Mode != TerminalMode.Downloader)
+            return;
+
+        m_DownloadSocket.selectEntered.AddListener(HandleSocketSelectEntered);
+        m_DownloadSocket.selectExited.AddListener(HandleSocketSelectExited);
+    }
+
+    bool UsesDownloadSocket()
+    {
+        return m_Mode == TerminalMode.Downloader && m_DownloadSocket != null;
+    }
+
+    void HandleSocketSelectEntered(SelectEnterEventArgs args)
+    {
+        if (!UsesDownloadSocket())
+            return;
+
+        var module = args.interactableObject?.transform.GetComponentInParent<InstructionModule>();
+        if (m_DownloadedModule != null || !CanAcceptSocketedModule(module))
+            return;
+
+        DockModule(module);
+    }
+
+    void HandleSocketSelectExited(SelectExitEventArgs args)
+    {
+        if (!UsesDownloadSocket())
+            return;
+
+        var module = args.interactableObject?.transform.GetComponentInParent<InstructionModule>();
+        if (module == null || module != m_CurrentCandidate)
+            return;
+
+        m_CurrentCandidate = null;
+        m_CurrentCandidateTime = 0f;
     }
 
     void PlayParticles()

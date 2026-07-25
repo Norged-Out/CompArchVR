@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Shared packet-latching logic for the Memory Unit's pillar scanners.
@@ -15,9 +17,13 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
     Collider m_ScanZone;
 
     [SerializeField]
+    XRSocketInteractor m_ScanSocket;
+
+    [SerializeField]
     DataPacketRole m_ExpectedPacketRole;
 
     readonly HashSet<DataPacketToken> m_PacketsInZone = new();
+    DataPacketToken m_SocketedPacket;
 
     /// <summary>
     /// Packet currently accepted by this memory scanner, if any.
@@ -40,12 +46,20 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
     {
         base.Awake();
         BindZoneHelper();
+        ConfigureSocketState();
     }
 
     protected override void OnEnable()
     {
         base.OnEnable();
         BindZoneHelper();
+        ConfigureSocketState();
+        HookSocketEvents(true);
+    }
+
+    protected virtual void OnDisable()
+    {
+        HookSocketEvents(false);
     }
 
     protected override void OnValidate()
@@ -58,6 +72,9 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
             if (zoneHelper != null)
                 m_ScanZone = zoneHelper.GetComponent<Collider>();
         }
+
+        if (m_ScanSocket == null)
+            m_ScanSocket = GetComponent<XRSocketInteractor>();
     }
 
     /// <summary>
@@ -109,6 +126,7 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
     public new void ResetScanner()
     {
         m_PacketsInZone.Clear();
+        m_SocketedPacket = null;
 
         if (AcceptedPacket != null)
             AcceptedPacket.ReleaseFromLatch();
@@ -144,6 +162,9 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
 
     protected override Component GetStableCandidate()
     {
+        if (m_SocketedPacket != null)
+            return m_SocketedPacket;
+
         m_PacketsInZone.RemoveWhere(packet => packet == null);
 
         foreach (var dataPacket in m_PacketsInZone)
@@ -186,6 +207,41 @@ public abstract class MemoryPacketLatchScannerBase<TZone, TScanner> : MemoryPill
             helper = m_ScanZone.gameObject.AddComponent<TZone>();
 
         helper.Bind((TScanner)this);
+    }
+
+    void ConfigureSocketState()
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.socketActive = true;
+    }
+
+    void HookSocketEvents(bool subscribe)
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
+
+        if (!subscribe)
+            return;
+
+        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
+    }
+
+    void HandleSocketSelectEntered(SelectEnterEventArgs args)
+    {
+        m_SocketedPacket = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+    }
+
+    void HandleSocketSelectExited(SelectExitEventArgs args)
+    {
+        var packet = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+        if (packet != null && packet == m_SocketedPacket)
+            m_SocketedPacket = null;
     }
 
     /// <summary>

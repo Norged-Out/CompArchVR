@@ -1,4 +1,6 @@
 using UnityEngine;
+using UnityEngine.XR.Interaction.Toolkit;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// ALU-side packet receiver.
@@ -22,12 +24,16 @@ public class AluInputScanner : PedestalScannerBase
     Collider m_ScanZone;
 
     [SerializeField]
+    XRSocketInteractor m_ScanSocket;
+
+    [SerializeField]
     float m_RequiredStableSeconds = 1f;
 
     [SerializeField]
     float m_LocalPressedOffsetY = -0.02f;
 
     readonly System.Collections.Generic.HashSet<DataPacketToken> m_PacketsInZone = new();
+    DataPacketToken m_SocketedPacket;
     PacketIssue m_CurrentIssue;
 
     public DataPacketRole ExpectedPacketRole => m_ExpectedPacketRole;
@@ -45,12 +51,20 @@ public class AluInputScanner : PedestalScannerBase
     {
         base.Awake();
         BindZoneHelper();
+        ConfigureSocketState();
     }
 
     protected override void OnEnable()
     {
         base.OnEnable();
         BindZoneHelper();
+        ConfigureSocketState();
+        HookSocketEvents(true);
+    }
+
+    void OnDisable()
+    {
+        HookSocketEvents(false);
     }
 
     /// <summary>
@@ -83,6 +97,7 @@ public class AluInputScanner : PedestalScannerBase
     public void ResetScanner()
     {
         m_PacketsInZone.Clear();
+        m_SocketedPacket = null;
         ClearAcceptedPacket();
         m_CurrentIssue = PacketIssue.None;
         base.ResetScanner();
@@ -140,6 +155,9 @@ public class AluInputScanner : PedestalScannerBase
 
     protected override Component GetStableCandidate()
     {
+        if (m_SocketedPacket != null)
+            return m_SocketedPacket;
+
         m_PacketsInZone.RemoveWhere(packet => packet == null);
 
         // The first ungrabbed packet in the trigger is treated as the current
@@ -165,6 +183,9 @@ public class AluInputScanner : PedestalScannerBase
             if (scanZoneTransform != null)
                 m_ScanZone = scanZoneTransform.GetComponent<Collider>();
         }
+
+        if (m_ScanSocket == null)
+            m_ScanSocket = GetComponent<XRSocketInteractor>();
     }
 
     /// <summary>
@@ -181,6 +202,41 @@ public class AluInputScanner : PedestalScannerBase
             helper = m_ScanZone.gameObject.AddComponent<AluInputScannerZone>();
 
         helper.Bind(this);
+    }
+
+    void ConfigureSocketState()
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.socketActive = true;
+    }
+
+    void HookSocketEvents(bool subscribe)
+    {
+        if (m_ScanSocket == null)
+            return;
+
+        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
+
+        if (!subscribe)
+            return;
+
+        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
+        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
+    }
+
+    void HandleSocketSelectEntered(SelectEnterEventArgs args)
+    {
+        m_SocketedPacket = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+    }
+
+    void HandleSocketSelectExited(SelectExitEventArgs args)
+    {
+        var packet = args.interactableObject?.transform.GetComponentInParent<DataPacketToken>();
+        if (packet != null && packet == m_SocketedPacket)
+            m_SocketedPacket = null;
     }
 
     protected override bool IsImmediateMismatch(Component candidate)
