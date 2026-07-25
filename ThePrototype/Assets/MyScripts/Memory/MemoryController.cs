@@ -11,6 +11,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 [DisallowMultipleComponent]
 public sealed class MemoryController : MonoBehaviour
 {
+    const string k_LogPrefix = "[MemoryController]";
+
     [Header("Memory Unit")]
     [SerializeField]
     MemoryAddressScanner m_AddressScanner;
@@ -184,20 +186,16 @@ public sealed class MemoryController : MonoBehaviour
 
     void Awake()
     {
-        m_TransferService = new MemoryTransferService();
-        ConfigurePracticeFlow();
+        EnsureRuntimeReady();
         HookRuntimeBindings(true);
-        MemoryPresentation.PopulateHintDropdown(HintDropdown);
         RefreshPresentation();
         SetFeedback(string.Empty, false);
     }
 
     void OnEnable()
     {
-        m_TransferService ??= new MemoryTransferService();
-        ConfigurePracticeFlow();
+        EnsureRuntimeReady();
         HookRuntimeBindings(true);
-        MemoryPresentation.PopulateHintDropdown(HintDropdown);
         RefreshPresentation();
     }
 
@@ -212,17 +210,40 @@ public sealed class MemoryController : MonoBehaviour
     /// </summary>
     public void SetPhaseState(bool isActive, LessonMode lessonMode, InstructionDefinition instruction)
     {
-        var instructionChanged = instruction != null && instruction != m_CurrentInstruction;
-        var modeChanged = lessonMode != m_CurrentMode;
-        var isEnteringPhase = isActive && !m_IsPhaseActive;
+        Debug.Log(
+            $"{k_LogPrefix} SetPhaseState | active={isActive} mode={lessonMode} instruction={(instruction != null ? instruction.displayName : "<null>")} frame={Time.frameCount}",
+            this);
+        EnsureRuntimeReady();
 
-        m_IsPhaseActive = isActive;
+        var previousInstruction = m_CurrentInstruction;
+        var previousMode = m_CurrentMode;
+        var wasPhaseActive = m_IsPhaseActive;
+
         m_CurrentMode = lessonMode;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
+        ConfigurePracticeFlow();
+
+        if (!isActive)
+        {
+            m_IsPhaseActive = false;
+
+            if (m_MemUiRoot != null)
+                m_MemUiRoot.SetActive(false);
+
+            m_AddressScanner?.SetActive(false);
+            m_DataScanner?.SetActive(false);
+            m_MemoryBank?.SetPhaseState(false, false);
+            RefreshPresentation();
+            return;
+        }
+
+        var instructionChanged = m_CurrentInstruction != previousInstruction;
+        var modeChanged = m_CurrentMode != previousMode;
+        var isEnteringPhase = !wasPhaseActive;
+        m_IsPhaseActive = true;
 
         if (isEnteringPhase || instructionChanged || modeChanged)
         {
-            ConfigurePracticeFlow();
             m_PracticeFlow.Reset();
             m_TransferService.PrepareForMemoryStep(this);
         }
@@ -237,11 +258,19 @@ public sealed class MemoryController : MonoBehaviour
         RefreshPresentation();
     }
 
+    void EnsureRuntimeReady()
+    {
+        m_TransferService ??= new MemoryTransferService();
+        ConfigurePracticeFlow();
+        MemoryPresentation.PopulateHintDropdown(HintDropdown);
+    }
+
     /// <summary>
     /// Clears all runtime memory-phase state between lesson runs.
     /// </summary>
     public void ResetMemoryState()
     {
+        Debug.Log($"{k_LogPrefix} ResetMemoryState | frame={Time.frameCount}", this);
         if (m_ExecutionRoutine != null)
         {
             StopCoroutine(m_ExecutionRoutine);
@@ -276,6 +305,9 @@ public sealed class MemoryController : MonoBehaviour
     /// </summary>
     public void HandleActionPressed()
     {
+        Debug.Log(
+            $"{k_LogPrefix} HandleActionPressed | active={m_IsPhaseActive} awaitingContinue={m_IsAwaitingContinue} completed={m_HasCompletedMemoryAccess} mode={m_CurrentMode} frame={Time.frameCount}",
+            this);
         if (!m_IsPhaseActive || m_ExecutionRoutine != null)
             return;
 
@@ -597,6 +629,9 @@ public sealed class MemoryController : MonoBehaviour
     /// </summary>
     void EnterPracticeFailureState(string feedbackText)
     {
+        Debug.Log(
+            $"{k_LogPrefix} EnterPracticeFailureState | feedback={feedbackText} frame={Time.frameCount}",
+            this);
         m_IsAwaitingContinue = false;
         m_AddressScanner?.SetActive(false);
         m_DataScanner?.SetActive(false);

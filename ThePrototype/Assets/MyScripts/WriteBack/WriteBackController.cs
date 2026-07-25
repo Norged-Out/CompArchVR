@@ -13,6 +13,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 [DisallowMultipleComponent]
 public class WriteBackController : MonoBehaviour
 {
+    const string k_LogPrefix = "[WriteBackController]";
+
     [Header("Write-Back Station")]
     [SerializeField]
     WriteBackRegisterScanner m_RegisterScanner;
@@ -177,13 +179,9 @@ public class WriteBackController : MonoBehaviour
 
     void Awake()
     {
-        // Keep the behavioral service stateless so the controller remains the
-        // single runtime owner of authored scene state.
-        m_TransferService = new WriteBackTransferService();
-        ConfigurePracticeFlow();
+        EnsureRuntimeReady();
         HookRuntimeBindings(true);
         HookScannerEvents(true);
-        WriteBackPresentation.PopulateHintDropdown(HintDropdown);
         ResetPipeVisuals();
         SetFeedback(string.Empty, false);
         RefreshExpectedTargets();
@@ -192,12 +190,9 @@ public class WriteBackController : MonoBehaviour
 
     void OnEnable()
     {
-        // Rebind authored events whenever Unity re-enables this station so play
-        // mode toggles do not accumulate duplicate listeners.
-        ConfigurePracticeFlow();
+        EnsureRuntimeReady();
         HookRuntimeBindings(true);
         HookScannerEvents(true);
-        WriteBackPresentation.PopulateHintDropdown(HintDropdown);
         RefreshExpectedTargets();
         RefreshPresentation();
     }
@@ -213,18 +208,42 @@ public class WriteBackController : MonoBehaviour
     /// </summary>
     public void SetPhaseState(bool isActive, LessonMode lessonMode, InstructionDefinition instruction, RegisterBank registerBank)
     {
-        var instructionChanged = instruction != null && instruction != m_CurrentInstruction;
-        var modeChanged = lessonMode != m_CurrentMode;
-        var enteringPhase = isActive && !m_IsPhaseActive;
+        Debug.Log(
+            $"{k_LogPrefix} SetPhaseState | active={isActive} mode={lessonMode} instruction={(instruction != null ? instruction.displayName : "<null>")} registerBank={(registerBank != null ? registerBank.name : "<null>")} frame={Time.frameCount}",
+            this);
+        EnsureRuntimeReady();
 
-        m_IsPhaseActive = isActive;
+        var previousInstruction = m_CurrentInstruction;
+        var previousMode = m_CurrentMode;
+        var wasPhaseActive = m_IsPhaseActive;
+
         m_CurrentMode = lessonMode;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
         m_RegisterBank = registerBank;
+        ConfigurePracticeFlow();
+
+        if (!isActive)
+        {
+            m_IsPhaseActive = false;
+
+            if (m_WbUiRoot != null)
+                m_WbUiRoot.SetActive(false);
+
+            m_RegisterScanner?.SetActive(false);
+            m_PacketScanner?.SetActive(false);
+            EndPipeVisuals();
+            RefreshExpectedTargets();
+            RefreshPresentation();
+            return;
+        }
+
+        var instructionChanged = m_CurrentInstruction != previousInstruction;
+        var modeChanged = m_CurrentMode != previousMode;
+        var enteringPhase = !wasPhaseActive;
+        m_IsPhaseActive = true;
 
         if (enteringPhase || instructionChanged || modeChanged)
         {
-            ConfigurePracticeFlow();
             PrepareForWriteBackStep();
             m_PracticeFlow.Reset();
         }
@@ -242,11 +261,21 @@ public class WriteBackController : MonoBehaviour
         RefreshPresentation();
     }
 
+    void EnsureRuntimeReady()
+    {
+        // Keep the behavioral service stateless so the controller remains the
+        // single runtime owner of authored scene state.
+        m_TransferService ??= new WriteBackTransferService();
+        ConfigurePracticeFlow();
+        WriteBackPresentation.PopulateHintDropdown(HintDropdown);
+    }
+
     /// <summary>
     /// Fully clears temporary WB state and hides the authored UI.
     /// </summary>
     public void ResetWriteBackState()
     {
+        Debug.Log($"{k_LogPrefix} ResetWriteBackState | frame={Time.frameCount}", this);
         if (m_TransferRoutine != null)
         {
             StopCoroutine(m_TransferRoutine);
@@ -286,6 +315,9 @@ public class WriteBackController : MonoBehaviour
     /// </summary>
     public void HandleActionPressed()
     {
+        Debug.Log(
+            $"{k_LogPrefix} HandleActionPressed | active={m_IsPhaseActive} awaitingContinue={m_IsAwaitingContinue} applied={m_HasAppliedWriteBack} mode={m_CurrentMode} frame={Time.frameCount}",
+            this);
         if (!m_IsPhaseActive || m_TransferRoutine != null)
             return;
 
@@ -371,6 +403,9 @@ public class WriteBackController : MonoBehaviour
 
     void PrepareForWriteBackStep()
     {
+        Debug.Log(
+            $"{k_LogPrefix} PrepareForWriteBackStep | instruction={(m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "<null>")} mode={m_CurrentMode} frame={Time.frameCount}",
+            this);
         // Entering WB should always feel like a fresh authored station state:
         // default signals, empty scanners, idle pipes, and no pending continue.
         if (m_TransferRoutine != null)
@@ -423,6 +458,9 @@ public class WriteBackController : MonoBehaviour
 
     void OnWriteBackTransferApplied(string destinationRegister, int transferredValue, DataPacketRole packetRole)
     {
+        Debug.Log(
+            $"{k_LogPrefix} OnWriteBackTransferApplied | register={destinationRegister} value={transferredValue} packetRole={packetRole} frame={Time.frameCount}",
+            this);
         // Cache the applied result so the UI can swap from "waiting" language
         // to recap language before the learner presses Continue.
         m_LastTargetRegister = destinationRegister;
@@ -719,6 +757,9 @@ public class WriteBackController : MonoBehaviour
     /// </summary>
     void EnterPracticeFailureState(string feedbackText)
     {
+        Debug.Log(
+            $"{k_LogPrefix} EnterPracticeFailureState | feedback={feedbackText} frame={Time.frameCount}",
+            this);
         m_IsAwaitingContinue = false;
         m_RegisterScanner?.SetActive(false);
         m_PacketScanner?.SetActive(false);

@@ -86,17 +86,26 @@ public sealed class LessonGuideController : MonoBehaviour
     bool m_IsRefreshingInstructionDropdown;
     bool m_IsRefreshingDecodeDropdowns;
     LessonCuePhase m_LastCuePhase = LessonCuePhase.None;
+    bool m_HasStartedRuntime;
 
     void Awake()
     {
-        InitializeGuideState();
+        EnsureView();
     }
 
     void OnEnable()
     {
-        InitializeGuideState();
         SubscribePhaseEvents();
         SubscribeLessonFlowEvents();
+
+        if (m_HasStartedRuntime)
+            InitializeGuideState();
+    }
+
+    void Start()
+    {
+        m_HasStartedRuntime = true;
+        InitializeGuideState();
     }
 
     void OnDisable()
@@ -486,11 +495,35 @@ public sealed class LessonGuideController : MonoBehaviour
 
     void InitializeGuideState()
     {
-        ConfigurePracticeDecodeFlow();
-        EnsureView();
-        RefreshInstructionLibrary();
-        SyncLessonCueState();
-        RefreshView();
+        var stage = "ConfigurePracticeDecodeFlow";
+
+        try
+        {
+            Debug.Log($"{k_LogPrefix} InitializeGuideState begin | frame={Time.frameCount}", this);
+
+            ConfigurePracticeDecodeFlow();
+
+            stage = "EnsureView";
+            EnsureView();
+
+            stage = "RefreshInstructionLibrary";
+            RefreshInstructionLibrary();
+
+            stage = "SyncLessonCueState";
+            SyncLessonCueState();
+
+            stage = "RefreshView";
+            RefreshView();
+
+            Debug.Log($"{k_LogPrefix} InitializeGuideState complete | frame={Time.frameCount}", this);
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogError(
+                $"{k_LogPrefix} InitializeGuideState failed at stage={stage} | frame={Time.frameCount}\n{exception}",
+                this);
+            throw;
+        }
     }
 
     void HandlePracticeDecodeFailed()
@@ -577,21 +610,31 @@ public sealed class LessonGuideController : MonoBehaviour
         if (m_LessonFlow == null || m_View == null)
             return;
 
-        Debug.Log(
-            $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} frame={Time.frameCount}",
-            this);
+        try
+        {
+            Debug.Log(
+                $"{k_LogPrefix} RefreshView | step={m_LessonFlow.CurrentStep?.stepName} mode={m_LessonFlow.CurrentMode} hasStarted={m_LessonFlow.HasStarted} frame={Time.frameCount}",
+                this);
 
-        m_View.Refresh(
-            m_LessonFlow,
-            m_SelectionState.LearningInstructions,
-            m_LessonFlow.CurrentPracticeInstruction,
-            m_DecodeGuideFlow,
-            m_PracticeDecodeFlow,
-            m_StartButtonLabel,
-            m_ContinueButtonLabel,
-            m_GoBackButtonLabel,
-            m_RestartButtonLabel,
-            ref m_IsRefreshingDecodeDropdowns);
+            m_View.Refresh(
+                m_LessonFlow,
+                m_SelectionState.LearningInstructions,
+                m_LessonFlow.CurrentPracticeInstruction,
+                m_DecodeGuideFlow,
+                m_PracticeDecodeFlow,
+                m_StartButtonLabel,
+                m_ContinueButtonLabel,
+                m_GoBackButtonLabel,
+                m_RestartButtonLabel,
+                ref m_IsRefreshingDecodeDropdowns);
+        }
+        catch (System.Exception exception)
+        {
+            Debug.LogError(
+                $"{k_LogPrefix} RefreshView failed | step={m_LessonFlow.CurrentStep?.stepName} mode={m_LessonFlow.CurrentMode} hasStarted={m_LessonFlow.HasStarted} frame={Time.frameCount}\n{exception}",
+                this);
+            throw;
+        }
     }
 
     /// <summary>

@@ -222,9 +222,24 @@ public sealed class HandMenuControllerToggle : MonoBehaviour
         if (controllerPresetProperty == null)
             return;
 
-        // Assign a fresh copy so runtime changes stay local to this helper and
-        // do not keep mutating the same preset instance frame after frame.
-        s_DatumValueProperty.SetValue(controllerPresetProperty, ClonePreset(preset));
+        try
+        {
+            // Assign a fresh copy so runtime changes stay local to this helper
+            // and do not keep mutating the same preset instance frame after
+            // frame.
+            s_DatumValueProperty.SetValue(controllerPresetProperty, ClonePreset(preset));
+        }
+        catch
+        {
+            if (!m_HasWarnedAboutPresetAccess)
+            {
+                Debug.LogWarning(
+                    "HandMenuControllerToggle could not override the controller follow preset at runtime. " +
+                    "The menu toggle will still work with the currently authored preset values.",
+                    this);
+                m_HasWarnedAboutPresetAccess = true;
+            }
+        }
     }
 
     void WarnAboutPresetAccess()

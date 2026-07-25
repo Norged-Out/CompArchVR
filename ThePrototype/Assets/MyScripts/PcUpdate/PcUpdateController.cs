@@ -11,6 +11,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 [DisallowMultipleComponent]
 public class PcUpdateController : MonoBehaviour
 {
+    const string k_LogPrefix = "[PcUpdateController]";
+
     [Header("Station")]
     [SerializeField]
     PcUpdatePacketScanner m_ImmediateScanner;
@@ -93,10 +95,7 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     void Awake()
     {
-        m_BranchService = new PcBranchService();
-        ConfigurePracticeFlow();
-        PcUpdatePresentation.PopulateBranchConditionDropdown(BranchConditionDropdown);
-        PcUpdatePresentation.PopulateHintDropdown(HintDropdown);
+        EnsureRuntimeReady();
         HookPhysicalBindings(true);
         HookScannerEvents(true);
         RefreshPresentation();
@@ -108,10 +107,7 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     void OnEnable()
     {
-        m_BranchService ??= new PcBranchService();
-        ConfigurePracticeFlow();
-        PcUpdatePresentation.PopulateBranchConditionDropdown(BranchConditionDropdown);
-        PcUpdatePresentation.PopulateHintDropdown(HintDropdown);
+        EnsureRuntimeReady();
         HookPhysicalBindings(true);
         HookScannerEvents(true);
         RefreshPresentation();
@@ -133,17 +129,39 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     public void SetPhaseState(bool isActive, LessonMode lessonMode, InstructionDefinition instruction)
     {
-        var instructionChanged = instruction != null && instruction != m_CurrentInstruction;
-        var modeChanged = lessonMode != m_CurrentMode;
-        var isEnteringPhase = isActive && !m_IsPhaseActive;
+        Debug.Log(
+            $"{k_LogPrefix} SetPhaseState | active={isActive} mode={lessonMode} instruction={(instruction != null ? instruction.displayName : "<null>")} frame={Time.frameCount}",
+            this);
+        EnsureRuntimeReady();
 
-        m_IsPhaseActive = isActive;
+        var previousInstruction = m_CurrentInstruction;
+        var previousMode = m_CurrentMode;
+        var wasPhaseActive = m_IsPhaseActive;
+
         m_CurrentMode = lessonMode;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
+        ConfigurePracticeFlow();
+
+        if (!isActive)
+        {
+            m_IsPhaseActive = false;
+
+            if (m_PcUpdateUiRoot != null)
+                m_PcUpdateUiRoot.SetActive(false);
+
+            m_ImmediateScanner?.SetActive(false);
+            m_ZeroScanner?.SetActive(false);
+            RefreshPresentation();
+            return;
+        }
+
+        var instructionChanged = m_CurrentInstruction != previousInstruction;
+        var modeChanged = m_CurrentMode != previousMode;
+        var isEnteringPhase = !wasPhaseActive;
+        m_IsPhaseActive = true;
 
         if (isEnteringPhase || instructionChanged || modeChanged)
         {
-            ConfigurePracticeFlow();
             PrepareForPcUpdate();
             m_PracticeFlow.Reset();
         }
@@ -157,12 +175,21 @@ public class PcUpdateController : MonoBehaviour
         RefreshPresentation();
     }
 
+    void EnsureRuntimeReady()
+    {
+        m_BranchService ??= new PcBranchService();
+        ConfigurePracticeFlow();
+        PcUpdatePresentation.PopulateBranchConditionDropdown(BranchConditionDropdown);
+        PcUpdatePresentation.PopulateHintDropdown(HintDropdown);
+    }
+
     /// <summary>
     /// Restores the station to its authored baseline so a new lesson run always
     /// starts from a clean Program Counter update step.
     /// </summary>
     public void ResetPcUpdateState()
     {
+        Debug.Log($"{k_LogPrefix} ResetPcUpdateState | frame={Time.frameCount}", this);
         m_CurrentInstruction = null;
         m_IsPhaseActive = false;
         m_IsAwaitingContinue = false;
@@ -196,6 +223,9 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     public void HandleActionPressed()
     {
+        Debug.Log(
+            $"{k_LogPrefix} HandleActionPressed | active={m_IsPhaseActive} awaitingContinue={m_IsAwaitingContinue} mode={m_CurrentMode} frame={Time.frameCount}",
+            this);
         if (!m_IsPhaseActive)
             return;
 
@@ -252,6 +282,9 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     void PrepareForPcUpdate()
     {
+        Debug.Log(
+            $"{k_LogPrefix} PrepareForPcUpdate | instruction={(m_CurrentInstruction != null ? m_CurrentInstruction.displayName : "<null>")} mode={m_CurrentMode} frame={Time.frameCount}",
+            this);
         // Every PC update phase begins from the same authored baseline so the
         // learner always rebuilds the final control decision from scratch.
         m_IsAwaitingContinue = false;
@@ -615,6 +648,9 @@ public class PcUpdateController : MonoBehaviour
     /// </summary>
     void EnterPracticeFailureState(string feedbackText)
     {
+        Debug.Log(
+            $"{k_LogPrefix} EnterPracticeFailureState | feedback={feedbackText} frame={Time.frameCount}",
+            this);
         m_IsAwaitingContinue = false;
         m_ImmediateScanner?.SetActive(false);
         m_ZeroScanner?.SetActive(false);

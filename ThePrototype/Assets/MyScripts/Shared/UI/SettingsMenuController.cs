@@ -72,23 +72,25 @@ public sealed class SettingsMenuController : MonoBehaviour
     readonly LessonPhaseRouter m_PhaseRouter = new();
     float m_FpsElapsedSeconds;
     int m_FpsFrameCount;
+    bool m_HasStartedRuntime;
 
     void Awake()
     {
-        RefreshLessonStateText();
-        RefreshGuidanceToggleUi();
-        RefreshDevModeUi();
-        RefreshVolumeUiFromCurrentValue();
+        ConfigureVolumeSlider();
     }
 
     void OnEnable()
     {
         BindLessonEvents();
-        ConfigureVolumeSlider();
-        RefreshLessonStateText();
-        RefreshGuidanceToggleUi();
-        RefreshDevModeUi();
-        RefreshVolumeUiFromCurrentValue();
+
+        if (m_HasStartedRuntime)
+            RefreshRuntimeState();
+    }
+
+    void Start()
+    {
+        m_HasStartedRuntime = true;
+        RefreshRuntimeState();
     }
 
     void OnDisable()
@@ -241,6 +243,14 @@ public sealed class SettingsMenuController : MonoBehaviour
         m_VolumeSlider.wholeNumbers = true;
         m_VolumeSlider.minValue = 0f;
         m_VolumeSlider.maxValue = 100f;
+    }
+
+    void RefreshRuntimeState()
+    {
+        RefreshLessonStateText();
+        RefreshGuidanceToggleUi();
+        RefreshDevModeUi();
+        RefreshVolumeUiFromCurrentValue();
     }
 
     void RefreshLessonStateText()

@@ -11,6 +11,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 [DisallowMultipleComponent]
 public sealed class AluController : MonoBehaviour
 {
+    const string k_LogPrefix = "[AluController]";
+
     [Header("Station")]
     [SerializeField]
     AluInputScanner m_InputA;
@@ -129,6 +131,7 @@ public sealed class AluController : MonoBehaviour
     public TMP_Text AluSrcStatusText => m_InteractionPanel.AluSrcStatusText;
     public TMP_Text Input1StatusText => m_InteractionPanel.Input1StatusText;
     public TMP_Text Input2StatusText => m_InteractionPanel.Input2StatusText;
+    public GameObject FunctRoot => m_InteractionPanel.FunctRoot;
     public TMP_Text FeedbackText => m_SharedInteraction.FeedbackText;
     public TMP_Text ExecuteButtonLabel => m_SharedInteraction.ActionLabel;
     public TMP_Text OperationLabelText => m_OperationLabelText;
@@ -152,22 +155,16 @@ public sealed class AluController : MonoBehaviour
 
     void Awake()
     {
-        m_ExecutionService = new AluExecutionService();
-        ConfigurePracticeFlow();
-        CacheLocalReferences();
+        EnsureRuntimeReady();
         HookRuntimeBindings(true);
-        AluPresentation.PopulateHintDropdown(HintDropdown);
         RefreshPresentation();
         SetFeedback(string.Empty, false);
     }
 
     void OnEnable()
     {
-        m_ExecutionService ??= new AluExecutionService();
-        ConfigurePracticeFlow();
-        CacheLocalReferences();
+        EnsureRuntimeReady();
         HookRuntimeBindings(true);
-        AluPresentation.PopulateHintDropdown(HintDropdown);
         RefreshPresentation();
     }
 
@@ -193,19 +190,39 @@ public sealed class AluController : MonoBehaviour
     /// </summary>
     public void SetPhaseState(bool isActive, LessonMode lessonMode, InstructionDefinition instruction)
     {
-        CacheLocalReferences();
+        Debug.Log(
+            $"{k_LogPrefix} SetPhaseState | active={isActive} mode={lessonMode} instruction={(instruction != null ? instruction.displayName : "<null>")} frame={Time.frameCount}",
+            this);
+        EnsureRuntimeReady();
 
-        var instructionChanged = instruction != null && instruction != m_CurrentInstruction;
-        var modeChanged = lessonMode != m_CurrentMode;
-        var isEnteringPhase = isActive && !m_IsPhaseActive;
+        var previousInstruction = m_CurrentInstruction;
+        var previousMode = m_CurrentMode;
+        var wasPhaseActive = m_IsPhaseActive;
 
-        m_IsPhaseActive = isActive;
         m_CurrentMode = lessonMode;
         m_CurrentInstruction = instruction != null ? instruction : InstructionDefaults.CreateFallbackAdd();
+        ConfigurePracticeFlow();
+
+        if (!isActive)
+        {
+            m_IsPhaseActive = false;
+
+            if (m_AluUiRoot != null)
+                m_AluUiRoot.SetActive(false);
+
+            m_InputA?.SetActive(false);
+            m_InputB?.SetActive(false);
+            RefreshPresentation();
+            return;
+        }
+
+        var instructionChanged = m_CurrentInstruction != previousInstruction;
+        var modeChanged = m_CurrentMode != previousMode;
+        var isEnteringPhase = !wasPhaseActive;
+        m_IsPhaseActive = true;
 
         if (isEnteringPhase || instructionChanged || modeChanged)
         {
-            ConfigurePracticeFlow();
             m_PracticeFlow.Reset();
             m_ExecutionService.PrepareForExecution(this);
         }
@@ -218,11 +235,20 @@ public sealed class AluController : MonoBehaviour
         RefreshPresentation();
     }
 
+    void EnsureRuntimeReady()
+    {
+        m_ExecutionService ??= new AluExecutionService();
+        ConfigurePracticeFlow();
+        CacheLocalReferences();
+        AluPresentation.PopulateHintDropdown(HintDropdown);
+    }
+
     /// <summary>
     /// Clears all runtime ALU state between lesson runs.
     /// </summary>
     public void ResetExecutionState()
     {
+        Debug.Log($"{k_LogPrefix} ResetExecutionState | frame={Time.frameCount}", this);
         if (m_ComputeRoutine != null)
         {
             StopCoroutine(m_ComputeRoutine);
@@ -265,6 +291,9 @@ public sealed class AluController : MonoBehaviour
     /// </summary>
     public void HandleExecutePressed()
     {
+        Debug.Log(
+            $"{k_LogPrefix} HandleExecutePressed | active={m_IsPhaseActive} produced={m_HasProducedResult} awaitingContinue={m_IsAwaitingContinue} mode={m_CurrentMode} frame={Time.frameCount}",
+            this);
         if (!m_IsPhaseActive || m_ComputeRoutine != null)
             return;
 
@@ -594,6 +623,9 @@ public sealed class AluController : MonoBehaviour
     /// </summary>
     void EnterPracticeFailureState(string feedbackText)
     {
+        Debug.Log(
+            $"{k_LogPrefix} EnterPracticeFailureState | feedback={feedbackText} frame={Time.frameCount}",
+            this);
         m_IsAwaitingContinue = false;
         m_InputA?.SetActive(false);
         m_InputB?.SetActive(false);
