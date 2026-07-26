@@ -47,16 +47,14 @@ This principle should override ambitious expansion pressure.
 ## Current Delivery Milestone
 
 Active schedule:
-- next supervisor meeting target: `2026-07-24`
-- official project/demo deadline: `2026-07-29`
-- preferred internal target:
-  - finish a stable build a few days early
-  - keep the final buffer for polish, participant prep, and presentation safety
+- supervisor meeting target on `2026-07-24` is complete
+- official project/demo deadline remains `2026-07-29`
+- the current build should now be treated as the participant-study and presentation baseline unless a critical regression appears
 
 Current risk:
 - not missing datapath coverage
-- but safely extending the build into practice mode without breaking the guided baseline
-- plus onboarding clarity, experiment-mode readiness, and overall delivery quality
+- but destabilizing the now-working final build with unnecessary late changes
+- plus any last device-only regression that does not appear during editor testing
 
 Historical note:
 - the June 29, 2026 V1 checkpoint is complete and should now be treated as project history, not as the live plan
@@ -102,6 +100,7 @@ Working lesson paths now include:
 - `slt`
 - `beq`
 - `bne`
+- `j`
 
 Historical rollout:
 1. `add`
@@ -129,38 +128,28 @@ Note:
 
 ## Preferred Feature Breakdown
 
-### Must Have
-
-- a stable guided lesson loop across the current supported instruction set
+Must have:
+- a stable guided lesson loop across the supported instruction set
 - instruction selection or controlled instruction presentation
-- operand identification
-- stage-by-stage progression
-- correctness gating
-- feedback for wrong choices
-- stable scene layout for key datapath zones
-- presentation-ready readability across authored UI and environment
+- operand identification, stage progression, correctness gating, and readable feedback
+- stable scene layout and presentation-ready authored UI
 
-### Strongly Desired
-
-- UI reference boards for format/opcode/control help
+Strongly desired:
+- UI reference support for format/opcode/control help
 - mux/gateway interactions
-- register selection mechanics
+- register-selection mechanics
 
-### Nice To Have
-
+Nice to have:
 - richer audiovisual polish
-- jump-family instruction support
-- experiment mode without guided handholding
-- expanded cheatsheet/settings support beyond the current baseline menu
-- optional helper NPC / guide presence
-- optional in-world music / ambience interaction if it improves presentation feel without becoming distracting
+- jump-family expansion
+- optional support systems beyond the current settings baseline
 
 The project has already moved beyond the old three-instruction V1 boundary, so future prioritization should now favor clarity and presentation over raw instruction count.
 
 Current extension note:
-- practice mode is now the main near-term systems extension, and it should be built by extending the existing lesson architecture rather than forking an unrelated second flow
-- the first safe implementation slice has now grown into a real ten-instruction practice baseline using the same underlying lesson architecture
-- the remaining question is now refinement, onboarding clarity, and whether any later `Test`-mode slice is worth fitting before the deadline
+- practice mode has already been extended safely from the existing lesson architecture
+- test mode now also exists as the harsher assessment layer derived from the same baseline
+- the main question is no longer whether the three-mode structure can be built, but how little should be changed now that the study build is effectively locked
 
 ## Non-Goals
 
@@ -185,40 +174,15 @@ The ideal lesson loop is:
 6. explain what the current stage is doing
 7. finish with a recap of the instruction flow
 
-Current preferred authored-panel shape:
+Current authored-panel shape:
+- `Intro UI` for mode/instruction selection and fetch framing
+- `Register Zone UI` for decode and operand setup
+- zone-specific panels for `ALU`, memory, write-back, and PC update
+- outside Intro, the preferred format is lesson panel + interaction panel + hint/info panel
 
-1. `Intro UI`
-   - start lesson
-   - show current instruction
-   - show the fetch framing
-2. `Register Zone UI`
-   - show the instruction field breakdown for decode
-   - remind the learner which fields map to the currently needed source operands
-   - keep prompts physically near the register bank and scanners
-3. later zone-specific panels
-   - `ALU`
-   - `Data Memory`
-   - `WriteBack`
-
-Current refinement direction:
-- each lesson zone UI should move toward three authored panels side by side:
-  - lesson panel
-  - interaction panel
-  - hint / info panel
-- static instructional text should live in edit mode where possible
-- runtime should primarily update:
-  - current instruction-specific text
-  - live statuses
-  - feedback
-  - validation state
-- instruction fetch now also has a physical embodiment path through:
-  - `Instruction Module`
-  - uploader terminal
-  - downloader terminal
-- control-flow conclusion now also has a dedicated end-stage path through:
-  - `PC Update UI`
-  - `PC Update Station`
-  - branch-resolution logic for `beq` / `bne`
+Runtime preference:
+- keep static instructional text authored in-scene where possible
+- keep runtime updates focused on instruction-specific text, live status, feedback, and validation state
 
 ## Interaction Heuristic
 
@@ -294,7 +258,7 @@ This structure aligns better with the emerging design than a simple "advance hig
 - make the demo stable and understandable to a first-time viewer
 
 Current deadline anchor:
-- the next anchor is the `2026-07-24` supervisor meeting
+- the `2026-07-24` supervisor meeting is now complete
 - the official project/demo target remains `2026-07-29`
 
 ## Fallback Plan
@@ -315,58 +279,18 @@ A strong demo should show that a learner can:
 - move through the correct datapath route
 - explain why memory, immediate, or write-back paths were or were not used
 
-## Current Pre-Meeting Cutoff
+## Remaining Near-Term Posture
 
-Before the next supervisor meeting on `2026-07-24`, prioritize:
+At this point:
+- the project is effectively complete for the presentation and research sessions
+- the current build should be defended, not heavily reshaped
+- only critical fixes or clearly justified participant-facing improvements should be made before real use
 
-1. practice mode foundation and first safe playable slice
-2. tutorial / onboarding refinement
-3. experiment mode without handholding
-4. optional settings refinement only where it clearly improves usability
-5. jump-family instruction additions only if the above is already safe
-6. final presentation polish
-
-Already partly established and now moving into refinement instead of first implementation:
-- routed map revamp / improved route baseline
-- gated progression
-- physical route guidance
-- multi-panel authored lesson UI
-- baseline wrist settings menu support
-- baseline tutorial/onboarding setup through the imported sample tutorial/video prefab and lightweight in-scene image surfaces
-- broad gameplay audio feedback across the main lesson loop
-
-Reason:
-- the functional lesson loop is already broad enough
-- the main remaining risk is whether the experience feels readable, guided, polished, and complete
-
-Practical interpretation of this cutoff:
-- do not let practice-mode work silently regress the stable guided lesson loop
-- do not reopen core datapath architecture unless a blocker appears
-- do not treat instruction-count growth as the main success metric anymore
-- treat the next supervisor meeting as a usability/readability checkpoint, not a "prove the datapath exists" checkpoint
-
-## Recommended Backlog After The Meeting
-
-Recommended order once the `2026-07-24` checkpoint build is safe:
-
-1. expanded settings menu / replay affordances if still useful
-2. cleaner exit / restart / free-roam transitions
-3. deeper audio balancing / ambience if still useful
-4. immediate-family expansion:
-   - `slti`
-   - `andi`
-   - `ori`
-5. jump instructions:
-   - `j`
-   - `jal`
-   - `jr`
-6. `lui`
-7. deeper VFX polish
-
-Rationale:
-- the learner experience should be presentation-ready first
-- post-checkpoint scope can expand only if the final guided build is already stable
-- instruction additions are now secondary to clarity and delivery
+If anything still changes, it should be small and low-risk:
+1. deployment sanity / device-only fixes
+2. questionnaire / study-material alignment
+3. very light presentation polish
+4. anything larger should move to future work instead
 
 ## Future Work Beyond The Final Demo
 

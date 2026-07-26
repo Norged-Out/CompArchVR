@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Physical write-back pedestal that accepts the destination register token.
@@ -25,11 +23,7 @@ public class WriteBackRegisterScanner : PedestalScannerBase
     [SerializeField]
     string m_ExpectedRegisterId = string.Empty;
 
-    [SerializeField]
-    XRSocketInteractor m_ScanSocket;
-
     readonly HashSet<RegisterToken> m_TokensInZone = new();
-    RegisterToken m_SocketedRegister;
 
     public RegisterToken AcceptedRegister { get; private set; }
     public string ExpectedRegisterId => m_ExpectedRegisterId;
@@ -44,20 +38,12 @@ public class WriteBackRegisterScanner : PedestalScannerBase
     {
         base.Awake();
         BindZoneHelper();
-        ConfigureSocketState();
     }
 
     protected override void OnEnable()
     {
         base.OnEnable();
         BindZoneHelper();
-        ConfigureSocketState();
-        HookSocketEvents(true);
-    }
-
-    void OnDisable()
-    {
-        HookSocketEvents(false);
     }
 
     public void SetActive(bool isActive)
@@ -83,7 +69,6 @@ public class WriteBackRegisterScanner : PedestalScannerBase
     public new void ResetScanner()
     {
         m_TokensInZone.Clear();
-        m_SocketedRegister = null;
         AcceptedRegister = null;
         base.ResetScanner();
     }
@@ -110,9 +95,6 @@ public class WriteBackRegisterScanner : PedestalScannerBase
 
     protected override Component GetStableCandidate()
     {
-        if (m_SocketedRegister != null)
-            return m_SocketedRegister;
-
         m_TokensInZone.RemoveWhere(token => token == null);
 
         foreach (var registerToken in m_TokensInZone)
@@ -136,44 +118,6 @@ public class WriteBackRegisterScanner : PedestalScannerBase
             helper = m_ScanZone.gameObject.AddComponent<WriteBackRegisterScannerZone>();
 
         helper.Bind(this);
-    }
-
-    void ConfigureSocketState()
-    {
-        if (m_ScanSocket == null)
-            m_ScanSocket = GetComponent<XRSocketInteractor>();
-
-        if (m_ScanSocket == null)
-            return;
-
-        m_ScanSocket.socketActive = true;
-    }
-
-    void HookSocketEvents(bool subscribe)
-    {
-        if (m_ScanSocket == null)
-            return;
-
-        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
-        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
-
-        if (!subscribe)
-            return;
-
-        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
-        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
-    }
-
-    void HandleSocketSelectEntered(SelectEnterEventArgs args)
-    {
-        m_SocketedRegister = args.interactableObject?.transform.GetComponentInParent<RegisterToken>();
-    }
-
-    void HandleSocketSelectExited(SelectExitEventArgs args)
-    {
-        var register = args.interactableObject?.transform.GetComponentInParent<RegisterToken>();
-        if (register != null && register == m_SocketedRegister)
-            m_SocketedRegister = null;
     }
 
     protected override void HandleScannerReset()

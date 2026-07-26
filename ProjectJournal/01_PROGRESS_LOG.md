@@ -3,148 +3,32 @@
 ## Current Status
 
 Project phase:
-- final-delivery polish pass after the core single-cycle lesson loop was proven end-to-end
+- final participant-study and presentation build
 
 Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
 
 Current stable feature set:
-- playable guided lesson paths for:
-  - `add`
-  - `addi`
-  - `lw`
-  - `sw`
-  - `sub`
-  - `and`
-  - `or`
-  - `slt`
-  - `beq`
-  - `bne`
-- authored phase spaces for:
-  - instruction fetch
-  - instruction decode
-  - execute
-  - memory access
-  - write-back
-  - PC update / lesson conclusion
-- lesson-mode groundwork for:
+- guided lesson support for `add`, `addi`, `lw`, `sw`, `sub`, `and`, `or`, `slt`, `beq`, `bne`, and `j`
+- full three-mode baseline:
   - `Learning`
   - `Practice`
-- full playable practice-mode baseline for:
-  - `add`
-  - `addi`
-  - `lw`
-  - `sw`
-  - `sub`
-  - `and`
-  - `or`
-  - `slt`
-  - `beq`
-  - `bne`
-- physical instruction fetch through:
-  - `Instruction Module`
-  - uploader `Instruction Terminal`
-  - downloader `Instruction Terminal`
-- authored three-panel lesson UIs for the active phase stations
-- authored 32-register MIPS bank with:
-  - logical register values
-  - authored sample values across all 32 registers
-  - local pose-only reset
-  - authored-value restore on lesson-mode change
-  - scanner-driven decode interaction
-- working datapacket flow for:
-  - register reads
-  - immediates
-  - ALU results
-  - memory data
-  - branch zero result
-- dedicated authored stations for:
-  - ALU
-  - Memory Unit + Data Memory bank
-  - Write Back
-  - PC Update
-- datapacket reset for loose, non-consumed packets
-- reworked routed map now established as the active baseline
-- gated route progression with authored arrow guidance
-- player-facing wrist settings menu support with:
-  - current instruction readout
-  - current phase readout
-  - register reset
-  - datapacket reset
-  - lesson restart
-  - volume control
-  - route-guidance toggle
-  - password-gated dev-mode unlock
-  - current-phase skip for dev testing
-  - FPS + frame-time readout
-  - quit / restart support
-- controller-accessible wrist menu opening through the left controller menu-button path
-- spatial-keyboard-backed TMP input fields now work inside the lesson scene
-- lightweight onboarding groundwork in-scene through:
-  - the imported tutorial/video prefab from `VRTemplateAssets`
-  - simple image-based tutorial surfaces
-- broad gameplay audio pass covering:
-  - gate transitions
-  - instruction terminals
-  - menu/world buttons
-  - phase activation / completion / failure cues
-  - lesson completion
-  - memory / write-back transfer cues
-  - datapacket spawn audio
-  - scanner occupied / success / failure cues
+  - `Test`
+- authored single-cycle phase spaces for fetch, decode, execute, memory, write-back, and PC update
+- physical fetch flow through the `Instruction Module` and instruction terminals
+- authored 32-register MIPS bank, datapacket flow, and dedicated ALU / memory / write-back / PC-update stations
+- routed map, moving gates, and arrow guidance as the active navigation baseline
+- wrist settings menu with status readouts, resets, guidance toggle, dev-mode tools, volume, FPS, and quit support
+- spatial keyboard support, updated tutorial/onboarding surfaces, broad gameplay audio, and background music
+- Android XR build stabilized enough to serve as the participant-study baseline
 
 Current interaction systems that are already implemented:
-- permanent 32-register MIPS bank serialized into `Testing Ground`
-- grabbable labeled register tokens with persistent logical values
-- register scanners for:
-  - decode-stage source-operand validation
-  - idle preview/reference use when no lesson is active
-- local register reset that restores pose only
-- datapacket reset that restores loose packet transforms only
-- immediate packet generation and physical sign-extension through the `Immediate Extender`
-- ALU execution through:
-  - physical `ALUOp` and `ALUSrc` inputs
-  - packet-fed ALU input scanners
-  - ALU result spawning
-  - funct selection for R-type operation selection
-- memory interaction through:
-  - `Memory Unit`
-  - `Data Memory` bank
-  - memory read/write control handling
-  - addressed-word highlighting and data display
-- write-back interaction through:
-  - target register validation
-  - datapacket validation
-  - final register value update
-- branch resolution through:
-  - `PC Update UI`
-  - `PC Update Station`
-  - zero-result path
-  - branch condition handling for `beq` / `bne`
-- scanner feedback through shared occupied / success / failure visuals and audio
-- local 3D audio feedback across the main interaction loop
-- practice decode flow for the first safe slice now supports:
-  - fetch display in hex form
-  - decode display in 32-bit binary form
-  - staged opcode confirmation
-  - staged field validation
-  - typed bitfield entry through TMP input fields + the spatial keyboard
-  - limited hints
-  - limited answer attempts
-  - failed-state hold until explicit reset press
-- later practice phases now support:
-  - per-phase validation-attempt budgets
-  - per-phase scanner-attempt budgets
-  - per-phase hint budgets
-  - held failure states that wait for explicit restart
-  - shared failure behavior across `EX`, `MEM`, `WB`, and `PC Update`
-- centralized dev-mode support now exists for:
-  - unlocking dev mode from the settings menu
-  - skipping the currently active phase from the settings menu
-  - force-completing `ID`, `EX`, `MEM`, `WB`, and `PC Update`
-- authored catalog assets now exist for:
-  - lesson instruction bookkeeping
-  - phase info dropdown bookkeeping
+- persistent register values with pose-only reset and mode-change rebaseline
+- scanner-driven decode, immediate extension, ALU execution, memory access, write-back, and branch / PC-update handling
+- practice-mode decode with typed bitfields, staged validation, limited hints, and limited attempts
+- budgeted later practice phases with held failure states
+- centralized dev-mode skip / force-complete support
+- authored instruction and info catalogs
 
 Current architecture truths:
 - lesson UI is scene-authored and code-driven
@@ -153,80 +37,36 @@ Current architecture truths:
 - Unity UI event hookups are now expected to be Inspector-bound instead of wired in code at runtime
 - instruction selection and phase-info dropdown population now read from authored catalog assets instead of folder-wide runtime discovery
 - the routed map is part of the lesson design, not just environment decoration
-- the current build direction is polish-first, not instruction-count-first
-- practice mode is now an active extension path and should be built by safely extending the existing lesson architecture, not replacing it
-- the decode panel now uses a clearer split between:
-  - scene reference containers
-  - learning-mode view logic
-  - practice-mode view logic
-  - practice decode validation state
+- the three-mode structure now safely extends the same core lesson architecture instead of forking separate systems
+- the current build direction is stability-first, not instruction-count-first
 
 Current delivery target:
-- next supervisor checkpoint: `2026-07-24`
-- official demo deadline: `2026-07-29`
-- preferred internal target:
-  - finish a stable build a few days early
-  - leave the buffer for polish, participant prep, and presentation safety
+- supervisor checkpoint on `2026-07-24` is complete
+- official presentation / demo target: `2026-07-29`
+- the current build should now be treated as the real participant-study baseline unless a critical regression appears
 
 Current development priority:
-- stabilize the practice-mode groundwork without regressing the guided baseline
-- stabilize the first practice-mode decode slice before widening instruction coverage inside that mode
-- improve readability, onboarding, experiment-mode readiness, and overall presentation quality
-- avoid major architecture churn unless it fixes a real blocker
-- preserve the now-working lesson loop while polishing around it
+- preserve the final build and avoid non-critical churn
 
-## Active TODO Before The Next Supervisor Meeting
+## Remaining Future Work / Post-Presentation Backlog
 
-These are the live priorities from the current perspective:
+Main future-work items:
+- optional opening sequence if a reliable moving-platform or equivalent intro beat is still worth it
+- additional jump-family work beyond `j`, such as `jal` or `jr`
+- route/guidance tuning only if participant testing exposes a real need
+- optional scanner/socket interaction expansion only if it can be done safely and consistently
+- optional ambience / presentation polish beyond the current background music baseline
+- delayed refactors for oversized scripts only if they do not destabilize the current study build
 
-1. record the updated tutorial video
-2. add background music
-3. add test mode
-4. add the game intro sequence
-5. final polish
-6. refactor oversized scripts later if time remains and only if it does not destabilize the current build
-
-Optional only if time remains:
+Lower-priority extras:
 - helper NPC / guide presence
 - in-world music player / ambient interaction
 - VFX pass using the Unity Asset Store pack already identified but not yet integrated
 
 Interpretation:
-- the datapath lesson itself is already broad enough for the checkpoint
-- the remaining risk is experience quality, not missing core single-cycle stages
-- a baseline settings menu now exists, so the remaining question is expansion/tuning rather than first implementation
-- the map revamp / better route baseline should now be treated as established work, with only touch-up tuning left if testing reveals a problem
-- the core sound-feedback pass is now in place, so remaining audio work is mostly balancing, ambience, or optional presentation flavor
-
-## Current Working Build Snapshot
-
-What should currently be treated as true:
-- `Testing Ground` is the authoritative prototype scene
-- lesson UI is scene-authored and code-driven, not runtime-generated
-- fetch, decode, execute, memory, write-back, and PC update all exist as real authored interactions
-- the routed map is part of the teaching experience, not just scenery
-- door gating and arrow guidance are now presentation-layer systems on top of the working lesson loop
-- a baseline wrist settings menu now exists for player-facing recovery, status, and guidance control
-- a baseline gameplay audio layer now exists across scanning, phase flow, transfer events, and local interaction feedback
-- tutorial/onboarding now has real in-scene groundwork rather than being a purely abstract future task
-- the improved routed-map layout should now be treated as the active baseline rather than an unfinished first-pass map task
-- the current build direction is polish-first, not instruction-count-first
-- the next major build change in flight is practice-mode support layered onto the same lesson foundation
-- the practice instruction baseline now spans the same ten-instruction set as learning mode
-- temporary testing relief now exists through a centralized dev-mode skip path instead of ad-hoc scene edits
-- decode no longer forces `rs` to be scanned before `rt`; required source-register scans can complete in either order while still respecting scanner roles
-- instruction and phase-info bookkeeping now live in authored catalog assets under `Assets/MyData/Resources`
-- supported working instructions are:
-  - `add`
-  - `addi`
-  - `lw`
-  - `sw`
-  - `sub`
-  - `and`
-  - `or`
-  - `slt`
-  - `beq`
-  - `bne`
+- the datapath lesson itself is complete enough for the presentation and studies
+- the remaining risk is regression, not missing core single-cycle coverage
+- future work should extend from this baseline rather than reopening the core lesson architecture
 
 ## Historical Development Archive
 
@@ -1447,129 +1287,77 @@ Risks / Notes:
 - the decode scanner-order change is shared behavior, so the successful `add` validation should carry across the other two-source decode instructions as well
 - both catalogs now live under `Assets/MyData/Resources`, which is valid because Unity keys off the `Resources` segment rather than the parent folder name
 
-
-## Current Working Baseline
-
-### Scene / Interaction Baseline
-
-- `Testing Ground` is the sandbox scene
-- the lesson framework is currently driven from `Lesson Guide`
-- `Intro UI` is the current lesson start point
-- `Instruction Decode UI` is the current instruction-decode and operand-selection panel
-- the preferred register path is the authored `Register Bank` with 32 permanent register tokens
-- the preferred register validation path is the authored scanner pedestals
-- minimal visual feedback is acceptable; heavy animation is not required
-- physical instruction fetch now depends on:
-  - uploader `Instruction Terminal`
-  - `Instruction Module`
-  - downloader `Instruction Terminal`
-- physical route progression now matters because the lesson space is no longer flat:
-  - intro/fetch start
-  - decode room
-  - ALU platform
-  - memory hall
-  - write-back area
-  - PC-update conclusion platform
-- phase routing now also includes:
-  - moving gates
-  - prototype phase-specific arrow guidance
-
-### Architecture / Script Baseline
-
-Current relevant scripts:
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\CpuLessonFlow.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonLifecycle.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonState.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\LessonStepActions.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\FetchFlow.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\DecodeFlow.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Flow\FlowProgress.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonChecks.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\LessonPhaseRouter.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\InstructionCatalog.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeTextBuilder.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeHintBuilder.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeGuideFlow.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\Support\DecodeDropdownView.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\LessonGuideView.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\IntroPanelController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\CpuLesson\UI\DecodePanelController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Shared\UI\LessonPanelBase.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluExecutionController.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScanner.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluInputScannerZone.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\AluPacketTypes.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\ALU\DataPacketToken.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBank.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterBankResetButton.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScanner.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterScannerZone.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\Registers\RegisterToken.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionDefinition.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionEnums.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionDefaults.cs`
-- `D:\CompArchVR\ThePrototype\Assets\MyScripts\InstructionSystem\InstructionRuntimeSelection.cs`
-
-Interpretation:
-- these are the scripts that currently matter to the working MVP
-- older experiments outside this set should be treated cautiously and removed if they stop matching the scene
-- the next work should refine this scene-driven path rather than reintroduce runtime-built lesson UI or runtime scene lookup glue
-
-## Immediate Next Steps
-
-Recommended next development priorities:
-
-1. Add tutorial/onboarding support.
-   Focus on:
-   - controls
-   - lesson rhythm
-   - recovery expectations
-
-2. Refine the new settings support only if it materially helps usability.
-   Focus on:
-   - keeping wording concise enough to fit the wrist format cleanly
-   - adding only small quality-of-life options if they clearly help testing or presentation
-   - not re-scoping it into a full separate cheatsheet system, since the hint panels are currently expected to cover most reference needs
-
-3. Polish the authored UIs and environment together.
-   Focus on:
-   - readability
-   - lighting
-   - path clarity
-   - sound-guided feedback
-   - experiment-mode feasibility before the next checkpoint
-
-4. Refine the already-built navigation layer.
-   Focus on:
-   - route arrow tuning
-   - gate readability
-   - environmental guidance without visual clutter
-
-## Risks To Watch
-
-- scope creep into "simulate all of MIPS"
-- too many manual low-level interactions turning the lesson into a tedious puzzle
-- over-investment in animation/polish before the educational loop works
-- confusing "accurate hardware behavior" with "best pedagogical interaction"
-
-## Update Template For Future Entries
-
-Use this format when appending future entries:
-
-### YYYY-MM-DD - Title
+### 2026-07-20 - Test Mode Finalized As The Harsh Assessment Layer
 
 Completed:
-- item
-- item
+- implemented `Test` mode on top of the existing `Practice` architecture instead of creating a third unrelated lesson system
+- changed intro behavior so `Test` hides manual instruction selection and starts from a random draw
+- hid lesson and hint panels during `Test`, leaving only the interaction panels active
+- locked `Test` to the intended strict budget rhythm:
+  - one validation mistake per phase
+  - one scanner mistake per phase
+  - no hints
+- relaxed immediate entry so leading zeros can be omitted without invalidating otherwise-correct immediate typing
 
 Changed:
-- item
-- item
+- `Test` is now a real playable mode rather than only a planned extension
+- the three-mode structure is now:
+  - `Learning` for guided walkthrough
+  - `Practice` for supported decode and reduced handholding
+  - `Test` for strict minimal-support assessment
 
 Next:
-- item
-- item
+- finish the last presentation-facing polish and build-validation work
+- keep later mode changes small unless participant testing exposes a real problem
 
 Risks / Notes:
-- item
+- because `Test` reuses the established downstream phase architecture, regressions in `Practice` can still affect it
+- the intended distinction between `Practice` and `Test` now depends more on support removal and budgets than on different phase mechanics
+
+
+### 2026-07-24 - Final Study Build Polish Landed
+
+Completed:
+- updated the in-scene tutorial video and image-based onboarding surfaces
+- added background music to the scene baseline
+- improved route guidance readability and clarified the active routing baseline
+- finished a set of UI cleanups and small quality-of-life improvements across the lesson loop
+- updated grabbable interaction feel on the relevant objects to the newer latched/attach baseline where appropriate
+- added the learn-mode `j` instruction as a safe late-stage jump-path inclusion
+
+Changed:
+- the prototype should now be treated as effectively feature-complete for the presentation and participant studies
+- remaining work shifted from active system building to build safety, deployment sanity, and future-work deferral
+
+Next:
+- verify Android XR build behavior on-device
+- avoid any non-critical architecture churn
+
+Risks / Notes:
+- the build had become the real risk surface rather than the in-editor lesson flow
+- the late addition of `j` should be treated as a bounded extension, not a signal to expand the whole jump family right now
+
+
+### 2026-07-26 - Build Stability Recovered And The Study Baseline Locked
+
+Completed:
+- traced the Android XR build-only startup regression through targeted logs
+- fixed the startup-order problem so the lesson UIs now initialize correctly on-device again
+- stabilized the participant-study build enough to treat it as the final research baseline
+- retained the working authored-catalog path for instruction and info bookkeeping
+- kept the successful socket-style interaction changes only in the places where they actually proved stable:
+  - register scanners
+  - immediate extender
+  - instruction terminals
+
+Changed:
+- the current Unity scene and Android XR build should now both be treated as the live source of truth
+- the project is now in maintenance/future-work territory rather than active core-feature construction
+
+Next:
+- use this build for the actual research sessions unless a critical regression appears
+- keep future changes narrow and well justified
+
+Risks / Notes:
+- the remaining meaningful risk is destabilizing the now-working build with unnecessary late changes
+- further QoL experiments should be treated as optional future work rather than baseline requirements

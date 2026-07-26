@@ -647,7 +647,7 @@ Why:
 - the bigger risk for the next meeting is readability, cleanliness, and perceived completeness
 
 Implication:
-- new instruction families and larger pedagogical redesigns should be treated as post-cutoff work unless a blocking issue appears
+- treat new instruction families and larger pedagogical redesigns as post-cutoff work unless a blocker appears
 
 
 ## 2026-07-05 - Immediate Packets Should Spawn From The Immediate Extender
@@ -820,10 +820,7 @@ Implication:
   - affect only loose packets
   - restore only pose / parent / motion state
   - avoid changing value, sign extension, or lesson progress
-- it gives the learner a clear "place and confirm" rhythm during later datapath phases
-
-Implication:
-- pedestal validation should be designed around placement confirmation, not instant overlap detection alone
+- it should support recovery without becoming another lesson-state reset
 
 
 ## 2026-07-09 - The Next Major Push Should Prioritize Guidance And Polish Over More Core Datapath Systems
@@ -877,20 +874,6 @@ Implication:
 - future control-flow expansion should build on this end-stage instead of scattering PC logic across unrelated phases
 
 
-## 2026-07-09 - Experiment Mode Must Arrive Before The Final Checkpoint If Scope Allows
-
-Decision:
-- keep a non-handheld / experiment-mode variant on the short list before the next supervisor checkpoint
-
-Why:
-- the guided mode is becoming stable enough that a freer replay mode now has educational value
-- experiment mode would help show that the prototype is not only a scripted walkthrough
-
-Implication:
-- this mode should come only after navigation/tutorial polish is safe
-- it does not need to be the most feature-rich mode; it needs to prove that guided support can be reduced
-
-
 ## 2026-07-09 - 3D Audio Is A Guidance Tool, Not Just Cosmetic Polish
 
 Decision:
@@ -906,7 +889,7 @@ Implication:
   - phase completion cues
   - gate unlock cues
   - next-destination cues
-- pure ambience should stay secondary to instructional clarity
+- keep ambience secondary to instructional clarity
 
 
 ## 2026-07-12 - Navigation Guidance Should Be Physical, Gated, And Minimal
@@ -937,9 +920,9 @@ Why:
 - the coaching-card path is easier to revise late and may be more reusable later for hints or experiment-mode support
 
 Implication:
-- future onboarding work can evaluate either approach first without treating the other as a contradiction
-- combining both remains acceptable only if it still stays small and does not turn onboarding into a side project
-- a pure text-only fallback remains possible, but should not be treated as the preferred presentation target while the other two options are still viable
+- either onboarding path can be tried first
+- combining both is acceptable only if it stays small
+- pure text remains a fallback, not the preferred presentation target
 
 
 ## 2026-07-14 - Opening Sequence Polish Should Stay Opt-In And Scene-Led
@@ -1131,7 +1114,7 @@ Why:
 
 Implication:
 - Practice decode should validate submitted bitstrings after normalization rather than rely on dropdown option values
-- future Practice / Test additions can reuse the same input normalization and field-wrapping helpers instead of rebuilding entry logic again
+- future Practice / Test additions should reuse the same input normalization and field-wrapping helpers
 
 
 ## 2026-07-18 - Practice Mode Should Hide Decoded Assembly Until Decode Is Out Of The Way
@@ -1205,17 +1188,24 @@ Why:
 - the mode becomes a clean assessment path rather than a slightly stricter Practice clone
 
 Instruction-pool note:
-- `Test` mode should eventually get its own pool
-- however, it is acceptable for that pool to reference or reuse Practice-definition assets where the mechanics are identical
+- it is acceptable for `Test` to reference or reuse Practice-definition assets where the mechanics are identical
 
 Implication:
-- `Test` mode should be implemented later as a presentation/selection change plus stricter budget rules, not as a third unrelated lesson system
+- `Test` should be a presentation/selection change plus stricter budget rules, not a third unrelated lesson system
 
 
-## Open Questions
+## 2026-07-26 - The Current Android XR Build Should Be Treated As The Study Baseline
 
-- how much instruction decoding should be interactive in V1
-- how explicit ALU/control-signal manipulation should be in the first prototype
-- whether instruction selection is manually chosen, random, or both
-- how closely the prototype should model exact datapath semantics vs pedagogically simplified interactions
+Decision:
+- the current Android XR build is now the authoritative participant-study baseline
+- further code changes should be treated as high-risk unless they fix a real blocker
+
+Why:
+- the project now covers the intended single-cycle lesson loop, the reduced-handholding practice path, and the strict assessment path
+- the recent work shifted from feature building to build stability and presentation safety
+- late-stage churn now poses more risk than value
+
+Implication:
+- remaining changes before real study use should stay narrow, deliberate, and easy to justify
+- anything larger should move to future work after the presentation and participant sessions
 

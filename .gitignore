@@ -156,9 +156,8 @@ ThePrototype/Assets/CompositionLayers/UserSettings/
 ThePrototype/Assets/CompositionLayers/UserSettings.meta
 ThePrototype/.vsconfig
 
-# Local-only journal files
+# Local-only
 ProjectJournal/00_README.md
-ProjectJournal/03_GUIDELINES.md
-
-# Local-only recruitment mailing list
 Documents/recruitment_bcc_list.txt
+TutorialCardSources/
+Documents/latex/
