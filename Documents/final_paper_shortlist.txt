@@ -1,0 +1,197 @@
+Final paper usage list for presentation and dissertation
+
+Context:
+- the project is now firmly about VR for teaching computer architecture
+- the older DBMS direction should not be treated as a central research thread anymore
+- papers in red are excluded
+- all remaining papers should still be used to some degree where sensible
+
+Use the papers in the following order of importance.
+
+1. Core domain papers
+These should carry the main related-work section because they are the closest to the final project.
+
+- Dascalu et al. (2017)
+  Title: Experiential Learning VR System for Studying Computer Architecture
+  Use for:
+  - direct precedent for VR in computer architecture learning
+  - motivation for immersive visualization of hidden hardware processes
+  - comparison point for scope and interaction design
+
+- Tan et al. (2024)
+  Title: VR Serious Game for Learning the Computer Organisation and Architecture Subject
+  Use for:
+  - closest implementation to the final prototype
+  - serious-game framing
+  - support for engagement and staged learning design
+
+- Tlili et al. (2016)
+  Title: Improving Learning Computer Architecture Through an Educational Mobile Game
+  Use for:
+  - evidence that interactive/game-based learning is useful for architecture topics
+  - non-VR comparison point
+  - motivation for moving beyond static material
+
+- Alnuaimi and Awad (2025)
+  Title: VR Environment of Digital Design Laboratory: A Usability Study
+  Use for:
+  - nearby hardware/systems education context
+  - usability-study precedent
+  - support for the evaluation framing
+
+2. Core VR-in-CS-education papers
+These should support the argument that VR is a meaningful teaching medium for abstract CS concepts, not just for architecture.
+
+- Pirker (2020)
+  Title: The Potential of Virtual Reality for Computer Science Education
+  Use for:
+  - general motivation for VR in CS education
+  - support for interactive visualization of abstract concepts
+
+- Agbo et al. (2021)
+  Title: Application of Virtual Reality in Computer Science Education: A Systematic Review
+  Use for:
+  - systematic-review grounding
+  - broader state of the field
+  - positioning the project within CS education literature
+
+- Janani et al. (2026)
+  Title: Virtual Reality Applications in Computer Science Education: Scoping Review
+  Use for:
+  - newest broad review
+  - high-level field positioning
+  - support for arguing that the area is active and still evolving
+
+3. Core VR-education / design-constraint papers
+These should support design decisions, limitations, and why the study matters.
+
+- Cook (2019)
+  Title: Challenges and Strategies for Educational Virtual Reality
+  Use for:
+  - practical constraints of educational VR
+  - accessibility, deployment, and usability concerns
+  - limitations / future work discussion
+
+- Samala et al. (2025)
+  Title: Virtual Reality in Education: Global Trends, Challenges and Advances
+  Use for:
+  - broad educational-VR context
+  - high-level motivation and adoption framing
+
+- Korkut and Surer (2022)
+  Title: Visualization in Virtual Reality: A Systematic Review
+  Use for:
+  - visualization choices
+  - clutter, readability, and interaction-design tradeoffs
+  - justification for spatial guidance and simplified phase presentation
+
+4. Transferable abstract-visualization papers
+These should not dominate the story, but they are still useful because they deal with abstract structures and immersive visualization.
+
+- Lee et al. (2020)
+  Title: Data Visceralization: Enabling Deeper Understanding of Data Using Virtual Reality
+  Use for:
+  - the argument that VR can deepen intuitive understanding
+  - caution around complexity and cognitive overload
+  - support for the “guided, not overloaded” design philosophy
+
+- Oberhauser (2018)
+  Title: Database Model Visualization in Virtual Reality: A WebVR and Benediktine Space Approach
+  Use for:
+  - transferable precedent for abstract-structure visualization in VR
+  - support for the claim that CS concepts beyond physical labs can benefit from immersive representation
+
+- Oberhauser (2019)
+  Title: Exploring WebVR and Native VR Concepts
+  Use for:
+  - background on implementation tradeoffs in VR delivery
+  - minor support only, mostly if discussing platform choices or accessibility
+
+- Kellmann et al. (2024)
+  Title: Visualization and Exploration of Linked Data using Virtual Reality
+  Use for:
+  - transferable support for graph/structure visualization in VR
+  - evidence that VR can help explore abstract relationships spatially
+
+5. Weak-fit but still usable background papers
+These are no longer part of the central story, but can still be cited lightly if needed.
+
+- Bertino et al. (2005)
+  Title: Integration of Virtual Reality and Database System Techniques
+  Use for:
+  - historical background only
+  - shows that the link between VR systems and data-driven structure representation is not new
+  - do not foreground this paper
+
+- Kewat et al. (2024)
+  Title: Enhancing Academic Learning through AR/VR: A 3D Visualization Approach for DBMS
+  Use for:
+  - lightweight proof-of-concept support
+  - only as a transferable example of immersive visualization in CS education
+  - do not let this paper steer the argument back toward DBMS
+
+- Soflano, Connolly, and Hainey (2015)
+  Title: Adaptive Games-Based Learning to Teach SQL
+  Use for:
+  - support for guided/adaptive learning design
+  - only indirectly relevant now
+  - useful when discussing learning-mode versus practice/test-mode scaffolding
+
+6. Explicitly excluded
+- Hadjiliasi et al. (2024)
+- Bagci et al. (2025)
+- Gomez et al. (2022)
+
+Recommended presentation emphasis
+
+If slide space is limited:
+
+- Lead with:
+  - Dascalu
+  - Tan
+  - Tlili
+  - Pirker
+  - Agbo
+  - Janani
+
+- Then use as supporting citations:
+  - Cook
+  - Korkut and Surer
+  - Samala
+  - Alnuaimi and Awad
+
+- Then mention briefly or keep mainly for dissertation text:
+  - Lee
+  - Oberhauser 2018
+  - Oberhauser 2019
+  - Kellmann
+  - Bertino
+  - Kewat
+  - Soflano et al.
+
+Suggested narrative grouping for related work slide(s)
+
+- Group A: VR for computer architecture learning
+  - Dascalu
+  - Tan
+  - Tlili
+  - Alnuaimi and Awad
+
+- Group B: VR in computer science education more broadly
+  - Pirker
+  - Agbo
+  - Janani
+
+- Group C: VR design, visualization, and educational constraints
+  - Cook
+  - Samala
+  - Korkut and Surer
+  - Lee
+
+- Group D: transferable abstract-structure visualization examples
+  - Oberhauser 2018
+  - Oberhauser 2019
+  - Kellmann
+  - Bertino
+  - Kewat
+  - Soflano et al.

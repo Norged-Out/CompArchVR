@@ -1,0 +1,103 @@
+Presentation plan for 15-minute dissertation talk
+
+Audience goal:
+By the end, the audience should understand why this VR prototype is a credible way to teach abstract computer architecture concepts, what exactly was built, and how the ongoing study evaluates it.
+
+Recommended slide flow:
+
+1. Title
+- Project title
+- Name, supervisor, programme
+- Optional one strong hero screenshot from the scene
+
+2. Why this problem matters
+- Computer architecture is hard because instruction flow, datapath behaviour, and state changes are hidden/abstract
+- Traditional diagrams and simulators help correctness, but not always mental-model formation
+- One visual of datapath or a cropped scene screenshot is enough
+
+3. Existing research and what it tells us
+- Bucket 1: VR for computer architecture or nearby hardware/systems learning
+- Bucket 2: VR in computer science education more broadly
+- Bucket 3: VR design constraints, usability, and visualization tradeoffs
+- Keep this slide high-level and citation-light
+- Prefer grouped citations over individual paper summaries
+- Strongest visible references should stay limited to:
+  - Dascalu
+  - Tan
+  - Tlili
+  - Pirker
+  - Agbo
+  - Janani
+- Papers such as Cook, Korkut, Alnuaimi, and TUMSphere should mostly sit in speaker notes or be mentioned only if they help answer a specific point
+
+4. Research gap, question, and learning outcomes
+- Gap: existing work shows promise, but there is still room for a focused VR system that teaches datapath execution through guided embodied interaction
+- Research question
+- Short list of learner-facing outcomes
+- Keep project objectives secondary to the learner outcomes
+
+5. System overview and scope
+- One slide showing the three modes: Learning, Practice, Test
+- One screenshot of the pipeline map or scene overview
+- State clearly that the prototype focuses on single-cycle MIPS datapath reasoning
+- Mention supported instruction families only at a high level, not as a full list
+
+6. Core interaction and implementation choices
+- Physical instruction fetch/upload-download flow
+- Register/data-packet manipulation for embodied tracing
+- UI reserved for prompts, hints, and correctness checks
+- Guided progression through IF / ID / EX / MEM / WB / PC update
+- Very high-level implementation only
+- Mention authored instruction definitions, phase controllers, and study-facing support systems
+- Use screenshots, not dense text
+
+7. Demo / walkthrough
+- Use a short prerecorded clip rather than relying fully on live demo
+- Recommended clip: one Learning-mode instruction, then 10-15 seconds of Practice or Test to show contrast
+- If live demo is still attempted, use the recording as fallback
+
+8. Evaluation and study status
+- Participant study setup
+- Measures: knowledge check, usability/system experience, engagement/perceived learning, qualitative feedback
+- State that the study is now ready / in progress
+
+9. Key design reflections
+- Why three modes were chosen
+- Why embodied actions were kept only where they supported learning
+- Why scope was limited to a single-cycle foundation
+
+10. Limitations and future work
+- Limited instruction family compared with full architecture curricula
+- No pipelining / hazards / multicycle yet
+- Future: richer jump family, pipelining, hazards, extended studies
+
+11. Conclusion
+- VR is used here to support guided spatial reasoning, not just visual novelty
+- Prototype is complete enough for research use
+- Study results will determine educational value more clearly
+
+Suggested timing:
+- Slides 1-4: 5 minutes
+- Slides 5-7: 5 minutes
+- Slides 8-10: 4 minutes
+- Slide 11: 1 minute
+
+Suggested visuals by slide:
+- 1: hero scene screenshot
+- 2: datapath or architecture difficulty framing visual
+- 3: 3-group related-work graphic with minimal paper names
+- 4: gap + research question + learning outcomes
+- 5: map screenshot + mode summary
+- 6: close-up screenshots of fetch, decode/register, phase UI
+- 7: embedded still frame from recorded clip
+- 8: simple study pipeline diagram
+- 9: mode comparison or design-principles graphic
+- 10: future-work bullets
+- 11: final scene image
+
+Notes:
+- Existing research should come before the implementation section.
+- Use screenshots generously.
+- Use short clips only where motion materially explains interaction.
+- Keep references mostly in notes or a final references slide if needed, not on every visible slide.
+- Do not let later slides drift back into paper discussion unless a specific design choice needs to be justified.
