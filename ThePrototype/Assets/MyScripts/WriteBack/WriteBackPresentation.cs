@@ -161,7 +161,8 @@ public static class WriteBackPresentation
             return $"Target Register: {registerNumber}\nCurrent Value: {currentValue}";
         }
 
-        var prefix = isWaiting ? $"Register Target: waiting for {registerId}" : $"Register Target: {registerId}";
+        var displayLabel = registerId.StartsWith("$", System.StringComparison.Ordinal) ? registerId : $"${registerId}";
+        var prefix = isWaiting ? $"Register Target: waiting for {displayLabel}" : $"Register Target: {displayLabel}";
         return $"{prefix}\nCurrent Value: {currentValue}";
     }
 

@@ -161,7 +161,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BodyTransform: {fileID: 8530779814507811918}
-  m_BaseRenderer: {fileID: 2819453700368837501}
+  m_BaseRenderer: {fileID: 0}
   m_BodyRenderer: {fileID: 2819453700368837501}
   m_InactiveMaterial: {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
   m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}
@@ -6453,7 +6453,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_BodyTransform: {fileID: 1444873480756048693}
-  m_BaseRenderer: {fileID: 8557756201868330266}
+  m_BaseRenderer: {fileID: 0}
   m_BodyRenderer: {fileID: 8557756201868330266}
   m_InactiveMaterial: {fileID: 2100000, guid: 805487a24eecbcf4a923c3ff4746bd22, type: 2}
   m_IdleMaterial: {fileID: 2100000, guid: 7e04f706f9e3f7f468772566c9b75da8, type: 2}

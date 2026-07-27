@@ -284,7 +284,7 @@ Transform:
   m_GameObject: {fileID: 4179065005876467514}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0.1}
+  m_LocalPosition: {x: 0, y: 0, z: 0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -740,7 +740,6 @@ GameObject:
   - component: {fileID: 1427603830217671358}
   - component: {fileID: 6551510841997103898}
   - component: {fileID: 9060744874807722881}
-  - component: {fileID: 4676519244821557792}
   m_Layer: 0
   m_Name: Register Scanner
   m_TagString: Untagged
@@ -849,13 +848,14 @@ MonoBehaviour:
   m_LabelText: {fileID: 1890001456753033952}
   m_ValueText: {fileID: 4569443550285306970}
   m_ScanZone: {fileID: 8222810023871308504}
-  m_ScanSocket: {fileID: 4676519244821557792}
   m_DataPacketPrefab: {fileID: 2850044229737508648, guid: 2874c88f5adc40788d4b1d6bb0a6c80f, type: 3}
   m_DataPacketSpawnAnchor: {fileID: 1158355636761020559}
   m_OutputPacketRole: 0
   m_ScanZonePadding: {x: 0.12, y: 0.18, z: 0.12}
   m_ScanZoneSurfaceInset: 0.02
   m_SupportColliderHeightPadding: 0.01
+  m_AuthoredBodyLocalPosition: {x: 0, y: 0.16, z: 0.118}
+  m_AuthoredScanZoneCenter: {x: 0, y: 0.36, z: 0.11800003}
 --- !u!82 &9060744874807722881
 AudioSource:
   m_ObjectHideFlags: 0
@@ -953,54 +953,6 @@ AudioSource:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
---- !u!114 &4676519244821557792
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6524586531415313360}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 60523e0647cc6ab43acc73cb266a32a7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.XR.Interaction.Toolkit::UnityEngine.XR.Interaction.Toolkit.Interactors.XRSocketInteractor
-  m_InteractionManager: {fileID: 0}
-  m_InteractionLayers:
-    m_Bits: 4294967295
-  m_Handedness: 0
-  m_AttachTransform: {fileID: 9182738204682900977}
-  m_KeepSelectedTargetValid: 1
-  m_DisableVisualsWhenBlockedInGroup: 1
-  m_StartingSelectedInteractable: {fileID: 0}
-  m_StartingTargetFilter: {fileID: 0}
-  m_AutoFindParentInteractableInHierarchy: 0
-  m_ParentInteractableObject: {fileID: 0}
-  m_HoverEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_HoverExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_SelectEntered:
-    m_PersistentCalls:
-      m_Calls: []
-  m_SelectExited:
-    m_PersistentCalls:
-      m_Calls: []
-  m_StartingHoverFilters: []
-  m_StartingSelectFilters: []
-  m_ShowInteractableHoverMeshes: 1
-  m_InteractableHoverMeshMaterial: {fileID: 0}
-  m_InteractableCantHoverMeshMaterial: {fileID: 2100000, guid: 1d618454d64b4429a852d8c195548d3e, type: 2}
-  m_SocketActive: 0
-  m_InteractableHoverScale: 1
-  m_RecycleDelayTime: 1
-  m_HoverSocketSnapping: 0
-  m_SocketSnappingRadius: 0.1
-  m_SocketScaleMode: 0
-  m_FixedScale: {x: 1, y: 1, z: 1}
-  m_TargetBoundsSize: {x: 1, y: 1, z: 1}
 --- !u!1 &6962034538506223565
 GameObject:
   m_ObjectHideFlags: 0

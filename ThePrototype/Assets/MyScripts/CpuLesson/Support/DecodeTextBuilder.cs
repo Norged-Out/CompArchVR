@@ -36,7 +36,10 @@ public sealed class DecodeTextBuilder
         for (var index = 0; index < requiredRoles.Length; index++)
         {
             var role = requiredRoles[index];
-            var registerName = instruction.GetExpectedRegisterName(role);
+            var registerId = instruction.GetExpectedRegisterName(role);
+            var registerName = lessonFlow.RegisterBankRef != null
+                ? lessonFlow.RegisterBankRef.GetRegisterDisplayLabel(registerId)
+                : $"${registerId}";
             var scannerName = GetScannerLabel(role);
             var status = lessonFlow.IsDecodeRegisterRoleSelected(role) ? "done" : "pending";
             lines.Add($"{scannerName}: {registerName} [{status}]");
@@ -125,7 +128,11 @@ public sealed class DecodeTextBuilder
             if (lessonFlow != null && lessonFlow.IsDecodeRegisterRoleSelected(role))
                 continue;
 
-            pendingTargets.Add($"{instruction.GetExpectedRegisterName(role)} on {GetScannerLabel(role)}");
+            var registerId = instruction.GetExpectedRegisterName(role);
+            var registerLabel = lessonFlow != null && lessonFlow.RegisterBankRef != null
+                ? lessonFlow.RegisterBankRef.GetRegisterDisplayLabel(registerId)
+                : $"${registerId}";
+            pendingTargets.Add($"{registerLabel} on {GetScannerLabel(role)}");
         }
 
         return pendingTargets.Count > 0
