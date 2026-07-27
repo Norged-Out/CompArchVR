@@ -1,8 +1,6 @@
 using System.Collections;
 using TMPro;
 using UnityEngine;
-using UnityEngine.XR.Interaction.Toolkit;
-using UnityEngine.XR.Interaction.Toolkit.Interactors;
 
 /// <summary>
 /// Pedestal-style scanner used during lesson phases that need a specific
@@ -19,6 +17,8 @@ using UnityEngine.XR.Interaction.Toolkit.Interactors;
 [DisallowMultipleComponent]
 public class RegisterScanner : PedestalScannerBase
 {
+    const float k_BruteForceBodyLocalZ = 0.118f;
+
     [Header("Role")]
 
     [SerializeField]
@@ -42,9 +42,6 @@ public class RegisterScanner : PedestalScannerBase
     [SerializeField]
     BoxCollider m_ScanZone;
 
-    [SerializeField]
-    XRSocketInteractor m_ScanSocket;
-
     [Header("Data Packet Output")]
 
     [SerializeField]
@@ -67,9 +64,15 @@ public class RegisterScanner : PedestalScannerBase
     [SerializeField]
     float m_SupportColliderHeightPadding = 0.01f;
 
-    readonly System.Collections.Generic.HashSet<RegisterToken> m_TokensInZone = new();
-    RegisterToken m_SocketedRegister;
+    [Header("Authored Layout")]
 
+    [SerializeField]
+    Vector3 m_AuthoredBodyLocalPosition;
+
+    [SerializeField]
+    Vector3 m_AuthoredScanZoneCenter;
+
+    readonly System.Collections.Generic.HashSet<RegisterToken> m_TokensInZone = new();
     DataPacketToken m_SpawnedPacket;
     int m_LastResolvedValue;
     bool m_HasResolvedValue;
@@ -83,13 +86,14 @@ public class RegisterScanner : PedestalScannerBase
 
     protected override void Awake()
     {
+        CacheVisualReferences();
+        CaptureAuthoredLayout();
+        RestoreAuthoredLayout();
+        AlignBodyToBaseSurface();
         base.Awake();
-        AlignBodyToBase(true);
-        RefreshBodyRestPose();
         ConfigureSupportCollider();
         ConfigureScanZone();
         BindZoneHelper();
-        ConfigureSocketState();
         EnsureStaticPedestalPhysics();
     }
 
@@ -97,23 +101,19 @@ public class RegisterScanner : PedestalScannerBase
     {
         base.OnEnable();
         BindZoneHelper();
-        ConfigureSocketState();
-        HookSocketEvents(true);
 
         if (m_AlwaysActiveInspector || m_IsInLessonInactivePreviewMode || !m_UseInLessonFlow)
             SetStepActive(true);
-    }
 
-    void OnDisable()
-    {
-        HookSocketEvents(false);
     }
 
     protected override void OnValidate()
     {
+        CacheVisualReferences();
+        CaptureAuthoredLayout();
+        RestoreAuthoredLayout();
+        AlignBodyToBaseSurface();
         base.OnValidate();
-        AlignBodyToBase(false);
-        RefreshBodyRestPose();
         ConfigureSupportCollider();
         ConfigureScanZone();
         EnsureStaticPedestalPhysics();
@@ -148,9 +148,6 @@ public class RegisterScanner : PedestalScannerBase
 
     protected override Component GetStableCandidate()
     {
-        if (m_SocketedRegister != null)
-            return m_SocketedRegister;
-
         m_TokensInZone.RemoveWhere(token => token == null);
         foreach (var registerToken in m_TokensInZone)
         {
@@ -189,15 +186,8 @@ public class RegisterScanner : PedestalScannerBase
 
         var scanZoneTransform = FindChildTransform("Scan Zone");
         m_ScanZone = scanZoneTransform != null ? scanZoneTransform.GetComponent<BoxCollider>() : null;
-
-        if (m_ScanSocket == null)
-            m_ScanSocket = GetComponent<XRSocketInteractor>();
     }
 
-    /// <summary>
-    /// Lets the authored register bank explicitly own this scanner instead of
-    /// the scanner trying to discover a bank on its own at runtime.
-    /// </summary>
     public void SetOwningBank(RegisterBank owningBank)
     {
         m_OwningBank = owningBank;
@@ -253,9 +243,9 @@ public class RegisterScanner : PedestalScannerBase
 
         m_ScanZone.isTrigger = true;
         m_ScanZone.center = new Vector3(
-            bodyBounds.center.x,
+            m_AuthoredScanZoneCenter.x,
             scanCenterY,
-            bodyBounds.center.z);
+            m_AuthoredScanZoneCenter.z);
         m_ScanZone.size = new Vector3(
             bodyBounds.size.x + m_ScanZonePadding.x,
             scanHeight,
@@ -274,41 +264,6 @@ public class RegisterScanner : PedestalScannerBase
         helper.Bind(this);
     }
 
-    void ConfigureSocketState()
-    {
-        if (m_ScanSocket == null)
-            return;
-
-        m_ScanSocket.socketActive = true;
-    }
-
-    void HookSocketEvents(bool subscribe)
-    {
-        if (m_ScanSocket == null)
-            return;
-
-        m_ScanSocket.selectEntered.RemoveListener(HandleSocketSelectEntered);
-        m_ScanSocket.selectExited.RemoveListener(HandleSocketSelectExited);
-
-        if (!subscribe)
-            return;
-
-        m_ScanSocket.selectEntered.AddListener(HandleSocketSelectEntered);
-        m_ScanSocket.selectExited.AddListener(HandleSocketSelectExited);
-    }
-
-    void HandleSocketSelectEntered(SelectEnterEventArgs args)
-    {
-        m_SocketedRegister = args.interactableObject?.transform.GetComponentInParent<RegisterToken>();
-    }
-
-    void HandleSocketSelectExited(SelectExitEventArgs args)
-    {
-        var register = args.interactableObject?.transform.GetComponentInParent<RegisterToken>();
-        if (register != null && register == m_SocketedRegister)
-            m_SocketedRegister = null;
-    }
-
     void EnsureStaticPedestalPhysics()
     {
         var rigidbody = GetComponent<Rigidbody>();
@@ -321,9 +276,14 @@ public class RegisterScanner : PedestalScannerBase
         rigidbody.Sleep();
     }
 
-    void AlignBodyToBase(bool allowDuringPlay)
+    void RememberBodyPose()
     {
-        if ((!allowDuringPlay && Application.isPlaying) || BaseRenderer == null || BodyRenderer == null || BodyTransform == null)
+        // handled by base
+    }
+
+    void AlignBodyToBaseSurface()
+    {
+        if (BaseRenderer == null || BodyRenderer == null || BodyTransform == null)
             return;
 
         var baseBounds = GetRendererBoundsInRootSpace(BaseRenderer);
@@ -332,7 +292,40 @@ public class RegisterScanner : PedestalScannerBase
         var correction = desiredBodyBottom - bodyBounds.min.y;
 
         if (correction > 0.002f)
-            BodyTransform.localPosition += new Vector3(0f, correction, 0f);
+        {
+            BodyTransform.localPosition = new Vector3(
+                m_AuthoredBodyLocalPosition.x,
+                BodyTransform.localPosition.y + correction,
+                k_BruteForceBodyLocalZ);
+        }
+        else
+        {
+            BodyTransform.localPosition = new Vector3(
+                m_AuthoredBodyLocalPosition.x,
+                BodyTransform.localPosition.y,
+                k_BruteForceBodyLocalZ);
+        }
+    }
+
+    void CaptureAuthoredLayout()
+    {
+        if (BodyTransform != null)
+            m_AuthoredBodyLocalPosition = BodyTransform.localPosition;
+
+        if (m_ScanZone != null)
+            m_AuthoredScanZoneCenter = m_ScanZone.center;
+    }
+
+    void RestoreAuthoredLayout()
+    {
+        if (BodyTransform != null)
+            BodyTransform.localPosition = new Vector3(
+                m_AuthoredBodyLocalPosition.x,
+                m_AuthoredBodyLocalPosition.y,
+                k_BruteForceBodyLocalZ);
+
+        if (m_ScanZone != null)
+            m_ScanZone.center = m_AuthoredScanZoneCenter;
     }
 
     protected override void ApplyAuxiliaryVisuals(ScannerVisualState visualState)
@@ -384,7 +377,6 @@ public class RegisterScanner : PedestalScannerBase
     protected override void HandleScannerReset()
     {
         m_TokensInZone.Clear();
-        m_SocketedRegister = null;
         ClearSpawnedPacket();
         m_LastResolvedValue = 0;
         m_HasResolvedValue = false;
@@ -507,7 +499,6 @@ public class RegisterScanner : PedestalScannerBase
 
         m_SpawnedPacket = null;
     }
-
     Bounds GetRendererBoundsInRootSpace(Renderer targetRenderer)
     {
         var localBounds = targetRenderer.localBounds;
