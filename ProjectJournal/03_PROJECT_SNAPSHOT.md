@@ -74,6 +74,7 @@ Current build truth:
 - participant-study use has now begun, so the build should be treated as locked unless a real blocker appears
 - further work should be treated as future work unless it fixes a real blocker
 - centralized dev-mode support now exists inside the settings menu so late-phase testing no longer depends on replaying the whole lesson every time
+- presentation support now lives under `D:\CompArchVR\Documents\Presentation`, with the active deck and phone-readable speaking script prepared there
 
 More detailed current-state notes:
 - fetch is no longer just UI framing; it uses a physical instruction upload/download handoff
@@ -113,6 +114,14 @@ Current non-build focus:
 - participant-session support
 - presentation preparation
 - thesis-facing consolidation of motivation, literature framing, and learning outcomes
+
+Current presentation state:
+- the presentation deck is actively being rehearsed and condensed for a 15-minute slot
+- the presentation story is now centered on:
+  - why datapath learning is difficult
+  - what was built in response
+  - how the learner experiences it
+  - how the participant study evaluates it
 
 ## Authored Register Bank Reference
 
