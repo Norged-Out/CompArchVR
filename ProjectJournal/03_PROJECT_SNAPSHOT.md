@@ -116,7 +116,8 @@ Current non-build focus:
 - thesis-facing consolidation of motivation, literature framing, and learning outcomes
 
 Current presentation state:
-- the presentation deck is actively being rehearsed and condensed for a 15-minute slot
+- the presentation deck has been condensed into the active delivery version
+- a full walkthrough demo has been recorded to support the presentation
 - the presentation story is now centered on:
   - why datapath learning is difficult
   - what was built in response
@@ -253,7 +254,7 @@ Why:
 ## Current Project Stage
 
 - supervisor checkpoint on `2026-07-24` is complete
-- official presentation target remains `2026-07-29`
+- the project is now in final participant-study and presentation delivery mode
 - the Android XR build is now the study-use baseline
 - core development is effectively complete; remaining work should be limited to critical fixes or clearly justified future extensions
 

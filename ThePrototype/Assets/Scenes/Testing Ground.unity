@@ -18192,6 +18192,17 @@ MonoBehaviour:
   m_ChildScaleWidth: 0
   m_ChildScaleHeight: 0
   m_ReverseArrangement: 0
+--- !u!114 &551432606 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
+  m_PrefabInstance: {fileID: 705460929}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &551847366
 GameObject:
   m_ObjectHideFlags: 0
@@ -23693,9 +23704,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1897108578803551515, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_text
-      value: 'Lesson Introduction
-
-'
+      value: Instruction Fetch
       objectReference: {fileID: 0}
     - target: {fileID: 3060619106468608791, guid: 085ce58b196caa446a8545c9dd388793, type: 3}
       propertyPath: m_PresetInfoIsWorld
@@ -54095,6 +54104,10 @@ PrefabInstance:
       propertyPath: m_LessonFlow
       value: 
       objectReference: {fileID: 1621409676001}
+    - target: {fileID: 1140575332013950618, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
+      propertyPath: m_SocketActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3216959825443256955, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
       propertyPath: m_LocalPosition.x
       value: 19.5
@@ -54134,6 +54147,10 @@ PrefabInstance:
     - target: {fileID: 3216959825443256955, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4569443550285306970, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
+      propertyPath: m_text
+      value: Instruction Decode Terminal
       objectReference: {fileID: 0}
     - target: {fileID: 6037807790624829065, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
       propertyPath: m_Resource
@@ -56392,6 +56409,10 @@ PrefabInstance:
     - target: {fileID: 3216959825443256955, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4569443550285306970, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
+      propertyPath: m_text
+      value: Instruction Fetch Terminal
       objectReference: {fileID: 0}
     - target: {fileID: 6037807790624829065, guid: ed8f86b79ef2b4a48ada144a6bf06e93, type: 3}
       propertyPath: m_Resource
@@ -82871,6 +82892,7 @@ MonoBehaviour:
   m_RootRects:
   - {fileID: 705460930}
   m_Body: {fileID: 105658619}
+  m_Header: {fileID: 551432606}
   m_ActionButton: {fileID: 8421790730918759245}
   m_ActionLabel: {fileID: 3683504704253126962}
   m_ModeGroupRoot: {fileID: 861838834}

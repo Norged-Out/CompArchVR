@@ -58,7 +58,7 @@ This principle should override ambitious expansion pressure.
 
 Active schedule:
 - supervisor meeting target on `2026-07-24` is complete
-- official project/demo deadline remains `2026-07-29`
+- the project and presentation baseline are now effectively locked for delivery
 - the current build should now be treated as the participant-study and presentation baseline unless a critical regression appears
 - participant-study use has now begun, so changes should be judged against study risk before feature value
 
@@ -300,7 +300,7 @@ At this point:
 If anything still changes, it should be small and low-risk:
 1. deployment sanity / device-only fixes
 2. questionnaire / study-material alignment
-3. very light presentation polish
+3. presentation / demonstration support
 4. anything larger should move to future work instead
 
 ## Future Work Beyond The Final Demo

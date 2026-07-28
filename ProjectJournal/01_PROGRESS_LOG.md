@@ -42,19 +42,20 @@ Current architecture truths:
 
 Current delivery state:
 - supervisor checkpoint on `2026-07-24` is complete
-- official presentation / demo target remains `2026-07-29`
+- official presentation / demo target is now in its final ready state
 - participant-study use has begun
 - the Android XR build should now be treated as the real research baseline unless a blocker-grade regression appears
 
 Current non-build focus:
 - participant-session support
-- presentation rehearsal and Q&A preparation
+- presentation delivery, demo playback, and Q&A preparation
 - thesis-facing consolidation of motivation, learning outcomes, study procedure, and references
 - keeping documentation aligned with the actual built scope
 
 Presentation support now prepared:
 - deck under `D:\CompArchVR\Documents\Presentation\Presentation_PriyanshNayak.pptx`
 - phone-readable script under `D:\CompArchVR\Documents\Presentation\presentation_script.md`
+- recorded walkthrough demo prepared for presentation use
 
 ## Remaining Future Work / Post-Presentation Backlog
 
@@ -284,3 +285,14 @@ Completed:
 Why it mattered:
 - the project is now being carried forward more by presentation/study delivery than by new system development
 - at this stage, the journals matter less as a live engineering scratchpad and more as a stable historical record for the dissertation
+
+### 2026-07-28 - Final Review And Demo Recording
+
+Completed:
+- performed one last participant-facing bug-fix pass around lesson behavior and presentation clarity
+- recorded a full walkthrough covering all three learning modes
+- confirmed that the deck, build, and supporting materials now describe the same final project state
+
+Why it mattered:
+- the focus is no longer feature completion, but confident delivery of the already-built system
+- this marks the point where the project moved from active prototyping into demonstration and study-use readiness

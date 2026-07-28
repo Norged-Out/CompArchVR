@@ -18,6 +18,9 @@ public sealed class IntroPanelController : LessonPanelBase
     TMP_Text m_Body;
 
     [SerializeField]
+    TMP_Text m_Header;
+
+    [SerializeField]
     Button m_ActionButton;
 
     [SerializeField]
@@ -128,6 +131,7 @@ public sealed class IntroPanelController : LessonPanelBase
             $"{k_LogPrefix} ShowBeforeStart | mode={lessonMode} showInstructionDropdown={showInstructionDropdown} canStart={canStartSelectedMode} instruction={(currentInstruction != null ? currentInstruction.displayName : "<null>")} frame={Time.frameCount}",
             this);
         SetVisible(true);
+        SetTextField(m_Header, "Lesson Introduction");
         SetTextField(m_Body, BuildBeforeStartBody(lessonMode, canStartSelectedMode));
         SetButtonState(m_ActionButton, m_ActionLabel, startButtonLabel, canStartSelectedMode);
         SetModeDropdownVisible(true);
@@ -165,6 +169,7 @@ public sealed class IntroPanelController : LessonPanelBase
             step.requiredInteraction == InstructionStepInteractionType.Completion;
 
         SetVisible(true);
+        SetTextField(m_Header, lessonFlow.HasStarted ? "Instruction Fetch" : "Lesson Introduction");
         SetTextField(m_Body, BuildIntroBody(lessonFlow, step));
         SetButtonState(
             m_ActionButton,

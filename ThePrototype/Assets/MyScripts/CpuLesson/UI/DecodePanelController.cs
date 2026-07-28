@@ -293,6 +293,13 @@ public sealed class DecodePanelController : LessonPanelBase
             $"{k_LogPrefix} ApplyPracticeLessonText | showDecodingLesson={showDecodingLesson} mode={lessonMode} frame={Time.frameCount}",
             this);
         SetObjectActive(m_LessonPanel.Root, LessonModePolicy.UsesLessonPanel(lessonMode));
+
+        if (!LessonModePolicy.IsAssessmentMode(lessonMode))
+        {
+            SetTextFieldActive(m_LessonPanel.PracticeDecodingText, false);
+            return;
+        }
+
         SetTextFieldActive(m_LessonPanel.OpcodeText, !showDecodingLesson);
         SetTextFieldActive(m_LessonPanel.PracticeDecodingText, showDecodingLesson);
         SetTextFieldActive(m_LessonPanel.FunctText, false);
