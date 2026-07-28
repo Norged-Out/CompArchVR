@@ -17,6 +17,16 @@ The strongest justification for VR is:
 - one-on-one whiteboard guidance works better because it is paced, interactive, and spatial
 - this project aims to recreate that guided tracing experience in an immersive, self-paced form
 
+Personal motivation behind that framing:
+- during my Bachelor's at the University of Arizona, I worked as a teaching assistant for Computer Organisation for two years across four consecutive semesters
+- during office hours, I repeatedly saw the same pain points:
+  - reading datapath diagrams
+  - understanding what control signals do for different instructions
+  - following data movement through registers, memory, and PC updates
+  - reasoning about adjacent topics such as stacks and function calls
+- the most effective help was usually not another static explanation, but drawing over the datapath on a whiteboard or iPad and walking a student through it step by step
+- this project comes directly from the idea that VR might recreate part of that guided tracing process by letting the learner stand inside the datapath and act through the instruction flow themselves
+
 ## Primary Learning Objective
 
 After completing the experience, a learner should be able to:
@@ -50,6 +60,7 @@ Active schedule:
 - supervisor meeting target on `2026-07-24` is complete
 - official project/demo deadline remains `2026-07-29`
 - the current build should now be treated as the participant-study and presentation baseline unless a critical regression appears
+- participant-study use has now begun, so changes should be judged against study risk before feature value
 
 Current risk:
 - not missing datapath coverage
@@ -318,5 +329,13 @@ The implementation should collect enough clarity for the later paper to discuss:
 - how the interaction design supported that objective
 - what was implemented
 - what limitations remained
+
+Current note:
+- the project is now at the stage where presentation and paper framing should describe the implemented build faithfully instead of arguing for speculative expansion
+- the cleanest framing is now:
+  - TA-grounded educational motivation
+  - guided spatial reasoning as the "why VR?" answer
+  - the finalized learning outcomes supported by the built three-mode lesson flow
+  - future work kept clearly separate from the finished participant-study baseline
 
 The more disciplined the scope, the easier the paper will be to write.

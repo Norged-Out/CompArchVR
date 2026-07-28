@@ -14,6 +14,18 @@ The project should:
 - use VR for meaningful physical/spatial choices
 - use UI for lookup tables, prompts, and explanations
 
+## Motivation Anchor
+
+The project motivation is grounded in earlier teaching experience, not in VR novelty by itself.
+
+During my Bachelor's at the University of Arizona, I worked as a teaching assistant for Computer Organisation for four consecutive semesters. Across those semesters, students repeatedly struggled with the same cluster of issues:
+- mentally navigating the CPU datapath
+- understanding what different control signals were doing for different instructions
+- following how values moved between registers, ALU logic, memory, and PC updates
+- carrying that reasoning into nearby topics such as stacks and function calls
+
+The most effective teaching pattern was usually to draw over the datapath on a whiteboard or iPad and walk the learner through the flow step by step. This prototype is meant to turn that guided tracing process into an embodied, self-paced VR supplement.
+
 ## Current Active Prototype Area
 
 Scene:
@@ -59,6 +71,7 @@ Current build truth:
 - the ten non-jump instructions also have authored practice-mode variants that feed the shared downstream phase flow
 - test mode is the stripped-down assessment variant of that same practice foundation
 - the project is now effectively complete for the presentation and participant studies
+- participant-study use has now begun, so the build should be treated as locked unless a real blocker appears
 - further work should be treated as future work unless it fixes a real blocker
 - centralized dev-mode support now exists inside the settings menu so late-phase testing no longer depends on replaying the whole lesson every time
 
@@ -72,6 +85,7 @@ More detailed current-state notes:
 - decode no longer forces `rs` to be scanned before `rt`; required source registers can now be satisfied in either order while still respecting scanner roles
 - later practice phases use limited validation attempts, limited scanner attempts, limited hints, and held restart-on-failure flow
 - when no lesson is active, the two decode-stage lesson scanners can now act as simple preview scanners instead of staying uselessly inactive
+- the first participant-facing build pass exposed a few build-only scanner/UI regressions, and those have now been treated as blocker-grade fixes rather than as reasons to reopen the architecture
 - execute handles ALU signal interaction, operand acceptance, operation selection, and result spawning
 - memory handles address validation, read/write behavior, memory-bank communication, and load-result spawning
 - write-back handles destination validation, value-source validation, and final register updates
@@ -91,9 +105,14 @@ What is already solved versus now deferred:
 - now mostly deferred to future work:
   - additional jump-family work beyond `j`
   - optional opening-sequence work
-  - optional socket/scanner interaction expansion beyond the proven stable cases
+  - optional socket/scanner interaction expansion only if it can be proven stable without introducing build-only regressions
   - light route/gate readability tuning only if participant testing exposes issues
   - optional VFX / ambience expansion beyond the current baseline
+
+Current non-build focus:
+- participant-session support
+- presentation preparation
+- thesis-facing consolidation of motivation, literature framing, and learning outcomes
 
 ## Authored Register Bank Reference
 

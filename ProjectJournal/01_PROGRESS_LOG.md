@@ -44,9 +44,11 @@ Current delivery target:
 - supervisor checkpoint on `2026-07-24` is complete
 - official presentation / demo target: `2026-07-29`
 - the current build should now be treated as the real participant-study baseline unless a critical regression appears
+- participant-study use has now begun, so only blocker-grade fixes should justify touching the build
 
 Current development priority:
 - preserve the final build and avoid non-critical churn
+- support participant sessions, presentation prep, and thesis-facing documentation from the existing baseline
 
 ## Remaining Future Work / Post-Presentation Backlog
 
@@ -1361,3 +1363,55 @@ Next:
 Risks / Notes:
 - the remaining meaningful risk is destabilizing the now-working build with unnecessary late changes
 - further QoL experiments should be treated as optional future work rather than baseline requirements
+
+
+### 2026-07-27 - Participant Study Hotfixes And Build-Only Scanner Regressions Were Closed Out
+
+Completed:
+- used the first participant-facing session to identify a small set of real build issues that had not shown up reliably in editor testing
+- investigated the decode register-scanner regressions that only appeared in the Android XR build
+- fixed the build-side scanner display issue after tracing it to transform/canvas state rather than lesson logic failure
+- corrected register-label clarity issues so decode and write-back now show register names with the expected `$` formatting
+- backed away from unstable late socket-style interaction experiments where they were creating more risk than value
+- added a simple register-value overview UI path so live register state can be surfaced more clearly during study use when needed
+
+Changed:
+- the participant-study build is now closer to the real intended lesson presentation, not just the editor-trusted version
+- build verification is now informed by actual participant use instead of only in-editor and local headset smoke tests
+- the project is now firmly in "support the study" mode rather than "keep extending interaction ideas" mode
+
+Next:
+- keep watching for any additional device-only regressions that only appear during real participant sessions
+- prefer surgical fixes and avoid new interaction experiments unless they solve a direct study blocker
+
+Risks / Notes:
+- the build/editor gap is now the main trust risk, not the lesson logic itself
+- participant sessions are now a better source of truth for urgent polish than speculative QoL experiments
+
+
+### 2026-07-27 - Presentation And Thesis Framing Moved Into Consolidation Mode
+
+Completed:
+- reviewed the current dissertation/presentation literature pool with the older DBMS-heavy angle deprioritized
+- started consolidating the paper set toward the references that best support:
+  - VR in computer science education
+  - VR for architecture / systems learning
+  - visualization, usability, and design tradeoffs
+- updated presentation drafting material so the project motivation is now stated more explicitly through earlier teaching-assistant experience
+- formalized a clearer learning-outcomes set based on what the final build actually teaches
+- began trimming the questionnaire / question-bank material toward the subset that matches the implemented scope more cleanly
+
+Changed:
+- the project narrative is now more tightly anchored around:
+  - repeated student difficulty with datapath reasoning
+  - guided one-on-one tracing as the teaching pattern that worked best
+  - VR as a supplement for that guided tracing process rather than a novelty platform
+- the literature and presentation prep are now being shaped around the current built system instead of older broader plans
+
+Next:
+- finish building the actual presentation deck from the prepared notes and references
+- keep the final paper/questionnaire trimming aligned with the implemented single-cycle scope
+
+Risks / Notes:
+- the main risk is no longer missing implementation, but misrepresenting scope or overclaiming what the system teaches
+- presentation and thesis framing should stay tightly matched to the implemented learning outcomes and the actual participant-study build

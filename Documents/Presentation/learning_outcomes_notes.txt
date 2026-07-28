@@ -14,20 +14,20 @@ Final proposed learning outcomes
   - Practice mode typed binary-field decode
   - Test mode strict decode
 
-2. Trace a supported instruction and its data through the major stages of a single-cycle datapath.
+2. Explain the role of the major datapath components involved in instruction execution.
+- This includes the register file, ALU, multiplexers, sign-extension path, data memory, and PC update logic.
+- Project coverage:
+  - guided Learning mode
+  - reduced-support Practice mode
+  - instruction coverage across arithmetic, immediate, memory, branch, and jump categories
+
+3. Trace an instruction and its data through the major stages of a single-cycle datapath.
 - The learner should be able to follow the instruction through IF, ID, EX, MEM, WB, and PC update, while recognizing that not every instruction meaningfully uses every stage in the same way.
 - Project coverage:
   - routed world-space phase stations
   - fetch flow
   - decode register scanning
   - ALU, memory, write-back, and PC update stations
-
-3. Explain the role of the major datapath components involved in instruction execution.
-- This includes the register file, ALU, multiplexers, sign-extension path, data memory, and PC update logic.
-- Project coverage:
-  - guided Learning mode
-  - reduced-support Practice mode
-  - instruction coverage across arithmetic, immediate, memory, branch, and jump categories
 
 4. Select the correct operands and control-facing choices needed to complete execution of a supported instruction.
 - The learner should be able to choose the right registers, immediate handling, ALU behavior, memory action, write-back target, and next-PC path for the supported instruction set.
@@ -47,7 +47,7 @@ Final proposed learning outcomes
   - branch and jump handling
   - end-state validation in later phases
 
-6. Compare how different instruction classes change datapath behavior within the same processor model.
+6. Compare how different instruction classes change datapath behavior.
 - The learner should be able to contrast the execution flow of R-type, immediate, load/store, branch, and jump instructions inside the same single-cycle CPU model.
 - Project coverage:
   - three-mode structure built on the same world and datapath stations
@@ -112,8 +112,8 @@ Recommended teaching sequence
 
 The cleanest educational progression is:
 - decode
-- trace
 - explain
+- trace
 - select
 - predict
 - compare
@@ -128,11 +128,11 @@ Presentation-use version
 
 If the slide needs a short visible version, use:
 
-- Decode the key fields of a supported MIPS instruction.
-- Trace that instruction through the major stages of a single-cycle datapath.
-- Explain the role of the major datapath components involved.
-- Select the correct operands and control-facing choices.
-- Predict the resulting register, memory, and PC changes.
+- Decode the relevant fields of a supported single-cycle MIPS instruction.
+- Explain the role of the major datapath components involved in instruction execution.
+- Trace an instruction and its data through the major stages of a single-cycle datapath.
+- Select the correct operands and control-facing choices needed to execute an instruction.
+- Predict the architectural state changes caused by a supported instruction.
 
 Thesis-use version
 

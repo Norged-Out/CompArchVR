@@ -95,8 +95,12 @@ Decision:
 - justify VR through guided spatial reasoning, not novelty
 
 Why:
-- the project's motivation comes from earlier teaching experience
-- students benefited from paced one-on-one whiteboard tracing
+- the project's motivation comes from earlier teaching experience during four consecutive semesters as a Computer Organisation teaching assistant at the University of Arizona
+- the same office-hours problems kept repeating:
+  - students struggled to navigate the datapath
+  - students struggled to map control signals to instruction behavior
+  - students struggled to reason through value flow, stacks, and function-call-related state changes
+- students benefited most when I could draw over the datapath on a whiteboard or iPad and guide them through it step by step
 - VR should recreate that guided tracing process in an interactive embodied form
 
 Implication:
@@ -1208,4 +1212,29 @@ Why:
 Implication:
 - remaining changes before real study use should stay narrow, deliberate, and easy to justify
 - anything larger should move to future work after the presentation and participant sessions
+
+
+## 2026-07-27 - Presentation And Thesis Framing Should Stay Anchored To The Built Learning Outcomes
+
+Decision:
+- presentation and thesis framing should be anchored to the implemented learning outcomes and the finished single-cycle study build, not to older broader ambitions
+
+Why:
+- the project has now reached participant-study use, so overclaiming is a bigger risk than underselling optional future work
+- the strongest motivation comes from repeated teaching-assistant experience with datapath reasoning difficulties, not from VR novelty
+- the final three-mode structure now supports a clean learning progression:
+  - guided walkthrough
+  - reduced-support practice
+  - strict independent test
+
+Implication:
+- research framing should emphasize what the current build actually teaches:
+  - decode
+  - trace
+  - explain
+  - select
+  - predict
+  - compare
+  - complete with reduced or no guidance
+- future-work topics such as wider jump support, multicycle coverage, and pipelining should stay clearly separated from the baseline claims
 
