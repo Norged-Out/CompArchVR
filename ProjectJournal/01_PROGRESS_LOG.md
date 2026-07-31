@@ -296,3 +296,16 @@ Completed:
 Why it mattered:
 - the focus is no longer feature completion, but confident delivery of the already-built system
 - this marks the point where the project moved from active prototyping into demonstration and study-use readiness
+
+### 2026-07-31 - Thesis-Prep Documentation Reorganization
+
+Completed:
+- reorganized the `Documents` folder into clearer buckets for ethics, literature, methodology, presentation, and project reference material
+- moved bibliography work into the root `Latex` folder to separate writing assets from presentation/study notes
+- restored fuller learning-outcome and methodology support notes after an earlier over-trim
+- reintroduced stronger curricular grounding around University of Arizona teaching experience and Trinity course context
+- separated reusable study-note templates from private participant-session notes
+
+Why it mattered:
+- the repository now better reflects the project’s transition from build work to dissertation-writing support
+- the methodology and learning-outcome notes are now more useful as reference material for later thesis chapters instead of reading like overcompressed summaries

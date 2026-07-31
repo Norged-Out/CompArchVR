@@ -1,0 +1,423 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{needspace}
+
+\setstretch{1.1}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+
+\newcommand{\boxmark}{\(\square\)}
+\newcommand{\lineanswer}{\vspace{2.5em}\hrulefill}
+\newcommand{\shortline}{\underline{\hspace{3cm}}}
+\newcommand{\yesno}{\boxmark\ Yes \hspace{2em} \boxmark\ No}
+
+\newcommand{\responseline}[5]{%
+    \begin{flushleft}
+    \boxmark\ #1 \hspace{1.2em}
+    \boxmark\ #2 \hspace{1.2em}
+    \boxmark\ #3 \hspace{1.2em}
+    \boxmark\ #4 \hspace{1.2em}
+    \boxmark\ #5
+    \end{flushleft}
+}
+
+\newcommand{\fivepointscale}[1]{%
+    \Needspace{4\baselineskip}%
+    \textbf{#1}
+    
+    \responseline{Strongly disagree}{Disagree}{Neither agree nor disagree}{Agree}{Strongly agree}
+}
+
+\newcommand{\familiarityscale}[1]{%
+    \Needspace{4\baselineskip}%
+    \textbf{#1}
+    
+    \responseline{None}{Limited}{Moderate}{Good}{High}
+}
+
+\newcommand{\difficultyscale}[1]{%
+    \Needspace{4\baselineskip}%
+    \textbf{#1}
+    
+    \responseline{Very easy}{Easy}{Neutral}{Difficult}{Very difficult}
+}
+
+\newcommand{\confidenceoptional}{%
+    \textit{Optional confidence rating:} \boxmark\ 1 \hspace{1em} \boxmark\ 2 \hspace{1em} \boxmark\ 3 \hspace{1em} \boxmark\ 4 \hspace{1em} \boxmark\ 5
+}
+
+\begin{document}
+
+\begin{flushleft}
+    \includegraphics[width=0.28\textwidth]{Logo.png}
+\end{flushleft}
+
+\begin{center}
+    {\LARGE \textbf{Study Questionnaire}}\\[0.4em]
+    {\large Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture}
+\end{center}
+
+\textbf{Participant ID:} \shortline \hfill \textbf{Date:} \shortline
+
+\section*{Section A: Screening and Background}
+
+\textbf{1. Are you 18 or older?}
+
+\yesno
+
+\textbf{2. Have you previously studied computer architecture or computer organisation?}
+
+\yesno
+
+\familiarityscale{3. How familiar are you with virtual reality?}
+
+\textbf{4. Have you used a VR headset before?}
+
+\yesno
+
+\fivepointscale{5. Before this session, how confident are you in your understanding of computer architecture concepts?}
+
+\difficultyscale{6. How difficult do you usually find topics such as instruction flow, pipelining, stack behaviour, and memory hierarchy?}
+
+\textbf{7. Which of the following topics have you previously studied? Tick all that apply.}
+
+\boxmark\ Instruction flow \hspace{1em}
+\boxmark\ Pipelining \hspace{1em}
+\boxmark\ Stack \hspace{1em}
+\boxmark\ Memory hierarchy \hspace{1em}
+\boxmark\ Assembly \hspace{1em}
+\boxmark\ None
+
+\section*{Section B: System Usability}
+
+\textit{For Questions 8--14, please select one response for each statement.}
+
+\fivepointscale{8. The VR system was easy to learn.}
+\fivepointscale{9. I could navigate the environment without difficulty.}
+\fivepointscale{10. The controls felt intuitive.}
+\fivepointscale{11. The visual presentation made the concepts easier to follow.}
+\fivepointscale{12. I could focus on the learning task without being distracted by the interface.}
+\fivepointscale{13. I would feel confident using this system again.}
+\fivepointscale{14. I experienced discomfort, motion sickness, or visual fatigue while using the system.}
+
+\section*{Section C: System Engagement}
+
+\textit{For Questions 15--19, please select one response for each statement.}
+
+\fivepointscale{15. The experience held my attention.}
+\fivepointscale{16. I felt actively involved in the learning process.}
+\fivepointscale{17. The system made the topic feel more interesting.}
+\fivepointscale{18. I was motivated to explore the concepts further.}
+\fivepointscale{19. The interactive format improved my focus compared with standard learning materials.}
+
+\section*{Section D: Perceived Learning}
+
+\textit{For Questions 20--24, please select one response for each statement.}
+
+\fivepointscale{20. The VR experience helped me understand the topic better.}
+\fivepointscale{21. The visualisations helped me build a mental model of what was happening.}
+\fivepointscale{22. The system made abstract processes easier to understand.}
+\fivepointscale{23. I would prefer this as a supplement to traditional teaching materials.}
+\fivepointscale{24. I believe I learned something useful from this session.}
+
+\section*{Section E: Conceptual Questions}
+
+\textit{For each question, tick one answer. A confidence rating can be included if you want extra analysis, but I recommend keeping it optional rather than mandatory unless confidence is a core study outcome.}
+
+\textbf{25. Which register stores the address of the next instruction?}
+
+\boxmark\ Stack Pointer \hspace{2em}
+\boxmark\ Program Counter \hspace{2em}
+\boxmark\ Instruction Register \hspace{2em}
+\boxmark\ Base Register
+
+\confidenceoptional
+
+\textbf{26. Which stage of the instruction cycle reads an instruction from memory?}
+
+\boxmark\ Decode \hspace{2em}
+\boxmark\ Fetch \hspace{2em}
+\boxmark\ Execute \hspace{2em}
+\boxmark\ Write-back
+
+\confidenceoptional
+
+\textbf{27. During instruction execution, the instruction register primarily stores:}
+
+\boxmark\ Program variables \hspace{1em}
+\boxmark\ The currently executing instruction \hspace{1em}
+\boxmark\ The stack pointer value \hspace{1em}
+\boxmark\ Cache addresses
+
+\confidenceoptional
+
+\textbf{28. What happens to the program counter after an instruction is fetched?}
+
+\boxmark\ It resets to zero \hspace{1em}
+\boxmark\ It increments to the next instruction address \hspace{1em}
+\boxmark\ It copies into the stack pointer \hspace{1em}
+\boxmark\ It stores the result of the ALU
+
+\confidenceoptional
+
+\textbf{29. What is the main purpose of the stack during function calls?}
+
+\boxmark\ Store pipeline stages \hspace{1em}
+\boxmark\ Store return addresses and local variables \hspace{1em}
+\boxmark\ Store instruction cache data \hspace{1em}
+\boxmark\ Store CPU clock values
+
+\confidenceoptional
+
+\textbf{30. Which register tracks the top of the stack?}
+
+\boxmark\ PC \hspace{2em}
+\boxmark\ SP \hspace{2em}
+\boxmark\ IR \hspace{2em}
+\boxmark\ ALU
+
+\confidenceoptional
+
+\textbf{31. When a function returns, which of the following usually happens?}
+
+\boxmark\ Stack pointer moves back to previous position \hspace{1em}
+\boxmark\ Program counter resets to zero \hspace{1em}
+\boxmark\ Cache is cleared \hspace{1em}
+\boxmark\ Registers are deleted
+
+\confidenceoptional
+
+\textbf{32. Which event normally pushes data onto the stack?}
+
+\boxmark\ Memory read \hspace{2em}
+\boxmark\ Function call \hspace{2em}
+\boxmark\ Pipeline stall \hspace{2em}
+\boxmark\ Cache miss
+
+\confidenceoptional
+
+\textbf{33. Why do CPUs use pipelining?}
+
+\boxmark\ To reduce instruction memory \hspace{1em}
+\boxmark\ To increase instruction throughput \hspace{1em}
+\boxmark\ To eliminate branching \hspace{1em}
+\boxmark\ To reduce stack usage
+
+\confidenceoptional
+
+\textbf{34. Which of the following best describes a pipeline stall?}
+
+\boxmark\ A new instruction enters the pipeline \hspace{1em}
+\boxmark\ The pipeline pauses due to a dependency or hazard \hspace{1em}
+\boxmark\ The stack pointer changes \hspace{1em}
+\boxmark\ The ALU executes multiple instructions
+
+\confidenceoptional
+
+\textbf{35. A data hazard occurs when:}
+
+\boxmark\ An instruction depends on the result of a previous instruction \hspace{1em}
+\boxmark\ Memory latency increases \hspace{1em}
+\boxmark\ Branch prediction fails \hspace{1em}
+\boxmark\ Cache memory overflows
+
+\confidenceoptional
+
+\textbf{36. Which pipeline stage usually performs arithmetic operations?}
+
+\boxmark\ Fetch \hspace{2em}
+\boxmark\ Decode \hspace{2em}
+\boxmark\ Execute \hspace{2em}
+\boxmark\ Write-back
+
+\confidenceoptional
+
+\textbf{37. Branch instructions primarily affect which component?}
+
+\boxmark\ Cache memory \hspace{1em}
+\boxmark\ Program counter \hspace{1em}
+\boxmark\ Stack pointer \hspace{1em}
+\boxmark\ Instruction register
+
+\confidenceoptional
+
+\textbf{38. If a branch prediction is incorrect:}
+
+\boxmark\ The CPU must flush incorrect instructions in the pipeline \hspace{1em}
+\boxmark\ The stack pointer resets \hspace{1em}
+\boxmark\ The instruction register deletes memory \hspace{1em}
+\boxmark\ The ALU halts
+
+\confidenceoptional
+
+\textbf{39. Why are caches used in modern CPUs?}
+
+\boxmark\ To increase instruction size \hspace{1em}
+\boxmark\ To store program code permanently \hspace{1em}
+\boxmark\ To reduce average memory access time \hspace{1em}
+\boxmark\ To remove the need for RAM
+
+\confidenceoptional
+
+\textbf{40. Which memory type is fastest?}
+
+\boxmark\ Hard disk \hspace{2em}
+\boxmark\ RAM \hspace{2em}
+\boxmark\ Cache \hspace{2em}
+\boxmark\ Virtual memory
+
+\confidenceoptional
+
+\textbf{41. Which memory component is typically largest but slowest?}
+
+\boxmark\ Cache \hspace{2em}
+\boxmark\ Registers \hspace{2em}
+\boxmark\ Main memory \hspace{2em}
+\boxmark\ Secondary storage
+
+\confidenceoptional
+
+\textbf{42. What does this instruction do? \texttt{add x1, x2, x3}}
+
+\boxmark\ Adds \texttt{x2} and \texttt{x3} and stores the result in \texttt{x1}\\
+\boxmark\ Adds \texttt{x1} and \texttt{x2} and stores the result in \texttt{x3}\\
+\boxmark\ Moves \texttt{x2} into \texttt{x3}\\
+\boxmark\ Multiplies registers
+
+\confidenceoptional
+
+\textbf{43. What does this instruction do? \texttt{addi x5, x0, 10}}
+
+\boxmark\ Stores 10 into \texttt{x5} \hspace{1em}
+\boxmark\ Clears \texttt{x5} \hspace{1em}
+\boxmark\ Moves \texttt{x5} into \texttt{x0} \hspace{1em}
+\boxmark\ Adds two registers
+
+\confidenceoptional
+
+\textbf{44. Which instruction type loads data from memory into a register?}
+
+\boxmark\ ADD \hspace{2em}
+\boxmark\ STORE \hspace{2em}
+\boxmark\ LOAD \hspace{2em}
+\boxmark\ JUMP
+
+\confidenceoptional
+
+\textbf{45. Consider this sequence: \texttt{lw x1, 0(x2)} followed by \texttt{add x3, x1, x4}. Why might a pipeline stall occur?}
+
+\boxmark\ Because the second instruction depends on \texttt{x1}\\
+\boxmark\ Because \texttt{x2} is unused\\
+\boxmark\ Because the program counter resets\\
+\boxmark\ Because memory is cleared
+
+\confidenceoptional
+
+\textbf{46. Which register usually holds the return address after a function call in RISC-V?}
+
+\boxmark\ \texttt{x0} \hspace{2em}
+\boxmark\ \texttt{ra} \hspace{2em}
+\boxmark\ \texttt{sp} \hspace{2em}
+\boxmark\ \texttt{gp}
+
+\confidenceoptional
+
+\textbf{47. What is the role of register \texttt{x0} in RISC-V?}
+
+\boxmark\ Stores the program counter \hspace{1em}
+\boxmark\ Always contains the value 0 \hspace{1em}
+\boxmark\ Stores return addresses \hspace{1em}
+\boxmark\ Tracks the stack pointer
+
+\confidenceoptional
+
+\textbf{48. What does this instruction do? \texttt{lw x5, 0(x10)}}
+
+\boxmark\ Stores \texttt{x5} into memory \hspace{1em}
+\boxmark\ Loads a word from memory into \texttt{x5} \hspace{1em}
+\boxmark\ Moves \texttt{x10} into \texttt{x5} \hspace{1em}
+\boxmark\ Clears memory
+
+\confidenceoptional
+
+\textbf{49. What does this instruction do? \texttt{sw x5, 4(x10)}}
+
+\boxmark\ Value from \texttt{x5} is stored in memory \hspace{1em}
+\boxmark\ Value from memory is loaded into \texttt{x5} \hspace{1em}
+\boxmark\ \texttt{x10} is overwritten \hspace{1em}
+\boxmark\ Stack pointer moves
+
+\confidenceoptional
+
+\textbf{50. What is this instruction commonly used for? \texttt{addi sp, sp, -16}}
+
+\boxmark\ Allocate space on the stack \hspace{1em}
+\boxmark\ Reset stack pointer \hspace{1em}
+\boxmark\ Jump to a function \hspace{1em}
+\boxmark\ Clear registers
+
+\confidenceoptional
+
+\textbf{51. What is this instruction commonly used for? \texttt{addi sp, sp, 16}}
+
+\boxmark\ Allocates stack memory \hspace{1em}
+\boxmark\ Frees stack memory after a function returns \hspace{1em}
+\boxmark\ Loads memory \hspace{1em}
+\boxmark\ Changes the program counter
+
+\confidenceoptional
+
+\textbf{52. What does this instruction do? \texttt{beq x1, x2, label}}
+
+\boxmark\ Jump if \texttt{x1 > x2} \hspace{1em}
+\boxmark\ Jump if \texttt{x1 == x2} \hspace{1em}
+\boxmark\ Jump if \texttt{x1 < x2} \hspace{1em}
+\boxmark\ Always jump
+
+\confidenceoptional
+
+\textbf{53. What does this instruction do? \texttt{jal ra, func}}
+
+\boxmark\ Calls a function and stores the return address in \texttt{ra}\\
+\boxmark\ Jumps without saving the return address\\
+\boxmark\ Loads memory\\
+\boxmark\ Writes to the stack
+
+\confidenceoptional
+
+\textbf{54. Put the instruction stages in the correct order.}
+
+\boxmark\ Execute, Fetch, Decode, Write-back\\
+\boxmark\ Fetch, Decode, Execute, Write-back\\
+\boxmark\ Decode, Fetch, Execute, Write-back\\
+\boxmark\ Fetch, Execute, Decode, Write-back
+
+\confidenceoptional
+
+\section*{Section F: Open-Ended Feedback}
+
+\textbf{55. What part of the experience helped your understanding most?}
+\lineanswer
+
+\textbf{56. What part was confusing or ineffective?}
+\lineanswer
+
+\textbf{57. What would you improve in the system?}
+\lineanswer
+
+\textbf{58. Were there any moments where the VR interface got in the way of learning?}
+\lineanswer
+
+\textbf{59. Would you use this again as a learning aid? Why or why not?}
+
+\vspace{4em}
+\hrulefill
+
+\end{document}

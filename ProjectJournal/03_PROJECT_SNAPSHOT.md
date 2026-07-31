@@ -114,6 +114,7 @@ Current non-build focus:
 - participant-session support
 - presentation preparation
 - thesis-facing consolidation of motivation, literature framing, and learning outcomes
+- methodology consolidation so later thesis writing has stable reference notes instead of scattered chat-only context
 
 Current presentation state:
 - the presentation deck has been condensed into the active delivery version
@@ -123,6 +124,16 @@ Current presentation state:
   - what was built in response
   - how the learner experiences it
   - how the participant study evaluates it
+
+Current document/reference state:
+- `Documents/Literature_Review` now holds readings, reading notes, shortlist material, and bibliography-support files
+- `Documents/Methodology_and_Study` now holds methodology drafts, comparative-analysis notes, hypothesis support, and the reusable participant-study notes template
+- private participant notes and recruitment logistics are now separated into ignored `Private` subfolders
+- `Documents/Project_Reference` now holds the higher-value long-lived reference files:
+  - learning outcomes
+  - real single-cycle MIPS vs VR prototype mapping
+  - research plan
+- `Latex` now holds `references.bib` and the questionnaire-related TeX material
 
 ## Authored Register Bank Reference
 

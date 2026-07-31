@@ -12,14 +12,20 @@ https://youtu.be/Y8tFYnWeLtI
 - `ThePrototype/`  
   The main Unity project. This is where the actual VR system lives.
 
-- `Documents/Readings/`  
-  The research papers and background material that helped shape the project direction, research gap, and study design.
+- `Documents/Literature_Review/`  
+  Research papers, reading notes, and bibliography support material used to shape the research gap and dissertation framing.
 
 - `Documents/Presentation/Presentation_PriyanshNayak.pptx`  
   The presentation deck used for the dissertation demo.
 
+- `Documents/Methodology_and_Study/`  
+  Study-planning notes, methodology drafts, research-question support notes, and reusable participant-study templates.
+
 - `ProjectJournal/`  
   My running project notes: progress tracking, design decisions, planning, pivots, and general project state over time.
+
+- `Latex/`  
+  LaTeX-side material, including the working bibliography file and questionnaire-related TeX files.
 
 ## Quick Project Summary
 

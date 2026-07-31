@@ -1,0 +1,288 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage[margin=1in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{lmodern}
+\usepackage{setspace}
+\usepackage{enumitem}
+\usepackage{amssymb}
+\usepackage{needspace}
+
+\setstretch{1.1}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.6em}
+
+\newcommand{\boxmark}{\(\square\)}
+\newcommand{\lineanswer}{\vspace{2.5em}\hrulefill}
+\newcommand{\shortline}{\underline{\hspace{3cm}}}
+\newcommand{\yesno}{\boxmark\ Yes \hspace{2em} \boxmark\ No}
+
+\newcommand{\responseline}[5]{%
+    \begin{flushleft}
+    \boxmark\ #1 \hspace{1.2em}
+    \boxmark\ #2 \hspace{1.2em}
+    \boxmark\ #3 \hspace{1.2em}
+    \boxmark\ #4 \hspace{1.2em}
+    \boxmark\ #5
+    \end{flushleft}
+}
+
+\newcommand{\fivepointscale}[1]{%
+    \Needspace{4\baselineskip}%
+    \textbf{#1}
+    
+    \responseline{Strongly disagree}{Disagree}{Neither agree nor disagree}{Agree}{Strongly agree}
+}
+
+\newcommand{\familiarityscale}[1]{%
+    \Needspace{4\baselineskip}%
+    \textbf{#1}
+    
+    \responseline{None}{Limited}{Moderate}{Good}{High}
+}
+
+\newcommand{\difficultyscale}[1]{%
+    \Needspace{4\baselineskip}%
+    \textbf{#1}
+    
+    \responseline{Very easy}{Easy}{Neutral}{Difficult}{Very difficult}
+}
+
+\newcommand{\confidenceoptional}{%
+    \textit{Optional confidence rating:} \boxmark\ 1 \hspace{1em} \boxmark\ 2 \hspace{1em} \boxmark\ 3 \hspace{1em} \boxmark\ 4 \hspace{1em} \boxmark\ 5
+}
+
+\begin{document}
+
+\begin{flushleft}
+    \includegraphics[width=0.28\textwidth]{Logo.png}
+\end{flushleft}
+
+\begin{center}
+    {\LARGE \textbf{Study Questionnaire}}\\[0.4em]
+    {\large Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture}
+\end{center}
+
+\textbf{Participant ID:} \shortline \hfill \textbf{Date:} \shortline
+
+\section*{Section A: Screening and Background}
+
+\textbf{1. Are you 18 or older?}
+
+\yesno
+
+\textbf{2. Have you previously studied computer architecture or computer organisation?}
+
+\yesno
+
+\familiarityscale{3. How familiar are you with virtual reality?}
+
+\textbf{3. Have you used a VR headset before?}
+
+\yesno
+
+\fivepointscale{5. Before this session, how confident are you in your understanding of computer architecture concepts?}
+
+\difficultyscale{6. How difficult do you usually find topics such as instruction flow, pipelining, stack behaviour, and memory hierarchy?}
+
+\textbf{4. Which of the following topics have you previously studied? Tick all that apply.}
+
+\boxmark\ Instruction flow \hspace{1em}
+\boxmark\ Pipelining \hspace{1em}
+\boxmark\ Stack \hspace{1em}
+\boxmark\ Memory hierarchy \hspace{1em}
+\boxmark\ Assembly \hspace{1em}
+\boxmark\ None
+
+\section*{Section B: System Usability}
+
+\textit{For Questions 8--14, please select one response for each statement.}
+
+\fivepointscale{8. The VR system was easy to learn.}
+\fivepointscale{9. I could navigate the environment without difficulty.}
+\fivepointscale{10. The controls felt intuitive.}
+\fivepointscale{11. The visual presentation made the concepts easier to follow.}
+\fivepointscale{12. I could focus on the learning task without being distracted by the interface.}
+\fivepointscale{13. I would feel confident using this system again.}
+\fivepointscale{14. I experienced discomfort, motion sickness, or visual fatigue while using the system.}
+
+\section*{Section C: System Engagement}
+
+\textit{For Questions 15--19, please select one response for each statement.}
+
+\fivepointscale{15. The experience held my attention.}
+\fivepointscale{16. I felt actively involved in the learning process.}
+\fivepointscale{17. The system made the topic feel more interesting.}
+\fivepointscale{18. I was motivated to explore the concepts further.}
+\fivepointscale{19. The interactive format improved my focus compared with standard learning materials.}
+
+\section*{Section D: Perceived Learning}
+
+\textit{For Questions 20--24, please select one response for each statement.}
+
+\fivepointscale{20. The VR experience helped me understand the topic better.}
+\fivepointscale{21. The visualisations helped me build a mental model of what was happening.}
+\fivepointscale{22. The system made abstract processes easier to understand.}
+\fivepointscale{23. I would prefer this as a supplement to traditional teaching materials.}
+\fivepointscale{24. I believe I learned something useful from this session.}
+
+\section*{Section E: Conceptual Questions}
+
+\textit{For each question, tick one answer. A confidence rating can be included.}
+
+\textbf{25. Which register stores the address of the next instruction?}
+
+\boxmark\ Stack Pointer \hspace{2em}
+\boxmark\ Program Counter \hspace{2em}
+\boxmark\ Instruction Register \hspace{2em}
+\boxmark\ Base Register
+
+\confidenceoptional
+
+\textbf{26. Which stage of the instruction cycle reads an instruction from memory?}
+
+\boxmark\ Decode \hspace{2em}
+\boxmark\ Fetch \hspace{2em}
+\boxmark\ Execute \hspace{2em}
+\boxmark\ Write-back
+
+\confidenceoptional
+
+\textbf{27. During instruction execution, the instruction register primarily stores:}
+
+\boxmark\ Program variables \hspace{1em}
+\boxmark\ The currently executing instruction \hspace{1em}
+\boxmark\ The stack pointer value \hspace{1em}
+\boxmark\ Cache addresses
+
+\confidenceoptional
+
+\textbf{28. What happens to the program counter after an instruction is fetched?}
+
+\boxmark\ It resets to zero \hspace{1em}
+\boxmark\ It increments to the next instruction address \hspace{1em}
+\boxmark\ It copies into the stack pointer \hspace{1em}
+\boxmark\ It stores the result of the ALU
+
+\confidenceoptional
+
+\textbf{29. Which pipeline stage usually performs arithmetic operations?}
+
+\boxmark\ Fetch \hspace{2em}
+\boxmark\ Decode \hspace{2em}
+\boxmark\ Execute \hspace{2em}
+\boxmark\ Write-back
+
+\confidenceoptional
+
+\textbf{30. Branch instructions primarily affect which component?}
+
+\boxmark\ Cache memory \hspace{1em}
+\boxmark\ Program counter \hspace{1em}
+\boxmark\ Stack pointer \hspace{1em}
+\boxmark\ Instruction register
+
+\confidenceoptional
+
+\textbf{31. What does this instruction do? \texttt{add \$t0, \$t1, \$t2}}
+
+\boxmark\ Adds \texttt{\$t1} and \texttt{\$t2} and stores the result in \texttt{\$t0}\\
+\boxmark\ Adds \texttt{\$t0} and \texttt{\$t1} and stores the result in \texttt{\$t2}\\
+\boxmark\ Moves \texttt{\$t1} into \texttt{\$t2}\\
+\boxmark\ Multiplies registers
+
+\confidenceoptional
+
+\textbf{32. What does this instruction do? \texttt{addi \$t0, \$zero, 10}}
+
+\boxmark\ Stores 10 into \texttt{\$t0} \hspace{1em}
+\boxmark\ Clears \texttt{\$t0} \hspace{1em}
+\boxmark\ Moves \texttt{\$t0} into \texttt{\$zero} \hspace{1em}
+\boxmark\ Adds two registers
+
+\confidenceoptional
+
+\textbf{33. Which instruction type loads data from memory into a register?}
+
+\boxmark\ ADD \hspace{2em}
+\boxmark\ STORE \hspace{2em}
+\boxmark\ LOAD \hspace{2em}
+\boxmark\ JUMP
+
+\confidenceoptional
+
+\textbf{34. What is the role of register \texttt{\$zero} in MIPS?}
+
+\boxmark\ Stores the program counter \hspace{1em}
+\boxmark\ Always contains the value 0 \hspace{1em}
+\boxmark\ Stores return addresses \hspace{1em}
+\boxmark\ Tracks the stack pointer
+
+\confidenceoptional
+
+\textbf{35. What does this instruction do? \texttt{lw \$t0, 0(\$s0)}}
+
+\boxmark\ Stores \texttt{\$t0} into memory \hspace{1em}
+\boxmark\ Loads a word from memory into \texttt{\$t0} \hspace{1em}
+\boxmark\ Moves \texttt{\$s0} into \texttt{\$t0} \hspace{1em}
+\boxmark\ Clears memory
+
+\confidenceoptional
+
+\textbf{36. What does this instruction do? \texttt{sw \$t0, 4(\$s0)}}
+
+\boxmark\ Value from \texttt{\$t0} is stored in memory \hspace{1em}
+\boxmark\ Value from memory is loaded into \texttt{\$t0} \hspace{1em}
+\boxmark\ \texttt{\$s0} is overwritten \hspace{1em}
+\boxmark\ Stack pointer moves
+
+\confidenceoptional
+
+\textbf{37. What does this instruction do? \texttt{beq \$t0, \$t1, label}}
+
+\boxmark\ Jump if \texttt{\$t0 > \$t1} \hspace{1em}
+\boxmark\ Jump if \texttt{\$t0 == \$t1} \hspace{1em}
+\boxmark\ Jump if \texttt{\$t0 < \$t1} \hspace{1em}
+\boxmark\ Always jump
+
+\confidenceoptional
+
+\textbf{38. What does this instruction do? \texttt{j label}}
+
+\boxmark\ Jumps to \texttt{label} unconditionally \hspace{1em}
+\boxmark\ Jumps only if two registers are equal \hspace{1em}
+\boxmark\ Stores the return address in \texttt{\$ra} \hspace{1em}
+\boxmark\ Loads a value from memory
+
+\confidenceoptional
+
+\textbf{39. Put the instruction stages in the correct order.}
+
+\boxmark\ Execute, Fetch, Decode, Write-back\\
+\boxmark\ Fetch, Decode, Execute, Write-back\\
+\boxmark\ Decode, Fetch, Execute, Write-back\\
+\boxmark\ Fetch, Execute, Decode, Write-back
+
+\confidenceoptional
+
+\section*{Section F: Open-Ended Feedback}
+
+\textbf{40. What part of the experience helped your understanding most?}
+\lineanswer
+
+\textbf{41. What part was confusing or ineffective?}
+\lineanswer
+
+\textbf{42. What would you improve in the system?}
+\lineanswer
+
+\textbf{43. Were there any moments where the VR interface got in the way of learning?}
+\lineanswer
+
+\textbf{44. Would you use this again as a learning aid? Why or why not?}
+
+\vspace{4em}
+\hrulefill
+
+\end{document}

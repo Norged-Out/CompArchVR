@@ -1,0 +1,17 @@
+Section E Answer Key
+
+25. Program Counter
+26. Fetch
+27. The currently executing instruction
+28. It increments to the next instruction address
+29. Execute
+30. Program counter
+31. Adds $t1 and $t2 and stores the result in $t0
+32. Stores 10 into $t0
+33. LOAD
+34. Always contains the value 0
+35. Loads a word from memory into $t0
+36. Value from $t0 is stored in memory
+37. Jump if $t0 == $t1
+38. Jumps to label unconditionally
+39. Fetch, Decode, Execute, Write-back
