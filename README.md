@@ -19,7 +19,10 @@ https://youtu.be/Y8tFYnWeLtI
   The presentation deck used for the dissertation demo.
 
 - `Documents/Methodology_and_Study/`  
-  Study-planning notes, methodology drafts, research-question support notes, and reusable participant-study templates.
+  The tracked study-side reference material, including the live study procedure and reusable participant-session template.
+
+- `Documents/Project_Reference/`  
+  Long-lived dissertation reference material, including learning outcomes, the single-cycle MIPS-to-VR mapping note, and the original research plan.
 
 - `ProjectJournal/`  
   My running project notes: progress tracking, design decisions, planning, pivots, and general project state over time.

@@ -1,3 +1,23 @@
 \chapter{Introduction}
 
-Todo.
+Computer architecture is not usually difficult because students cannot name the parts of a datapath. The harder step is following what those parts are doing together. Registers, control signals, ALU behaviour, memory access, and program-counter updates are often introduced through diagrams, tables, and short instruction traces. Those materials are useful, but they do not always make the movement of data or the order of decisions easy to follow. A student may recognise the register file, the ALU, and the memory blocks while still being unsure about what is happening during the execution of a particular instruction.
+
+This project grew out of that problem. During repeated exposure to undergraduate Computer Organization teaching, the same kinds of confusion appeared again and again. Students often found it difficult to treat the datapath as a process rather than as a picture. They mixed up register values, memory contents, and memory addresses. They could sometimes repeat a worked example, but had more trouble explaining why a value moved in one direction rather than another, or why one control choice led to a different final state. In practice, the most useful explanation was often the simplest one: draw over the datapath and walk through the instruction step by step.
+
+The dissertation therefore explores a focused virtual reality learning environment for single-cycle MIPS instruction execution. The system is not intended to replace lectures, diagrams, or conventional simulators. It is intended as a supplementary tool that gives learners another way to work through instruction flow, value movement, and state change. The prototype organises the experience around Instruction Fetch, Instruction Decode, Execute, Memory Access, Write-Back, and PC Update, and asks the learner to work through supported instructions inside that structure.
+
+The scope is deliberately narrow. The prototype does not try to cover the whole of computer architecture, and it is not presented as a cycle-accurate simulator. It concentrates on a selected set of single-cycle MIPS instructions and on a bounded set of learning tasks: decoding the instruction, selecting the right operands, following the path of execution, making control-related choices, and reasoning about the resulting architectural state. To support different stages of learning, the environment provides three modes, Learning, Practice, and Test, which reduce guidance over time while keeping the same overall lesson flow.
+
+\section{Research Question and Scope}
+
+Within that bounded scope, the dissertation is guided by the following research question:
+
+\begin{quote}
+\textit{To what extent does an immersive virtual reality-based learning environment improve students' understanding of abstract computer architecture concepts compared to traditional teaching methods?}
+\end{quote}
+
+The wording is intentionally cautious. The aim is not to argue that virtual reality is broadly superior to other teaching methods. The aim is to examine whether this particular prototype, used in this particular teaching context, offers enough educational value to justify the design and the study. For that reason, the evaluation is treated as exploratory and formative rather than as a final controlled proof of superiority over traditional approaches.
+
+\section{Structure of the Dissertation}
+
+The remainder of the dissertation is structured as follows. Chapter 2 places the project in context by reviewing the relevant background and related work, with particular attention to computer architecture learning, virtual reality in computer science education, and the design constraints that shape educational VR systems. Chapter 3 explains the design of the learning environment, including the learning outcomes, pedagogical choices, environment structure, and major abstractions used to make datapath behaviour teachable in VR. Chapter 4 describes how the system was implemented. Chapter 5 sets out the methodology used for the participant study, including the procedure, instruments, and ethical boundaries. Chapter 6 presents and discusses the results. Chapter 7 concludes the dissertation and identifies directions for future work.
