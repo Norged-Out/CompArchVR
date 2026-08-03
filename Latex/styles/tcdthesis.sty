@@ -1,0 +1,198 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{tcdthesis}[2026/08/03 Lean TCD thesis helpers]
+
+\RequirePackage[a4paper,textwidth=155mm,top=25mm,bottom=30mm]{geometry}
+\RequirePackage{setspace}
+\RequirePackage{graphicx}
+\RequirePackage{natbib}
+\RequirePackage{caption}
+\RequirePackage{hyperref}
+\RequirePackage{listings}
+\RequirePackage{float}
+
+\hypersetup{hidelinks}
+\captionsetup{width=.85\linewidth}
+\setlength{\parindent}{12mm}
+
+\providecommand{\singlespace}{\singlespacing}
+\providecommand{\oneandhalfspace}{\onehalfspacing}
+\providecommand{\doublespace}{\doublespacing}
+
+\newcommand{\thesisschool}{School of Computer Science and Statistics}
+\newcommand{\thesisuniversity}{University of Dublin, Trinity College}
+\newcommand{\thesisauthor}{Ima Student}
+\newcommand{\thesisauthorpreviousdegrees}{}
+\newcommand{\thesismonth}{May}
+\newcommand{\thesisyear}{1994}
+\newcommand{\thesissubmissiondate}{\thesismonth~\thesisyear}
+\newcommand{\thesistitle}{Title}
+\newcommand{\thesissupervisor}{Supervisor}
+\newcommand{\thesisdegree}{Master of Science}
+\newcommand{\thesisdegreestream}{}
+\newcommand{\thesisdegreeabbreviation}{M.Sc.}
+\newcommand{\thesistype}{Dissertation}
+\newcommand{\thesiscrestpath}{figures/TrinityCrest.png}
+
+\newcommand{\mastersthesis}{%
+  \renewcommand{\thesisdegree}{Master of Science in Computer Science}%
+  \renewcommand{\thesisdegreeabbreviation}{M.Sc.}}
+
+\newcommand{\phdthesis}{%
+  \renewcommand{\thesisdegree}{Doctor of Philosophy}%
+  \renewcommand{\thesisdegreeabbreviation}{Ph.D.}%
+  \renewcommand{\thesistype}{Thesis}}
+
+\newcommand{\includecode}[4]{%
+  \lstinputlisting[
+    floatplacement=H,
+    caption={[#1]#2},
+    captionpos=b,
+    frame=single,
+    label={#3}
+  ]{#4}}
+
+\newcommand{\includescalefigure}[5]{%
+  \begin{figure}[htb]
+  \centering
+  \includegraphics[width=#4\linewidth]{#5}
+  \caption[#2]{#3}
+  \label{#1}
+  \end{figure}}
+
+\newcommand{\includefigure}[4]{%
+  \begin{figure}[htb]
+  \centering
+  \includegraphics{#4}
+  \caption[#2]{#3}
+  \label{#1}
+  \end{figure}}
+
+\newcommand{\thesissigline}[1]{%
+  \noindent\makebox[2.5in]{\hrulefill}\par
+  \vspace{-0.4\baselineskip}
+  \noindent\makebox[2.5in][l]{#1}}
+
+\newcommand{\thesistitlepage}{%
+  \begin{titlepage}
+    \thispagestyle{empty}
+    \begin{center}
+      \IfFileExists{\thesiscrestpath}{%
+        \includegraphics[width=0.78\textwidth]{\thesiscrestpath}\par
+        \vspace{1.5cm}
+      }{}
+      {\Large \thesisschool\par}
+      \vspace{1.5cm}
+      {\Huge\bfseries \thesistitle\par}
+      \vspace{1cm}
+      {\Large \thesisauthor\thesisauthorpreviousdegrees\par}
+      \vspace{2cm}
+      {A \thesistype\ submitted in partial fulfilment\par}
+      {of the requirements for the degree of\par}
+      \vspace{0.5cm}
+      {\large \thesisdegree\thesisdegreestream\par}
+      \vfill
+      Supervisor: \thesissupervisor\par
+      \thesismonth\ \thesisyear
+    \end{center}
+  \end{titlepage}
+  \clearpage}
+
+\newcommand{\thesisdeclarationpage}{%
+  \clearpage
+  \thispagestyle{empty}
+  \begin{center}
+    \section*{Declaration}
+  \end{center}
+  \vspace{20mm}
+  I, the undersigned, declare that this work has not previously been submitted as an
+  exercise for a degree at this, or any other University, and that unless otherwise
+  stated, is my own work.
+
+  \vspace{25mm}
+  \thesissigline{\thesisauthor}
+  \hfill \thesissubmissiondate\par
+  \clearpage}
+
+\newenvironment{thesisabstract}
+  {\chapter*{Abstract}\addcontentsline{toc}{chapter}{Abstract}}
+  {\clearpage}
+
+\newenvironment{thesisacknowledgments}
+  {\chapter*{Acknowledgments}\addcontentsline{toc}{chapter}{Acknowledgments}}
+  {\clearpage}
+
+\makeatletter
+\newcommand{\@chapteralignment}{\raggedright}
+
+\newcommand{\leftchapter}{\renewcommand{\@chapteralignment}{\raggedright}}
+\newcommand{\centerchapter}{\renewcommand{\@chapteralignment}{\centering}}
+\newcommand{\rightchapter}{\renewcommand{\@chapteralignment}{\raggedleft}}
+
+% Mirror the template's Contents wording for numbered chapters without
+% dragging in the rest of the legacy style file.
+\newcommand{\@chaptertype}{\chaptername}
+
+\def\@makechapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \@chapteralignment \reset@font
+    \ifnum \c@secnumdepth >\m@ne
+      \huge\bfseries \@chapapp{} \thechapter\par
+      \vskip 20\p@
+    \fi
+    \Huge \bfseries #1\par
+    \nobreak
+    \vskip 40\p@
+  }}
+
+\def\@makeschapterhead#1{%
+  \vspace*{50\p@}%
+  {\parindent \z@ \@chapteralignment \reset@font
+    \Huge \bfseries #1\par
+    \nobreak
+    \vskip 40\p@
+  }}
+
+% Keep chapter headings visually lean in the document, but write the same
+% "Chapter N Title" style entries to the table of contents as the template.
+\renewcommand{\chapter}{\clearpage
+   \renewcommand{\@chaptertype}{\chaptername}%
+   \thispagestyle{plain}%
+   \global\@topnum\z@
+   \@afterindentfalse
+   \secdef\@chapter\@schapter
+}
+
+\def\@chapter[#1]#2{%
+  \ifnum \c@secnumdepth >\m@ne
+    \refstepcounter{chapter}%
+    \typeout{\@chapapp\space\thechapter.}%
+    \addcontentsline{toc}{chapter}%
+      {\@chaptertype{} \protect\numberline{\thechapter}#1}%
+  \else
+    \addcontentsline{toc}{chapter}{\@chaptertype{} #1}%
+  \fi
+  \chaptermark{#1}%
+  \addtocontents{lof}{\protect\addvspace{10\p@}}%
+  \addtocontents{lot}{\protect\addvspace{10\p@}}%
+  \if@twocolumn
+    \@topnewpage[\@makechapterhead{#2}]%
+  \else
+    \@makechapterhead{#2}%
+    \@afterheading
+  \fi
+}
+
+% Use the same explicit Contents wrapper the template uses so the ToC page
+% follows the expected front-matter chapter styling.
+\renewcommand\tableofcontents{%
+  \if@twocolumn
+    \@restonecoltrue\onecolumn
+  \else
+    \@restonecolfalse
+  \fi
+  \chapter*{\contentsname
+    \@mkboth{\MakeUppercase\contentsname}{\MakeUppercase\contentsname}}%
+  \@starttoc{toc}%
+  \if@restonecol\twocolumn\fi
+}
+\makeatother

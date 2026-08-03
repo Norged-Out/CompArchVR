@@ -1,0 +1,57 @@
+\documentclass[a4paper,12pt,oneside]{report}
+
+\usepackage{styles/tcdthesis}
+
+\mastersthesis
+\oneandhalfspace
+\leftchapter
+
+\graphicspath{{figures/}}
+
+\renewcommand{\thesisschool}{School of Computer Science and Statistics}
+\renewcommand{\thesisuniversity}{University of Dublin, Trinity College}
+\renewcommand{\thesisauthor}{Priyansh Nayak}
+\renewcommand{\thesisauthorpreviousdegrees}{}
+\renewcommand{\thesismonth}{August}
+\renewcommand{\thesisyear}{2026}
+\renewcommand{\thesissubmissiondate}{August 2026}
+\renewcommand{\thesistitle}{Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture}
+\renewcommand{\thesissupervisor}{Gareth Young}
+\renewcommand{\thesisdegree}{Master of Science in Computer Science}
+\renewcommand{\thesisdegreestream}{ (Augmented and Virtual Reality)}
+\renewcommand{\thesisdegreeabbreviation}{M.Sc.}
+\renewcommand{\thesistype}{Dissertation}
+
+\begin{document}
+
+\pagenumbering{roman}
+
+\thesistitlepage
+\thesisdeclarationpage
+
+\begin{thesisabstract}
+Abstract to be written.
+\end{thesisabstract}
+
+\begin{thesisacknowledgments}
+Acknowledgments to be written.
+\end{thesisacknowledgments}
+
+\tableofcontents
+
+\clearpage
+\pagenumbering{arabic}
+
+\include{sections/intro}
+\include{sections/related_work}
+\include{sections/design}
+\include{sections/implementation}
+\include{sections/methodology}
+\include{sections/results}
+\include{sections/conclusion}
+
+\addcontentsline{toc}{chapter}{Bibliography}
+\bibliographystyle{apalike}
+\bibliography{references}
+
+\end{document}
