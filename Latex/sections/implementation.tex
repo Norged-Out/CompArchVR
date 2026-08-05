@@ -4,34 +4,34 @@
 
 \textit{What should go here:} briefly explain how the implemented prototype realises the design presented in Chapter 4. This opening should frame the chapter as the concrete system-level realization of the earlier pedagogical decisions.
 
-\section{Technology Stack and Platform}
+\section{Platform and Tooling}
 
-\textit{What should go here:} identify the main development environment, engine, XR tooling, and target platform. Include only the technologies that materially shaped the build or the participant-study version.
+\textit{What should go here:} identify the main development environment, engine, XR tooling, target headset, and any supporting systems that materially shaped the build used in the participant study.
 
-\section{System Architecture}
+\section{System Architecture and Lesson Orchestration}
 
-\textit{What should go here:} describe the high-level software structure of the prototype. This should explain the major subsystems and how lesson flow, UI, interaction handling, instruction data, and phase-specific logic are divided across them.
+\textit{What should go here:} describe the high-level software structure of the prototype. This section should explain how lesson flow, authored instruction data, UI panels, validation, interaction handling, and phase-specific systems are divided across the main controllers and support classes.
 
-\section{Lesson Flow and Runtime Control}
+\section{Scene Layout and Runtime State}
 
-\textit{What should go here:} explain how an instruction lesson is sequenced at runtime, from entry through decode, execution-related stages, validation, and completion. This is the right place for the overall control flow that ties the scene together.
+\textit{What should go here:} explain how the authored environment is organised in practice and how the lesson state progresses at runtime. This is the place for the overall control flow that ties scene layout, lesson progression, validation gates, and completion handling together.
 
-\section{Implementation of the Core Interaction Areas}
+\section{Instruction, Register, and Data Representation}
 
-\textit{What should go here:} describe the major implemented teaching stations or subsystems in turn, such as fetch, decode, register interaction, ALU, memory, write-back, and PC update. Focus on what each area actually does in the build and why it matters instructionally.
+\textit{What should go here:} explain how authored instructions, runtime lesson instances, register values, memory state, datapackets, and other important teaching objects are represented in the final build. This is where the system's concrete handling of architectural state should be made clear.
+
+\section{Phase Implementations}
+
+\textit{What should go here:} describe the major implemented teaching stations or subsystems in turn, such as fetch, decode, register interaction, ALU, memory, write-back, and PC update. Focus on what each area actually does in the build and how the lesson logic is realised technically.
 
 \section{Mode-Specific Behaviour}
 
-\textit{What should go here:} explain how Learning, Practice, and Test differ at the implementation level. This should cover guidance surfaces, validation strictness, hint availability, information hiding, and failure or restart behaviour.
+\textit{What should go here:} explain how Learning, Practice, and Test differ at the implementation level. This should cover guidance surfaces, validation strictness, hint availability, information hiding, restart behaviour, and how the shared baseline lesson logic is adapted across modes.
 
-\section{Supported Instruction Set}
+\section{Supported Instruction Set and Study Baseline}
 
-\textit{What should go here:} state which instruction categories and specific instructions are supported in the final prototype, and explain why that set was chosen. This section should also note any important exclusions that remain outside the current build.
+\textit{What should go here:} state which instruction categories and specific instructions are supported in the final prototype, explain why that set was chosen, and identify what counted as the participant-study baseline. This section should also note important exclusions that remain outside the current build.
 
-\section{Build Constraints, Iteration, and Final Study Baseline}
+\section{Implementation Constraints and Current Limitations}
 
-\textit{What should go here:} document the practical constraints that shaped the final build, including stability concerns, participant-study readiness, and any late decisions to stop expanding features in order to preserve a reliable evaluation baseline.
-
-\section{Current Limitations}
-
-\textit{What should go here:} summarise the important implementation limits that should be acknowledged before the results chapter, such as bounded architectural coverage, simplified behaviour, non-cycle-accurate abstractions, and any remaining usability or technical constraints.
+\textit{What should go here:} document the practical constraints that shaped the final build, including stability concerns, participant-study readiness, bounded architectural coverage, deliberately simplified behaviour, non-cycle-accurate abstractions, and any technical limits that should be acknowledged before the results chapter.

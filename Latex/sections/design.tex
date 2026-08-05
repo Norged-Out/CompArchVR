@@ -1,33 +1,108 @@
 \chapter{Design}
 
-\section{Design Goals}
+The previous chapters established the teaching difficulty to which this project responds and the bounded way in which it is evaluated. What remains is to explain how that difficulty was translated into a learning environment. The design problem was to decide which parts of instruction execution needed to become visible, which decisions should be left in the learner's hands, which abstractions could clarify the process without distorting it beyond use, and how far the whole system could be narrowed while still addressing the original educational concern in a serious way.
 
-\textit{What should go here:} restate the specific teaching problem the design responds to. Connect the chapter back to the methodology by showing that the design exists to address the stated learning outcomes and hypotheses rather than to showcase VR for its own sake.
+Computer architecture is ordinarily taught through a gradual build-up that begins with logic and simpler hardware ideas before moving toward datapaths, control, and instruction execution, and that gradual build-up remains essential \cite{tcdComputerArchitectureI}. The problem that motivated this project appears later, when a learner has already seen the structure of the machine and still struggles to connect instruction format, datapath structure, value movement, and state change into one account of what the processor is doing. The design of the prototype therefore grew out of an attempt to support that particular transition from recognition to explanation.
 
-\section{Learning Outcomes as Design Drivers}
+\section{Learning Outcomes and Design Scope}
 
-\textit{What should go here:} show how each learning outcome shaped the structure of the environment. This is where the dissertation should make explicit that the prototype was scoped around supported instruction execution tasks rather than around the whole of computer architecture.
+The prototype was designed around a specific set of learning outcomes rather than around the broader and vaguer ambition of helping students ``understand computer architecture.'' Those outcomes were used to decide what the environment should teach, what kinds of learner action it had to preserve, and where the project had to stop. \\
+By completing the VR experience, learners should be able to
 
-\section{Pedagogical Approach}
+\begin{enumerate}
+\item Decode the relevant fields of a supported single-cycle MIPS instruction;
+\item Explain the roles of the major datapath components involved in instruction execution;
+\item Trace an instruction and its data through the major stages of a single-cycle datapath;
+\item Select the correct operands and control-facing choices needed to execute a supported instruction;
+\item Predict the architectural state changes caused by that instruction;
+\item Compare how different instruction classes change datapath behaviour; and
+\item Complete a supported instruction walkthrough with reduced or no guidance.
+\end{enumerate}
 
-\textit{What should go here:} explain the teaching model behind the system. This should cover guided tracing, progressive reduction of support, the role of embodied interaction, and the decision to treat the prototype as a supplement to lectures, diagrams, whiteboard explanation, and conventional practice materials.
+Taken together, these outcomes define an educational progression: the learner first has to make sense of the instruction as an encoded object, then recognise the components and stages through which it travels, then reason through the choices that govern its execution, and finally carry that reasoning out with steadily less support. The structure of the environment follows that sequence closely, which is why the lesson path, mode progression, and supported instruction set are all tied to the same small cluster of tasks.
 
-\section{Environment Structure}
+The prototype does not claim to teach the whole of assembly programming, full digital-logic construction, pipelining, hazards, or the entire content of an undergraduate architecture course. It concentrates on selected single-cycle instruction walkthroughs because that is the point at which the educational problem can be made concrete without the system collapsing under its own breadth. A larger instruction set or a more expansive curriculum target might have sounded impressive in outline, but it would have weakened the coherence of the build and blurred the claims that the project can reasonably make about it.
 
-\textit{What should go here:} describe the overall layout of the environment and the logic of the learner's movement through it. Explain why the prototype was organised as a sequence of world-space teaching stations rather than as a floating menu or a purely abstract simulator.
+A prototype built around only one clean example would have made the lesson easier to stage, but it would also have hidden the fact that different instruction classes activate the datapath differently and demand different forms of reasoning from the learner. The final scope therefore had to be broad enough to cover arithmetic, immediate, memory, branch, and limited jump behaviour, while remaining narrow enough for the lesson loop to stay legible and stable throughout the participant study.
 
-\section{Mode Structure}
+\section{Pedagogical Position}
 
-\textit{What should go here:} explain the roles of Learning, Practice, and Test. This section should show how the three modes embody progression from explicit guidance to more independent completion while preserving a common lesson structure.
+\subsection{From Ordinary Teaching to Supplementary Support}
 
-\section{Interaction Model}
+The project was conceived from the beginning as a supplement to ordinary teaching rather than as an alternative to it. Lectures, tutorials, whiteboard derivations, simulators, and textbook diagrams already do several things extremely well: they provide sequence, terminology, worked examples, and a stable reference image of the machine. Chapter 2 argued that the difficulty appears at a narrower point, namely when the learner can already identify the relevant parts and still cannot explain how a particular instruction moves through them as a connected process. The prototype therefore assumes prior exposure to the topic and takes its place after that exposure, where it can reinforce, clarify, and slow down the reasoning rather than trying to replace the earlier stages of instruction.
 
-\textit{What should go here:} describe the main learner actions that matter pedagogically, such as decoding, register selection, datapath progression, operand or route choice, validation, and end-state reasoning. Make clear which interactions were made physical and which were left to UI support, and why.
+That supplementary role shaped the tone of the whole environment. The system was meant to provide a more guided and more tangible form of walkthrough at the stage where diagrams and explanations have already introduced the topic but have not yet settled into a stable mental model. In this respect, the design stands closer to the logic of guided tracing on a whiteboard than to the logic of an open simulation or an unguided exploratory world.
 
-\section{Representational and Pedagogical Abstractions}
+\subsection{Guidance, Progression, and Independence}
 
-\textit{What should go here:} explain where the prototype stays close to the textbook single-cycle datapath and where it deliberately departs from strict hardware realism. This is the place to discuss externalised hidden processes, staged progression, physical datapackets, and the decision to preserve reasoning structure rather than literal timing.
+The pedagogical model is built around supported progression. Learning mode slows the process down, supplies explanation at the relevant moment, and keeps the learner oriented as the instruction advances through the datapath. Practice asks for more independent decoding and more deliberate decision-making while preserving the same overall route. Test strips back much of the remaining support and asks whether the learner can now carry the reasoning through with less intervention. This structure follows a pattern already visible in related architecture and educational game work, where tutorials and strongly supported tasks precede stricter or more independent activities \cite{tlili2016improving,tan2023vr}.
+
+A student who can complete a task only while being coached through every step has not reached the same point as a student who can reconstruct the same reasoning more independently; at the same time, a learner who is denied support too early may never build the underlying structure in the first place. The three-mode arrangement reflects that balance by letting support recede gradually rather than treating explanation and independence as mutually exclusive states.
+
+\section{Representational Strategy and Abstraction}
+
+\subsection{Why Abstraction Was Necessary}
+
+The central representational problem arose from a mismatch between hardware behaviour and teachable experience. A textbook single-cycle datapath carries out its work as one overall cycle whose internal activity is largely hidden, combinational, and parallel. Fetch, decode, operand selection, ALU behaviour, memory access, write-back, and next-PC determination can be named separately for teaching purposes, yet they are not experienced by the hardware as six clear, sequential teaching moments. A learner, however, usually needs precisely that kind of separation before the process becomes intelligible.
+
+For that reason, the design could not simply imitate the diagram and hope that immersion alone would close the gap. If every internal relationship remained as compact and as hidden as it is in the textbook picture, the environment would inherit much of the same first-pass difficulty that motivated the project in the first place. Work on VR in computer science education and immersive information design points in the same direction: what matters is not raw immersion, but whether the medium clarifies the conceptual structure of the task without overwhelming the learner \cite{janani2026virtual,cook2019challenges,korkut2023visualization}. The abstractions used in the prototype were therefore justified by teachability before they were justified by realism.
+
+\subsection{Preserving Reasoning Rather Than Literal Timing}
+
+The guiding decision was to preserve the reasoning structure of instruction execution even when the literal timing and invisibility of the hardware had to be relaxed. In practical terms, this meant treating the familiar phases of fetch, decode, execute, memory, write-back, and PC update as teaching phases rather than as claims about separate clocked steps in a real processor. The prototype thus remains grounded in the logic of a single-cycle datapath, but it presents that logic in a form that can be followed, revisited, and acted upon by a human learner.
+
+Several of the prototype's most visible abstractions follow from that choice. Fetch becomes a simpler visible acquisition and transfer event rather than a silent response to the program counter. Decode is given an explicit learner-facing role rather than being left as internal field interpretation and control generation. Memory use, write-back, and program-counter consequences each receive enough space to become legible parts of the execution story. None of these changes deny how the textbook machine works; they redistribute that work into a form that better supports the experience as a journey.
+
+\subsection{Selected Representational Choices}
+
+The physical register bank and the later use of ``datapackets'' offer the clearest example of this strategy. During decode, the learner benefits from seeing source and destination registers as stable architectural locations that must be identified correctly. Once the lesson moves beyond that point, the more useful question concerns value flow: which quantity is moving, where it came from, and what later stage depends upon it. Datapackets answer that question more directly than a rigid insistence on keeping every value attached to a register-shaped object.
+
+The same principle shaped the treatment of control logic and multiplexers. In the textbook datapath, much of that work is centralised and resolved internally. In the prototype, multiplexers are not modelled as separate learner-facing components, and some control-facing consequences are distributed across the later phases of the lesson. That choice keeps execute, memory, write-back, and PC update educationally active, whereas a stricter concentration of all control into decode would have left those later phases looking more like consequences to observe than decisions to understand.
+
+Some hidden relationships were worth externalising because doing so made the logic easier to follow; others were better left in local panels, prompts, or background system behaviour because turning them into further embodied tasks would have added friction without much educational return. The result is not a full simulator of every internal detail, but a narrower representational model shaped around what a learner most needs in order to reconstruct the flow of execution coherently.
+
+\section{Environment Structure and Lesson Flow}
+
+\subsection{The World-Space Route}
+
+Once the design had committed itself to guided tracing, the environment could not remain a single flat viewing surface. The lesson needed a route. The prototype was therefore organised as a sequence of world-space stations through which the learner moves while following the instruction. This arrangement gives the environment a narrative function by pacing it.
+
+The routed map, directional cues, gate logic, and local landmarks all serve that purpose. They help the learner keep track of where they are in the execution path, what has already been resolved, and what remains to be decided. Traditional datapath diagrams can be powerful as overview material, but they present the entire system at once. In the prototype, the same system is encountered in a controlled sequence, which reduces the pressure to hold every relationship in mind at the same time.
+
+\subsection{The Six Lesson Phases}
+
+The route itself is organised around six familiar lesson phases, isolated as parts of the reasoning chain: fetch, decode, execute, memory, write-back, and PC update. It exists as one of the clearest places where the prototype departs from the hardware-faithful behaviour while remaining grounded.
+
+Fetch introduces the active instruction and establishes that execution begins from a definite source. Decode turns encoded structure into usable information by requiring the learner to identify fields, source operands, and immediate-related meaning where relevant. Execute gives architectural operations a visible decision point rather than leaving the ALU as a silent internal region in the diagram. The memory phase clarifies the distinction between arithmetic behaviour and memory behaviour by giving addressing and data access their own local context. Write-back provides a clear moment at which the learner can connect previous decisions with the final architectural update. 
+
+Program-counter update is separated for similar reasons: control-flow consequences are often harder to absorb when they remain implicit, so the design gives them a dedicated place in the lesson sequence. Across all six phases, the learner is not being asked to memorise a route through a virtual world for its own sake, but to reconstruct the flow of instruction execution through a series of linked decisions whose order becomes easier to follow once they are made spatial and local.
+
+\section{Modes, Interaction, and Local Support}
+
+\subsection{Modes as Variations on One Lesson}
+
+The prototype uses three modes for progressive learning: Learning, Practice, and Test are variations in support, tolerance, and responsibility rather than separate interpretations of the datapath. The intention is not to create three disconnected feature sets, but to express one pedagogical progression from guided understanding toward more independent performance. That progression echoes the more guided-to-reduced-support structures already used in related interactive and immersive teaching work \cite{tan2023vr,tlili2016improving}.
+
+Learning mode provides the fullest local explanation and therefore carries the strongest teaching load, helping the learner build an initial model of how an instruction moves through the datapath. Practice reduces that support while preserving enough scaffolding for the learner to attempt the route more deliberately. Test retains the same structure under stricter conditions and with much less help. The pedagogical logic depends on this continuity. Once the learner has understood what the route is and why it is shaped as it is, the gradual withdrawal of support becomes meaningful and helps embrace the logic as an intuitive skill.
+
+\subsection{Physical Action and Local Guidance}
+
+The interaction model follows the same selective logic already described in the representational choices. Physical action is used where it helps reveal structure: the learner moves through the route, handles the instruction, selects registers, works with datapackets, and completes local validation. Other forms of support remain in panels, prompts, and concise references because they are more useful there than they would be as further physical tasks. In practice, this allows the environment to remain active without becoming cumbersome.
+
+Local guidance plays an important role in that balance: panels, hints, and nearby prompts were not added as part of the teaching strategy by which the route remains legible while the learner is still acquiring the structure of the lesson. The environment asks the learner to act where action clarifies the concept, but it does not ask the learner to carry every explanatory burden unaided at every moment.
+
+\subsection{Validation and Conceptual Discipline}
+
+Local validation is another important part of the educational structure. The environment does not simply let the learner drift through the route and discover at the end that an early interpretation was wrong. It checks important decisions near the point at which they are made so that misunderstanding can be addressed before it spreads forward into the later phases, turning the environment into a disciplined walkthrough whose main concern is not that the learner reaches the final station, but that the route has been reasoned through coherently along the way.
 
 \section{Core Design Decisions and Trade-Offs}
 
-\textit{What should go here:} gather the important design choices in one place. This should include scope narrowing, supported instruction classes, readability versus realism, stability versus feature expansion, and the trade-off between pedagogical clarity and simulation fidelity.
+Several trade-offs define the final form of the prototype. The most important concerns pedagogical clarity and literal fidelity. The environment remains accountable to the logic of a single-cycle datapath, and presents that logic through staged, learner-facing actions rather than through compact invisible hardware behaviour. The result is less faithful at the level of timing and internal invisibility, but far more teachable at the level that matters for the present project.
+
+Another trade-off concerns breadth and coherence. A wider system could have covered more instructions, more architectural topics, or a more detailed account of control and low-level circuitry, but that breadth would have weakened the central lesson loop and made it harder to defend the educational scope of the build. The project therefore chose completeness within a narrow slice over partial coverage of a much larger one.
+
+There is also a trade-off between automation and learner action. If too much of the datapath remains automatic, the learner becomes a spectator. If too much is turned into interaction, the environment becomes cluttered and tiring. Much of the design work lay in deciding which decisions were worth preserving as learner action and which relationships were better carried by the environment itself. This balance also reflects a broader lesson from the literature: immersive space does not remove the need for restraint in information design \cite{korkut2023visualization,lee2020data}.
+
+Finally, the design was shaped by the demands of participant use. This prototype does not have the freedom of an indefinitely expanding research platform. It had to become stable, navigable, and teachable within the available scope, which meant that features had to earn their place pedagogically and practically. Some ideas remained outside the final build not because they were uninteresting, but because they did not strengthen the educational core strongly enough to justify the complexity they would have introduced.
+
+Taken together, these trade-offs define the design more accurately than any simple claim about immersion or simulation could. The prototype is best understood as a carefully narrowed educational environment that uses virtual reality to slow down, externalise, and spatialise selected hidden architectural relationships into staged, learner-facing reasoning tasks that learners can follow them with greater clarity than a static first encounter often allows.
