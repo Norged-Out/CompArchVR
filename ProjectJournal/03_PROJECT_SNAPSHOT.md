@@ -4,7 +4,7 @@ This file is meant to help me quickly resume work after breaks, session resets, 
 
 ## What This Project Is Trying To Be
 
-A focused VR learning experience for computer architecture, centered on helping learners reason through single-cycle MIPS datapath execution more effectively than static diagrams alone.
+A focused VR learning experience for computer architecture, centered on helping learners reason through single-cycle MIPS datapath execution more clearly as a supplementary tool alongside traditional teaching materials.
 
 ## Current Agreed Direction
 
@@ -112,9 +112,12 @@ What is already solved versus now deferred:
 
 Current non-build focus:
 - participant-session support
-- presentation preparation
 - thesis-facing consolidation of motivation, literature framing, and learning outcomes
 - methodology consolidation so later thesis writing has stable reference notes instead of scattered chat-only context
+- revising the research question and hypotheses so they match the real supplementary-tool scope of the study
+- cutting repetition across Chapters 1 to 4 instead of re-explaining the same framing in each chapter
+- reshaping the implementation chapter to emphasize what was built and how the standard datapath was translated into VR
+- preparing a revised full dissertation draft for supervisor review by `2026-08-10`
 
 Current presentation state:
 - the presentation deck has been condensed into the active delivery version
@@ -132,7 +135,13 @@ Current document/reference state:
 - `Documents/Project_Reference` now holds the higher-value long-lived reference files:
   - learning outcomes
   - real single-cycle MIPS vs VR prototype mapping
+  - supervisor feedback / revision planning notes
   - research plan
+
+Current thesis-planning authority:
+- the original research-plan PDF is now historical reference material
+- the active dissertation-revision note is `Documents/Project_Reference\thesis_revision_plan_2026-08-07.md`
+- if older planning language conflicts with the current supervisor-guided rewrite direction, follow the newer revision plan
 - `Latex` now holds `references.bib` and the questionnaire-related TeX material
 
 ## Authored Register Bank Reference
@@ -265,7 +274,7 @@ Why:
 ## Current Project Stage
 
 - supervisor checkpoint on `2026-07-24` is complete
-- the project is now in final participant-study and presentation delivery mode
+- the project is now in final participant-study and dissertation revision mode
 - the Android XR build is now the study-use baseline
 - core development is effectively complete; remaining work should be limited to critical fixes or clearly justified future extensions
 

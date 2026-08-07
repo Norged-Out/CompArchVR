@@ -10,7 +10,7 @@ If an older milestone note conflicts with the present state of the project, the 
 
 This project is not trying to build a giant all-encompassing computer architecture simulator.
 
-It is trying to build a focused educational VR experience that helps learners reason through CPU datapath behavior more effectively than a static schematic alone.
+It is trying to build a focused educational VR experience that serves as a supplementary tool for helping learners reason through CPU datapath behavior more clearly than a first pass with static materials often allows.
 
 The strongest justification for VR is:
 - students often struggle to mentally trace the datapath from flat diagrams
@@ -66,6 +66,7 @@ Current risk:
 - not missing datapath coverage
 - but destabilizing the now-working final build with unnecessary late changes
 - plus any last device-only regression that does not appear during editor testing
+- and, on the dissertation side, allowing the research question, hypotheses, and chapter framing to drift away from the actual scope of the study
 
 Historical note:
 - the June 29, 2026 V1 checkpoint is complete and should now be treated as project history, not as the live plan
@@ -330,12 +331,44 @@ The implementation should collect enough clarity for the later paper to discuss:
 - what was implemented
 - what limitations remained
 
+Current dissertation-structure note:
+- the active paper order is now:
+  1. Introduction
+  2. Related Work
+  3. Methodology
+  4. Design
+  5. Implementation
+  6. Results
+  7. Discussion
+  8. Conclusion and Future Work
+- this means the paper should establish the research framing, learning outcomes, bounded hypotheses, study design, and analysis plan before turning to the design and implementation chapters
+- the design chapter should therefore read as a response to the methodological and educational framing, and the implementation chapter should read as the concrete realization of that design
+- the research question and hypotheses should be revised where needed so they describe the project honestly as a supplementary educational tool rather than as a broad classroom-versus-traditional-methods comparison
+- the results chapter should commit the findings cleanly without interpretation, and the discussion chapter should handle interpretation, contribution, and comparison with the literature
+- the implementation chapter should emphasize what was built and how the traditional datapath was translated into VR, with figures and component-to-datapath connections doing more work than internal class inventories
+
 Current note:
 - the project is now at the stage where presentation and paper framing should describe the implemented build faithfully instead of arguing for speculative expansion
 - the cleanest framing is now:
   - TA-grounded educational motivation
   - guided spatial reasoning as the "why VR?" answer
+  - methodology and learning outcomes made explicit before artifact chapters
+  - research question and hypotheses aligned to the real supplementary-tool study scope
   - the finalized learning outcomes supported by the built three-mode lesson flow
   - future work kept clearly separate from the finished participant-study baseline
+  - repetition cut down across the draft so major points are stated once in their strongest location and only referred back to when needed
 
 The more disciplined the scope, the easier the paper will be to write.
+
+Thesis-side authority note:
+- the original research-plan PDF remains useful as a historical record of the approved project direction
+- for the current August 2026 dissertation rewrite, `Documents/Project_Reference\thesis_revision_plan_2026-08-07.md` should be treated as the active corrective planning reference wherever the older plan wording now overclaims
+
+## Immediate Dissertation Revision Posture
+
+Current writing priority for the coming revision pass:
+- align the research question, hypotheses, and methodology with the real scope of the study
+- reduce repeated re-explanation across Chapters 1 to 4
+- reshape the implementation chapter around datapath-to-VR translation and learner-facing function
+- keep the dissertation's contribution visible across the later draft
+- prepare one revised full draft for supervisor review by `2026-08-10`

@@ -3,7 +3,7 @@
 ## Current Status
 
 Project phase:
-- participant-study and presentation delivery phase
+- participant-study follow-through and dissertation revision phase
 
 Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
@@ -48,9 +48,11 @@ Current delivery state:
 
 Current non-build focus:
 - participant-session support
-- presentation delivery, demo playback, and Q&A preparation
 - thesis-facing consolidation of motivation, learning outcomes, study procedure, and references
 - keeping documentation aligned with the actual built scope
+- revising the research question and hypotheses so they match the prototype's real supplementary-tool scope
+- cutting repetition across the written chapters during revision
+- preparing a revised full dissertation draft for supervisor review by `2026-08-10`
 
 Presentation support now prepared:
 - deck under `D:\CompArchVR\Documents\Presentation\Presentation_PriyanshNayak.pptx`
@@ -309,3 +311,19 @@ Completed:
 Why it mattered:
 - the repository now better reflects the project’s transition from build work to dissertation-writing support
 - the methodology and learning-outcome notes are now more useful as reference material for later thesis chapters instead of reading like overcompressed summaries
+
+### 2026-08-07 - Supervisor Feedback Reshaped The Dissertation Revision Plan
+
+Completed:
+- reviewed the current dissertation draft with the supervisor and received a clearer direction for the full revision pass
+- confirmed that the research question may and should be revised so it matches the project's actual scope as a supplementary learning tool
+- confirmed that the methodology, hypotheses, and broader framing need to be brought into line with that revised question rather than defended through interpretation alone
+- confirmed that repeated re-explanation across Chapters 1 to 4 should be cut down substantially during revision
+- confirmed that the implementation chapter should emphasize what was built and how the traditional datapath was translated for the learner, rather than reading like an inventory of classes and internal construction details
+- confirmed that the remaining chapter structure should separate `Results`, `Discussion`, and `Conclusion and Future Work`
+- confirmed that the dissertation must make its contribution more explicit and should prioritize quality and value over page-padding
+- locked the next major writing deadline as a revised full draft for supervisor review by `2026-08-10`
+
+Why it mattered:
+- this removed the biggest thesis-side structural problem, namely the mismatch between the broad comparative research question and the narrower exploratory study that was actually carried out
+- it also gave the revision pass a much cleaner target: less repetition, stronger contribution framing, and a more explicit datapath-to-VR translation story

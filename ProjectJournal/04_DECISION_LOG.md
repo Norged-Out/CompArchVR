@@ -592,3 +592,57 @@ Implication:
   - complete with reduced or no guidance
 - future-work topics such as wider jump support, multicycle coverage, and pipelining should stay clearly separate from baseline claims
 - the presentation and dissertation should therefore describe the build that truly exists, not the larger architecture-teaching platform it could become later
+
+## 2026-08-07 - Dissertation Framing Revision Decisions
+
+### The Research Question Should Match The Study That Was Actually Run
+
+Decision:
+- revise the research question and supporting hypotheses away from a broad comparative claim and toward the real supplementary-tool scope of the project
+
+Why:
+- even with careful interpretation, the mismatch between the older comparative wording and the actual methodology would weaken the dissertation
+- the built system and participant study are both better defended as an exploratory evaluation of a supplementary learning environment than as proof of superiority over traditional teaching
+
+Implication:
+- methodology, hypotheses, and later interpretation should be updated to match that narrower framing
+- future writing should prefer honest scope alignment over rhetorical defense of an over-broad question
+
+### Repetition Should Be Cut Rather Than Carried Forward
+
+Decision:
+- stop re-explaining the same motivation, supplementary-tool framing, and abstraction logic in full across multiple chapters
+
+Why:
+- repeated restatement weakens the draft and makes the writing feel heavier than it needs to
+
+Implication:
+- major points should be stated once in their strongest location, then referenced back to briefly when needed
+- revision passes should actively remove duplicated explanation across Chapters 1 to 4
+
+### Implementation Should Be Framed Around Translation, Not Inventory
+
+Decision:
+- write the implementation chapter as a technical account of what was built and how the traditional datapath was translated into VR for the learner
+
+Why:
+- the chapter contains valuable material, but too much class-level or internal bookkeeping weakens the main story
+- the stronger contribution lies in how each major component functions for the learner and how it corresponds to, simplifies, or redistributes the traditional datapath
+
+Implication:
+- screenshots and figures should be used to connect the VR components back to the standard datapath more directly
+- internal implementation detail should be kept only when it helps explain the translation or the built behaviour
+
+### Results, Discussion, And Contribution Must Be More Explicit
+
+Decision:
+- separate findings from interpretation, and keep the dissertation's contribution visible throughout the later chapters
+
+Why:
+- the remaining draft needs a clearer ending structure and a stronger account of why the dissertation matters
+
+Implication:
+- `Results` should report findings only
+- `Discussion` should connect those findings back to the hypotheses, design goals, literature, and contribution
+- `Conclusion and Future Work` should close from that basis rather than carrying the full interpretive burden alone
+- the dissertation should explicitly frame its contribution as the design and exploratory evaluation of a new supplementary VR teaching tool for selected computer architecture concepts
