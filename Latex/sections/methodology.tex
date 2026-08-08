@@ -4,40 +4,37 @@ This chapter sets out the method used to evaluate the prototype developed in thi
 
 \section{Research Framing}
 
-The study asked whether the developed prototype appeared educationally useful within its intended scope, whether participants could engage with it clearly enough for that educational value to matter, and whether the collected evidence supported the view that the environment showed promise as a supplementary tool for learning selected computer architecture concepts.
+The study asked whether the developed prototype appeared educationally useful within its intended scope, whether participants could engage with it clearly enough for that educational value to matter, and whether the collected evidence supported the view that the environment showed promise for learning selected computer architecture concepts.
 
-The prototype grew out of repeated teaching-assistant experience in computer organisation, where the same pattern of difficulty appeared across multiple semesters. Students could often identify datapath components, but still struggled to explain how a particular instruction moved through the processor as a connected process. In those moments, the most effective help was often a slower walkthrough that made each step and each decision visible. The study therefore examined whether that kind of guided tracing could be translated into a useful VR-based learning environment, a question that also sits in line with earlier architecture-focused immersive work \cite{dascalu2017experiential,tan2023vr}.
+As noted in Chapter 1, the prototype grew out of repeated teaching-assistant experience in computer organisation. The study therefore examined whether the guided tracing that proved useful in that setting could be translated into a useful VR-based learning environment, a question that also sits in line with earlier architecture-focused immersive work \cite{dascalu2017experiential,tan2023vr}.
 
 \subsection{Research Question}
 
 The dissertation was guided by the following research question:
 
 \begin{quote}
-\textit{To what extent does an immersive virtual reality-based learning environment improve students' understanding of abstract computer architecture concepts compared to traditional teaching methods?}
+\textit{To what extent can an immersive virtual reality learning environment support students' understanding of selected single-cycle MIPS datapath concepts as a supplementary educational tool?}
 \end{quote}
 
-In a strict experimental sense, the phrase ``to what extent'' suggests a classroom-versus-VR comparison supported by control groups and standardised interventions. The present study addresses that question at a more exploratory level. It asks how far participants responded positively to the experience, whether the targeted learning outcomes appeared to be supported, and whether the system seemed valuable when set against the conventional study resources on which participants had previously relied.
+In this dissertation, the phrase ``to what extent'' is to be interpreted in a bounded exploratory sense rather than as a promise of a full classroom control-group comparison. More specifically, the question is answered through three linked forms of evidence: participant perceptions of the environment, descriptive concept evidence drawn from the baseline subset and post-session responses, and observed progression or support needs across the session structure.
 
-The original question is therefore retained, and the evaluation is kept within what the study could honestly support. The prototype is judged as an early educational intervention whose promise, if supported, could justify later testing in a more formal classroom setting with students actively taking the course.
-
-The purpose of the study was to determine whether this particular prototype, used in this particular educational context, offered enough conceptual clarity, usability, and perceived value to justify the design choices behind it and to support later work on broader evaluation.
+The purpose of the study was therefore to determine whether this particular prototype, used in this particular educational context, offered enough conceptual clarity, usability, and perceived value to justify the design choices behind it and support later work on broader evaluation.
 
 \subsection{Hypotheses}
 
 On that basis, the study was organised around one main hypothesis and a small set of bounded supporting hypotheses that guided the evaluation.
 
 \begin{quote}
-\textbf{Main hypothesis.} A structured VR learning environment that externalises instruction execution into visible, spatial, and interactive steps can support learners' understanding of selected single-cycle MIPS datapath concepts and will be perceived as a useful supplement to traditional teaching materials.
+\textbf{Main hypothesis.} A structured immersive virtual reality learning environment that externalises instruction execution into visible, spatial, and interactive steps can support students' understanding of selected single-cycle MIPS datapath concepts and be perceived as a useful supplementary educational tool for teaching computer architecture.
 \end{quote}
 
 The supporting hypotheses are as follows:
 
 \begin{enumerate}
 \item \textbf{H1: Usability and clarity.} Participants would generally report that the system was understandable, navigable, and usable after a short introduction.
-\item \textbf{H2: Conceptual support.} Participants would report that the environment helped them understand instruction flow, datapath stages, and component roles more clearly than static materials alone.
+\item \textbf{H2: Conceptual support.} Participants would report that the environment helped them understand instruction flow, datapath phases, and component roles clearly based on the interactions.
 \item \textbf{H3: Guided-to-independent progression.} After guided exposure in Learning mode, participants would be better able to complete tasks with reduced support in Practice or Test mode.
-\item \textbf{H4: Post-session knowledge evidence.} Post-session knowledge-check responses, considered alongside the short baseline probe and researcher notes, would indicate improvement in selected targeted concepts.
-\item \textbf{H5: Supplement rather than replacement.} Participants would tend to describe the system as a helpful complement to traditional explanation rather than as a full replacement for lectures, diagrams, or assignments.
+\item \textbf{H4: Supplementary value.} Participants would tend to describe the system as a helpful supplementary learning tool rather than as a replacement for lectures, diagrams, or other conventional teaching materials.
 \end{enumerate}
 
 \section{Alignment with the Learning Outcomes}
@@ -46,7 +43,6 @@ The evaluation was aligned with the learning outcomes defined for the prototype,
 
 The study therefore focused on a bounded cluster of educational tasks: decoding supported instructions, explaining the roles of major datapath components, tracing instruction and value flow across the main lesson phases, making the required operand and control-facing choices, predicting resulting architectural state changes, comparing instruction classes, and completing the walkthrough with progressively less support. These categories were reflected across the baseline subset, the post-session knowledge check, the observation notes, and the broader interpretation of participant feedback.
 
-The prototype was therefore assessed against the narrower outcomes for which it had actually been designed, rather than against the expectations one might bring to a full architecture course, a comprehensive MIPS simulator, or a digital-logic tutor. That distinction is important because the value of the study depends partly on matching the evaluation criteria to the educational scope of the build rather than to a larger curriculum the prototype was never intended to cover.
 
 \section{Study Design and Rationale}
 
@@ -54,7 +50,7 @@ The study is best described as a small-scale exploratory participant evaluation 
 
 The evaluation remained exploratory rather than classroom-trial in scale. The participant pool was limited, there was no formal non-VR control group, and the study did not attempt to measure long-term retention. Its purpose was to examine how participants engaged with the prototype, what kinds of understanding or difficulty became visible during use, how participants described the experience afterward, and whether those strands of evidence broadly supported the same interpretation.
 
-The rationale for this design followed directly from the educational position of the prototype. The system was conceived as a supplementary intervention at a specific point of difficulty: the moment when students can identify the parts of the datapath but still struggle to understand instruction execution as a connected process. The short refresher before the session, the guided-to-reduced-support mode structure, and the post-session evaluation all reflected that supplementary role. This position is consistent with the broader literature that treats VR as a promising but bounded support for conceptual learning rather than as an automatic replacement for established teaching practice \cite{janani2026virtual,dengel2020important}. The study therefore asked whether a guided, spatial, learner-facing environment could make a difficult representational problem easier to grasp.
+The rationale for this design followed directly from the prototype's educational role as a supplementary intervention at the point of difficulty identified earlier in the dissertation. The short refresher before the session, the mode structure, and the post-session evaluation all reflected that supplementary role. This position is consistent with broader literature on conceptual VR support in computer science education \cite{janani2026virtual,dengel2020important}. The study therefore asked whether a guided, spatial, learner-facing environment could make a difficult representational problem easier to grasp.
 
 \section{Participants}
 
@@ -78,7 +74,7 @@ After removing the headset, participants completed the remaining sections of the
 
 The study used several complementary instruments, each serving a different purpose. The primary structured instrument was the Microsoft Forms questionnaire used in the live study. Its opening section captured background context, including prior architecture exposure, prior VR use, self-reported confidence, and prior topic familiarity. The system-experience sections then gathered Likert-style responses on usability, engagement, and perceived learning. After that, the form presented a targeted knowledge check, a follow-up confidence item relating to that section, and a final set of open-ended feedback questions.
 
-The knowledge-check portion of the live form focused mainly on topics relevant to the implemented prototype: program-counter behaviour, fetch, the instruction register, stage order, the execute stage, branch-related reasoning, and the behaviour of supported MIPS instructions such as `add`, `addi`, `lw`, `sw`, `beq`, and `j`. A small number of surrounding architecture concepts were also retained so that responses could be read against the broader background knowledge with which participants entered the session.
+The knowledge-check portion of the live form focused mainly on topics relevant to the implemented prototype: program-counter behaviour, fetch, the instruction register, stage order, the execute stage, branch-related reasoning, and the behaviour of supported MIPS instructions such as `add`, `addi`, `lw`, `sw`, `beq`, and `j`. A small number of surrounding architecture concepts were also retained so that responses could be interpreted against the broader background knowledge with which participants entered the session, while the main evaluative focus remained on the selected datapath concepts supported by the prototype.
 
 The baseline probe drew on the same five foundational concepts already preserved in the formal knowledge check. This gave the study a limited pre-session comparison point while keeping the evaluation aligned with the live instrument and the actual session flow.
 
@@ -92,7 +88,7 @@ On the quantitative side, the analysis remains mainly descriptive. The backgroun
 
 On the qualitative side, open-ended responses and researcher observation notes are read together through a light thematic analysis. Likely themes include what helped understanding, what remained confusing, where the interface or navigation created friction, how the guidance structure was experienced, and how participants compared the prototype with more conventional learning materials.
 
-Because the study does not include a formal non-VR control group, comparison is handled indirectly. One route is participant perception of the system relative to prior learning materials. A second is the limited baseline-versus-post-session comparison on selected concept questions. A third is observed progression from guided to less-guided performance within the three-mode structure itself.
+Because the study does not include a formal non-VR control group, comparison is handled indirectly. One route is participant perception of the system relative to prior learning materials. A second is the limited baseline-versus-post-session comparison on selected concept questions. A third is observed progression from guided to less-guided performance during the session itself.
 
 \section{Ethical Considerations and Study Boundaries}
 
@@ -104,4 +100,4 @@ Data protection was handled by separating administrative information from the re
 
 The study also used a Meta VR headset supplied through the School rather than requiring participants to use personal accounts or personal devices. Participants were not asked to sign into their own Meta accounts, and the research team did not intentionally collect Meta account data. Even so, the participant materials made clear that, because third-party hardware and software were involved, limited device-level or platform-level processing outside the direct control of the research team could still occur.
 
-The evaluation was small in scale and exploratory in character. Its design does not support strong claims about long-term retention, broad generalisability, or causal proof that virtual reality is superior to conventional teaching, and the prototype itself remains a supplement to lectures, diagrams, tutorials, and other standard forms of instruction. The claims supported by the study are therefore narrower and more appropriate to the evidence: that a carefully scoped VR environment may help make selected instruction-execution concepts more tangible, and that participant responses can be used to judge whether such an approach appears promising as a supplementary educational tool.
+The evaluation was small in scale and exploratory in character. Its design does not support strong claims about long-term retention, broad generalisability, or causal proof that virtual reality is superior to conventional teaching, and the prototype itself remains a supplement to lectures, diagrams, tutorials, and other standard forms of instruction. The claims supported by the study are therefore narrower and more appropriate to the evidence: that a carefully scoped VR environment may help make the targeted computer architecture concepts more tangible, and that participant responses, post-session concept evidence, and observed progression can be used to judge whether such an approach appears promising as a supplementary educational tool.

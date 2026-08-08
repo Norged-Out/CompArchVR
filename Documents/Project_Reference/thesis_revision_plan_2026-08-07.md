@@ -4,6 +4,67 @@ This file records the supervisor feedback received on `2026-08-07` and the disse
 
 It is meant to be a stable tracked reference so the main writing direction does not depend on chat memory alone.
 
+## Source Note From The Actual Session
+
+The following raw note should be preserved as a direct source record of the
+session itself, separate from the structured interpretation below:
+
+> I am allowed to change the research question, and I am encouraged to do so.
+> He mentioned how even though I attempt to push for the interpretation, the
+> scope mismatch in the methodology with the question and hypothesis and the
+> actual project is going to cause issues, and I should simply change the
+> question (and hypo appropriately) to instead focus on this whole thing as the
+> supplemental tool it is meant to be. thus possibly revising a larger portion
+> of the writing in its entirety.
+>
+> he likes my prose and writing style, but he feels that there is a lot of
+> repeatition, especially in chapters 1-4 (so basically all of it), where I go
+> on to recite the same thing over and over. He feels that it is better for me
+> to state something once where it is most appropriate, and then either refer
+> back to it if I need to in a later section (like "in chapter 2, we see
+> this.." or "in chapter 3, it was stated...") than constantly retell the same
+> things, unless the context in which I say it makes it important enough to do
+> so. he wants me to cut down the repitition as I make my revision.
+>
+> for my implementation chapter, he had a special remark that he feels that
+> even though it has a lot of valuable information, what he feels is that it
+> should read as a technical design document, but more so along the lines of
+> "what I have done" and "how well has the datapath been translated" to it. He
+> also said something along the lines of how he "doesn't need to know about
+> every single class or item that was used to build a component" but more so
+> "what that component does and how does it do so for the learner and wrt to
+> how the same thing happens in a traditional datapath." He recommended not
+> only adding screenshots of the various assets, which I already plan to, but
+> to also directly connect it with figures of the datapath and components, so
+> that is probably something I am going to work on.
+>
+> he is fine with me citing the article btw. he will also be happy if I use
+> more of it, and really told me to make connections to that figure in my
+> design/implementation chapter to draw the translated connections.
+>
+> he also mentioned that I should think a bit more about how Im addressing the
+> translation of the standard traditional datapath to how my experience does
+>
+> he encourages me to have the remaining 3 chapters be results (which only
+> commits the findings, no assumptions or analysis should happen here
+> whatsover), discussion (where I actually attempt to draw the connections
+> based on the data I manage to get, and how it matches to the hypothesis and
+> goal" as well as conclusion section. future work should also be talked about
+> at some point.
+>
+> He wanted me to consider putting very strong emphasis on why this
+> dissertation matters in the end because that is what he and my second reader
+> will be looking for specifically: it is meant to showcasing a new design tool
+> that can be used later, is it a research of sorts, an analysis, or something
+> else. In simple terms, what he told me was to truly think and write about the
+> CONTRIBUTION my dissertation is making, and to write that with that in mind.
+>
+> he does not care for bloat, and would rather have me produce valuable,
+> quality writing, than incessent writing bloated for the sake of bloating.
+>
+> he requests a revised full draft by monday for his proper one and only
+> feedback session, as he choose to not count today's one as something formal.
+
 ## Authority And Scope
 
 This file is now the active tracked planning reference for the dissertation rewrite phase leading to the revised full draft due on `2026-08-10`.
