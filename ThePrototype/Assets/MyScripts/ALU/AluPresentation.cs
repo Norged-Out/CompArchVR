@@ -268,7 +268,7 @@ public static class AluPresentation
             AluOperation.Subtract => new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "Subtract", "Sub" },
             AluOperation.And => new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "And" },
             AluOperation.Or => new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "Or" },
-            AluOperation.SetOnLessThan => new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "Slt", "Set On Less Than" },
+            AluOperation.SetOnLessThan => new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "Slt", "Set Less Than", "Set On Less Than" },
             _ => new HashSet<string>(System.StringComparer.OrdinalIgnoreCase) { "Add" },
         };
     }

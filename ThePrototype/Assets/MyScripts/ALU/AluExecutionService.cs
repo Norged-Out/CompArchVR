@@ -254,6 +254,7 @@ public sealed class AluExecutionService
             "and" => AluOperation.And,
             "or" => AluOperation.Or,
             "slt" => AluOperation.SetOnLessThan,
+            "set less than" => AluOperation.SetOnLessThan,
             "set on less than" => AluOperation.SetOnLessThan,
             _ => AluOperation.Add,
         };
