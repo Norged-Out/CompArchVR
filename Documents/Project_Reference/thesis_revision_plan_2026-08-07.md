@@ -28,7 +28,7 @@ session itself, separate from the structured interpretation below:
 >
 > for my implementation chapter, he had a special remark that he feels that
 > even though it has a lot of valuable information, what he feels is that it
-> should read as a technical design document, but more so along the lines of
+> should NOT read as a technical design document, but more so along the lines of
 > "what I have done" and "how well has the datapath been translated" to it. He
 > also said something along the lines of how he "doesn't need to know about
 > every single class or item that was used to build a component" but more so

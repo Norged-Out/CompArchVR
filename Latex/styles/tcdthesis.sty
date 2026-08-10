@@ -196,4 +196,28 @@
   \@starttoc{toc}%
   \if@restonecol\twocolumn\fi
 }
+
+\renewcommand\listoftables{%
+  \if@twocolumn
+    \@restonecoltrue\onecolumn
+  \else
+    \@restonecolfalse
+  \fi
+  \chapter*{\listtablename
+    \@mkboth{\MakeUppercase\listtablename}{\MakeUppercase\listtablename}}%
+  \@starttoc{lot}%
+  \if@restonecol\twocolumn\fi
+}
+
+\renewcommand\listoffigures{%
+  \if@twocolumn
+    \@restonecoltrue\onecolumn
+  \else
+    \@restonecolfalse
+  \fi
+  \chapter*{\listfigurename
+    \@mkboth{\MakeUppercase\listfigurename}{\MakeUppercase\listfigurename}}%
+  \@starttoc{lof}%
+  \if@restonecol\twocolumn\fi
+}
 \makeatother
