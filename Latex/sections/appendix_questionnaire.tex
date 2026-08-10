@@ -1,0 +1,257 @@
+\chapter{Participant Questionnaire}
+\label{app:questionnaire}
+
+This appendix reproduces the final participant-facing questionnaire used during live data collection.
+
+\begingroup
+\small
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.5em}
+\setlength{\tabcolsep}{4pt}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcommand{\formbox}{\fbox{\rule{0pt}{1.1ex}\rule{1.1ex}{0pt}}}
+\newcommand{\formline}{\underline{\hspace{3cm}}}
+\newcommand{\formanswerline}{\par\vspace{2.5em}\hrulefill\par}
+\newcommand{\question}[1]{\par\medskip\textbf{#1}\par}
+\newcommand{\responselegend}{\textit{Response options: SD = Strongly Disagree, D = Disagree, N = Neutral, A = Agree, SA = Strongly Agree.}}
+
+\textbf{Participant ID:} \formline \hfill \textbf{Date:} \formline
+
+\section*{Screening and Background}
+
+\question{1. Are you 18 or older?}
+\formbox\ Yes \hspace{2em} \formbox\ No
+
+\question{2. Have you previously studied computer architecture or computer organisation?}
+\formbox\ Yes \hspace{2em} \formbox\ No
+
+\question{3. Have you used a VR headset before?}
+\formbox\ Yes \hspace{2em} \formbox\ No
+
+\question{4. How experienced are you with Virtual Reality?}
+\formbox\ None \hspace{1em}
+\formbox\ Limited \hspace{1em}
+\formbox\ Moderate \hspace{1em}
+\formbox\ Good \hspace{1em}
+\formbox\ High
+
+\question{5. Before this session, how confident are you in your understanding of computer architecture concepts?}
+\formbox\ Extremely confident \hspace{0.6em}
+\formbox\ Somewhat confident \hspace{0.6em}
+\formbox\ Neutral \hspace{0.6em}
+\formbox\ Somewhat not confident \hspace{0.6em}
+\formbox\ Extremely not confident
+
+\question{6. How difficult do you usually find topics such as instruction flow, pipelining, stack behaviour, and memory hierarchy?}
+\formbox\ Extremely difficult \hspace{0.6em}
+\formbox\ Somewhat difficult \hspace{0.6em}
+\formbox\ Neutral \hspace{0.6em}
+\formbox\ Somewhat easy \hspace{0.6em}
+\formbox\ Extremely easy
+
+\question{7. Which of the following topics have you previously studied?}
+\textit{Select all that apply.}
+
+\begin{tabularx}{\linewidth}{YYY}
+\formbox\ Instruction Flow & \formbox\ Pipelining & \formbox\ Stack \\
+\formbox\ Memory Hierarchy & \formbox\ Assembly & \formbox\ None of the above \\
+\end{tabularx}
+
+\section*{System Experience}
+
+\question{8. Please indicate how strongly you agree with the following statements for System Usability.}
+\responselegend
+
+\begin{tabular}{p{0.50\linewidth}ccccc}
+ & \textbf{SD} & \textbf{D} & \textbf{N} & \textbf{A} & \textbf{SA} \\
+The VR system was easy to learn. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I could navigate the environment without difficulty. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+The controls felt intuitive. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+The visual presentation made the concepts easier to follow. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I could focus on the learning task without being distracted by the interface. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I would feel confident using this system again. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I experienced discomfort, motion sickness, or visual fatigue while using the system. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+\end{tabular}
+
+\question{9. Please indicate how strongly you agree with the following statements for System Engagement.}
+\responselegend
+
+\begin{tabular}{p{0.50\linewidth}ccccc}
+ & \textbf{SD} & \textbf{D} & \textbf{N} & \textbf{A} & \textbf{SA} \\
+The experience held my attention. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I felt actively involved in the learning process. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+The system made the topic feel more interesting. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I was motivated to explore the concepts further. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+The interactive format improved my focus compared with standard learning materials. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+\end{tabular}
+
+\question{10. Please indicate how strongly you agree with the following statements about your learning experience.}
+\responselegend
+
+\begin{tabular}{p{0.50\linewidth}ccccc}
+ & \textbf{SD} & \textbf{D} & \textbf{N} & \textbf{A} & \textbf{SA} \\
+The VR experience helped me understand the topic better. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+The visualisations helped me build a mental model of what was happening. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+The system made abstract processes easier to understand. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I would prefer this as a supplement to traditional teaching materials. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+I believe I learned something useful from this session. & \formbox & \formbox & \formbox & \formbox & \formbox \\
+\end{tabular}
+
+\section*{Knowledge Check}
+
+Answer the following questions to assess your understanding of the computer architecture concepts covered in the session.
+
+\textbf{Reference Guide}
+
+\begin{itemize}
+\item MIPS: Microprocessor without Interlocked Pipeline Stages, a Reduced Instruction Set Computer (RISC) architecture commonly used for teaching computer architecture.
+\item \texttt{add}: Adds the values from two registers and stores the result in a destination register.
+\item \texttt{addi}: Adds an immediate (constant) value to a register and stores the result.
+\item \texttt{lw} (Load Word): Loads a 32-bit word from memory into a register.
+\item \texttt{sw} (Store Word): Stores a 32-bit word from a register into memory.
+\item \texttt{beq} (Branch if Equal): Branches to a target address if two register values are equal.
+\item \texttt{j} (Jump): Unconditionally jumps to a specified instruction address.
+\end{itemize}
+
+\question{11. Which register stores the address of the next instruction?}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ Stack Pointer & \formbox\ Program Counter \\
+\formbox\ Instruction Register & \formbox\ Base Register \\
+\end{tabularx}
+
+\question{12. Which stage of the instruction cycle reads an instruction from memory?}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ Decode & \formbox\ Fetch \\
+\formbox\ Execute & \formbox\ Write-back \\
+\end{tabularx}
+
+\question{13. During instruction execution, the instruction register primarily stores:}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ Program variables & \formbox\ The currently executing instruction \\
+\formbox\ The stack pointer value & \formbox\ Cache addresses \\
+\end{tabularx}
+
+\question{14. What happens to the program counter after an instruction is fetched?}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ It resets to zero & \formbox\ It increments to the next instruction address \\
+\formbox\ It copies into the stack pointer & \formbox\ It stores the result of the ALU \\
+\end{tabularx}
+
+\question{15. Which pipeline stage usually performs arithmetic operations?}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ Fetch & \formbox\ Decode \\
+\formbox\ Execute & \formbox\ Write-back \\
+\end{tabularx}
+
+\question{16. Branch instructions primarily affect which component?}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ Cache memory & \formbox\ Program counter \\
+\formbox\ Stack pointer & \formbox\ Instruction register \\
+\end{tabularx}
+
+\question{17. What does this instruction do?}
+\texttt{add \$t0, \$t1, \$t2}\\
+\formbox\ Adds \texttt{\$t1} and \texttt{\$t2} and stores the result in \texttt{\$t0}
+
+\formbox\ Adds \texttt{\$t0} and \texttt{\$t1} and stores the result in \texttt{\$t2}
+
+\formbox\ Moves \texttt{\$t1} into \texttt{\$t2}
+
+\formbox\ Multiplies registers
+
+\question{18. What does this instruction do?}
+\texttt{addi \$t0, \$zero, 10}\\
+\formbox\ Stores 10 into \texttt{\$t0}
+
+\formbox\ Clears \texttt{\$t0}
+
+\formbox\ Moves \texttt{\$t0} into \texttt{\$zero}
+
+\formbox\ Adds two registers
+
+\question{19. Which instruction type loads data from memory into a register?}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ ADD & \formbox\ STORE \\
+\formbox\ LOAD & \formbox\ JUMP \\
+\end{tabularx}
+
+\question{20. What is the role of register \$zero in MIPS?}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ Stores the program counter & \formbox\ Always contains the value 0 \\
+\formbox\ Stores return addresses & \formbox\ Tracks the stack pointer \\
+\end{tabularx}
+
+\question{21. What does this instruction do?}
+\texttt{lw \$t0, 0(\$s0)}\\
+\formbox\ Stores \texttt{\$t0} into memory
+
+\formbox\ Loads a word from memory into \texttt{\$t0}
+
+\formbox\ Moves \texttt{\$s0} into \texttt{\$t0}
+
+\formbox\ Clears memory
+
+\question{22. What does this instruction do?}
+\texttt{sw \$t0, 4(\$s0)}\\
+\formbox\ Value from \texttt{\$t0} is stored in memory
+
+\formbox\ Value from memory is loaded into \texttt{\$t0}
+
+\formbox\ \texttt{\$s0} is overwritten
+
+\formbox\ Stack pointer moves
+
+\question{23. What does this instruction do?}
+\texttt{beq \$t0, \$t1, label}\\
+\formbox\ Jump if \texttt{\$t0 > \$t1}
+
+\formbox\ Jump if \texttt{\$t0 == \$t1}
+
+\formbox\ Jump if \texttt{\$t0 < \$t1}
+
+\formbox\ Always jump
+
+\question{24. What does this instruction do?}
+\texttt{j label}\\
+\formbox\ Jumps to \texttt{label} unconditionally
+
+\formbox\ Jumps only if two registers are equal
+
+\formbox\ Stores the return address in \texttt{\$ra}
+
+\formbox\ Loads a value from memory
+
+\question{25. Put the instruction stages in the correct order.}
+\begin{tabularx}{\linewidth}{YY}
+\formbox\ Execute, Fetch, Decode, Write-back & \formbox\ Fetch, Decode, Execute, Write-back \\
+\formbox\ Decode, Fetch, Execute, Write-back & \formbox\ Fetch, Execute, Decode, Write-back \\
+\end{tabularx}
+
+\question{26. How confident are you in your answers to the previous section?}
+\formbox\ Not at all confident \hspace{1em}
+\formbox\ 1 \hspace{1em}
+\formbox\ 2 \hspace{1em}
+\formbox\ 3 \hspace{1em}
+\formbox\ 4 \hspace{1em}
+\formbox\ 5 \hspace{1em}
+Very confident
+
+\section*{Open-Ended Feedback}
+
+\question{27. What part of the experience helped your understanding most?}
+\formanswerline
+
+\question{28. What part was confusing or ineffective?}
+\formanswerline
+
+\question{29. What would you improve in the system?}
+\formanswerline
+
+\question{30. Were there any moments where the VR interface got in the way of learning?}
+\formanswerline
+
+\question{31. Would you use this again as a learning aid? Why or why not?}
+\formanswerline
+
+\endgroup

@@ -1,175 +1,276 @@
 \chapter{Implementation}
 
-The purpose of this chapter is to showcase how the design was realized in the final build of the prototype that was used for conducting the research study. The system was implemented as a Unity-based Virtual Reality application organized on an a shared lesson-flow architecture using a set of phase-specific stations corresponding to the standard MIPS single-cycle datapath consisting of fetch, decode, execute, memory access, write-back, and a bonus program-counter update phase. 
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{figures/HeroShot.png}
+\caption[HeroShot]{The entire lesson scene.}
+\label{fig:heroshot}
+\end{figure}
 
-To the learner, that system appears as a spatial route through a sequence of local teaching spaces coordinated by a runtime structure that keeps the active instruction, lesson mode, progression state, validation rules, and resulting architectural state in agreement from beginning to end. The arrangement was facilitated as such to support a complete walkthrough that could remain stable, re-playable, and pedagogically coherent as users experiece it through different modes and instructions to be well-suited for accomplishing the learning outcomes and for the research study.
+The purpose of this chapter is to showcase how the design was realized in the final build of the prototype used for the participant study. As previously stated, instead of restaging Figure~\ref{fig:referenceSingleCycleDatapath} as a three-dimensional machine, the system appears as a spatial route through a sequence of local teaching spaces coordinated by a runtime structure that keeps the active instruction, lesson mode, progression state, validation rules, and resulting architectural state in agreement from beginning to end.
+
+The prototype is examined here through the structures that make that lesson possible: the shared lesson framework that keeps the route coherent, the environment through which the session unfolds, the objects and interfaces that represent architectural state, the six phases through which instruction execution is carried, and the three-mode variation that formed the final study baseline.
 
 \section{Platform and Development Context}
 
-The prototype was developed in Unity version 6000.4.11f1 and deployed as a Virtual Reality application. Unity provided the practical combination of world-space interaction, scene layout, and headset deployment needed for the project in the form of Unity's XR Interaction Toolkit v.~3.4.1 and OpenXR-based platform support (v.~1.16.1, Meta version 2.5.0), which provided the baseline resources for XR grabbable logic, world-space UI, and general scene interactions. This project does not claim to have created these baseline systems from scratch, but instead built upon them by configuring these resources for the task at hand.
+The prototype was developed in Unity v. 6000.4.11f1 and deployed as a Virtual Reality application. The build relies on Unity's XR Interaction Toolkit v.~3.4.1, OpenXR support v.~1.16.1, and Meta OpenXR support v.~2.5.0 for the baseline systems required for the VR interactions and scripts created for the facilitation of the staged lesson.
 
-The environment and assets were developed using free asset packs from the Unity Asset Store, namely Free LowPoly Scifi Pack by Cuboom \cite{cuboom2018lowpoly} and 3D Sprite Sci-Fi Props by Oiva Kahri \cite{kahri2023scifi}. The asset packs were used for the creation of the various props, interactables, and overall environment scene, as well as for the translation of certain unique behavioural patterns such as scanning and retrieval of data from a register, updating of data memory or registers, and dictating phase-specific stations.
-
-The technical foundations had direct consequences for the shape of the build, as they required a proper split between authored elements that give shape to the overall structure of the datapath and the resources that experience runtime-specific manipulation. Main authored elements came in the form of phase-specific stations, phase-wise user interfaces, and various miscellaneous elements such as the register bank and data memory. While the core objects were all bound through serialized references and components, an equal chunk of resources went into the creation of runtime-only behaviours and object manipulation that influenced the lesson flow directly.
+The broader visual environment was assembled with the help of free Unity Asset Store packs, most notably the Free LowPoly SciFi Pack by Cuboom \cite{cuboom2018lowpoly} and 3D Sprite Sci-Fi Props by Oiva Kahri \cite{kahri2023scifi}. These assets reduced the need to construct every mesh from scratch, and assisted the creation of the various props, interactables, and overall environment scene. These technical foundations served as enabling conditions that helped realize the project to its completion.
 
 \section{Overall System Architecture}
 
-The software structure of the prototype is organized around one shared lesson runtime whose job is to keep instruction state, lesson progression, validation, and architectural state aligned across the whole route, and coordinated using several resources distributed across the environment.
+At the broadest level, the prototype is organised around one shared lesson structure that keeps the active instruction, lesson mode, phase progression, validation state, and resulting architectural changes aligned across the whole route, implemented chiefly through \texttt{CpuLessonFlow}. This internal coherence allows the lesson to behave as one continuous walkthrough rather than as a set of disconnected stations. A learner-facing guide layer, anchored by \texttt{LessonGuideController}, ties that shared state to the visible panels, prompts, and support surfaces distributed across the route.
 
-\subsection{Shared Lesson Runtime}
+The route always knows which instruction is active, which mode is governing support, which phase owns the next action, which decisions have already been validated, and what resulting state must be handed onward. The phase-local lesson systems therefore do not run continuously in parallel in the manner of hardware, but activate when the shared lesson flow places the learner in that part of the route and return control once the required work is complete, thus enabling the learner to follow through one coherent account of execution as presented in Figure~\ref{fig:datapathToVrTranslation}.
 
-The central lesson object is \texttt{CpuLessonFlow.cs}, which acts as the scene-facing root of the lesson runtime, storing the current lesson mode, the selected instruction context, and the current step within the lesson. This is directly responsible for raising state-change and feedback events used by the surrounding UIs and phase controllers, thus preventing complete independence of the stations and acting as an orchestrator that determines the type of interactions required at each step.
+This shared structure also supports all three lesson modes by reusing the same broad routes and central objects, while changing how much help is shown, how much must be reconstructed, and how strict later validation becomes. These mode-specific differences are governed centrally so that panel visibility, hint availability, and validation tolerance remain consistent throughout the route. In that respect, the implementation directly realizes the progression already outlined in Chapter 4 and summarised in Figure~\ref{fig:modeProgression}: support is reduced across the modes, while the underlying lesson remains recognisably the same.
 
-That shared runtime is further supported by the authored lesson-guide layer called the \texttt{LessonGuideController}, which is responsible for tying the central lesson flow to the visible lesson panels, UI interactables responsible for phase progression, and mode-specific supports. It is also responsible for coordinating the active panel and its object set across the lesson route, to make the experience feel more sequential. In simple terms, the guide controller is the bridge between the underlying lesson state and the learner-facing instructional layer.
-
-Then there is a \texttt{LessonPhaseRouter} that gives both systems a shared understanding of which phase currently owns the learner's next action, and a \texttt{LessonModePolicy} which centralises the broad behavioural differences between the three distinct modes so that hint availability, scanner and validation budgets, and panel visibility remain consistent across the board.
-
-The rest of the architecture is divided into focused subsystems, with dedicated controllers for each major phase, as well as coordinators and individual components that handle registers, data packets, instructions, navigational guidance, gates, and shared UI support. The architecture was properly separated into a hierarchical order, with one shared runtime, several stage-specific systems, and a support layer that keeps common behaviour consistent.
-
-\subsection{Core Runtime Controllers}
-
-The main runtime relationship is between the lesson-flow controller (\texttt{CpuLessonFlow}) which owns the lesson state and progression behaviour, the lesson-guide controller (\texttt{LessonGuideController}) which owns the visible instructional surfaces and their response to the flow state, and the phase controllers that own the logic and validation of their respective stations.
-
-This division allowed the proper separation of progression and station logic, by isolating phase-specific behaviour such as required input handling and validation without needing every individual object to require the knowledge of excess behaviour or unrelated information. Each phase controller activates and deactivates itself based on the current lesson state and instruction, and thus does not act as a free-running system, much unlike a practical, real microprocessor. Instead, they only become active when the shared lesson flow places the learner in their phase and return control when their work is complete, which allowed the transition of the traditional datapath from a parallel, always-active process into a more sequential experience.
-
-The remaining phase-specific systems handle the local logic of the route, each having a distinct controller that oversees its respective requirements and progression. Decode, especially, is spread across multiple subprocesses that oversee the panel logic, register validation, immediate handling, and runtime resolution code, because it carries the heaviest burden of turning the instruction identity into later lesson state. Execute, Memory Access, Write-back, and program-counter update are each handled by their own controllers and varying local scanners and feedback surfaces.
-
-\subsection{Instruction Data and Catalog Assets}
-
-The prototype does not contain a true simulator of the microprocessor, but instead authored instruction ScriptableObjects that each contain the expected identity behaviour. Guided lessons are represented through \texttt{InstructionDefinition} assets, each of which stores the identity of its respective instruction, the format and category, expected operands, relevant field displays, high-level behavioural flags, and the ordered lesson-step (\texttt{InstructionFlowStep}) sequences used to drive the lesson.
-
-Similarly, reduced-support behaviour is layered in through a variant called \texttt{PracticeInstructionDefinition}, which stores the encoded view, expected values, and specific overrides needed for the stricter decode flow and later downstream lesson phases, therefore allowing Practice and Test modes to extend the same broad lesson architecture while giving leeway for the learner's reconstruction requirements and the validation budgets.
-
-Finally, the selection and ordering of all these assets is governed by \texttt{InstructionCatalog}, which defines which instructions are made available for each mode. A similar logic appears in an additional \texttt{InfoCatalog} which holds the authored labels and reference items used by phase-wise local information user-interface objects.
+The prototype thus represents a bounded instructional system driven by authored lesson definitions that store the identity, operand structure, and expected lesson behaviour of each supported instruction, rather than a full processor simulator. Guided lesson definitions, stricter encoded-instruction variants, and local reference content all feed the same broader walkthrough rather than branching into unrelated sub-systems.
 
 \section{Environment Structure and Lesson Routing}
 
-The main lesson exists in one authored scene as the entire environment itself acts as part of the teaching structure, by distributing the teaching spaces through the world and translating the standard datapath into a progressive journey. This does deviate slightly from the traditional diagram shown earlier in Figure~\ref{fig:referenceSingleCycleDatapath}, so it is not a literal 3D copy of it, but a more sequential journey, with the core components arranged in a fashion that still closely resembles the original while taking into consideration the spatial distance the learner would need to access as they progress through each phase without deviating into unrequested territory unnecessarily.
+The entire lesson is staged inside one authored scene that functions as part of the teaching structure. As Chapter 4 argued, and as Figure~\ref{fig:referenceSingleCycleDatapath} makes clear, the standard single-cycle datapath is compact, simultaneous, and densely connected. The final environment redistributes the major stages of instruction execution into a progressive route that preserves the broad order of the datapath while giving each local decision a clearer setting in which to be understood.
 
 \subsection{Scene Organisation}
 
+As Figure~\ref{fig:routedLessonMap} shows, each major phase occupies its own authored zone within the route. The lesson begins in an introduction and fetch area that establishes the mode, provides the initial interface context, and stages the opening handoff of the instruction. Decode sits beside the register bank because that is the point at which encoded fields begin turning into specific operand choices and immediate handling. Execute follows as a distinct station, allowing ALU-related reasoning to be treated locally. Memory access sits beside the visible data memory structure, while write-back and program-counter update occupy the later parts of the route so that final architectural consequence and control flow can be experienced as the closing stages of the lesson.
+
+This organisation is intended to isolate tasks without breaking the broader execution story. Register selection benefits from being staged beside persistent architectural objects. Execute benefits from clearer separation between the values entering the phase, the control-facing choices that govern it, and the result it produces. Memory access benefits from enough local space for address, stored word, and resulting transfer to appear as related but still distinct ideas. Program-counter update benefits from standing apart as a concluding area in which branch or jump consequence can be treated as the final conceptual step of the route. The result is a route that presents one part of the execution story at a time without severing it from the machine as a whole.
+
+\subsection{Guidance, Gates, and Local Interfaces}
+
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\linewidth]{Map.png}
-\caption[Testing Ground lesson layout]{Map of the \texttt{Testing Ground} environment showing the major lesson zones and their placement along the routed walkthrough.}
-\label{fig:testingGroundMapTemp}
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{NavigationGuidanceExample1.jpg}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{NavigationGuidanceExample2.jpg}
+\end{minipage}
+\caption[Guidance cues along the route]{Examples of the directional guidance system used to reinforce phase progression through the environment.}
+\label{fig:navigationGuidanceExamples}
 \end{figure}
 
-Each major phase occupies its own authored zone. The Fetch zone is included in the entry point of the system where the learner first spawns in, which also contains a tutorial panel, a control panel, and a map of the whole place, in addition to the fetch-specific assets. The decode and register-bank area together form one distinct part of the route, representative of the larger contribution of the datapath diagram, making the handling legible and reachable. The ALU has its own stationed zone after the decoding step. Memory access combines the station as well as a physically visible data-memory structure on the path to the write-back station. PC update resides right before the return point of the lesson, acting as the conclusive step as needed.
+Two environmental systems help maintain that route during use. The first is a navigational guidance system that activates directional arrows pointing toward the next relevant destination and movement route. The second is a gate system that opens and closes parts of the route as the lesson progresses, giving controlled access to the areas of the route. Together they realise, in concrete scene form, the progression support argued for in Chapter 4. 
 
-\subsection{Guidance and Gate Systems}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{figures/InstructionDecodeLearningMode.jpg}
+\caption[Three-panel local interface split]{Example of the three-panel local interface arrangement used to present phase guidance, interaction state, and reference support.}
+\label{fig:threepanelsplit}
+\end{figure}
 
-Two environmental systems help maintain the lesson route during runtime. First is the navigational guidance system, managed by the main lesson-guidance controller. This provides a phase-wise field of navigational arrows that pulse in a sequential order, revealing the expected path the learner must take to achieve their goal and to reach the next relevant station. This helps provide direction to the learning process and is intended to lessen confusion for first-time users, and can be turned off as the user gets more comfortable with the lesson flow.
-
-The second is a gating system, managed by its own \texttt{LessonGateController}. These ``gates'' are used to reinforce phase progression by opening and closing parts of the route as the lesson advances, which forces spatial limitation on the learner to reduce deviation and accidental drift that may otherwise be caused by needing to see the entire picture at the same time. In practice, they help keep the learner focused on the section that currently matters most.
-
-\subsection{World-Space Lesson Interfaces}
-
-The prototype relies on local world-space panels that appear at each phase to anchor the user and require them to interact with and learn the phase-specific behaviour needed by the respective instruction to progress. Each phase other than Fetch contains a set of three adjacent panels that appear right behind the phase-specific stations, thus being in direct view of the user.
-
-The left panel dictates the lesson plan to the user, informing them of the importance and requirements of the respective phase, and is dynamically affected during runtime depending on the mode and the instruction as needed. The right panel acts as a source of respite by providing reference guides and hints depending on the mode to the user if they feel stuck. The central panel is the core interaction panel that relays the current phase-specific behaviour and changes that the user makes, while simultaneously providing the necessary requirements that the learner is expected to reach in order to progress through.
-
-The entire system is combined with a mix of scene-authored UI assets and a code-driven layer that interacts with the various controllers and catalogues to facilitate runtime-specific behaviour and dynamic labels corresponding to interactable objects like control signals.
+Each major phase after fetch is accompanied by trios of nearby world-space panels that explain the current task, show the state of the interaction, and provide reference support where the active mode permits it. The left panel dictates the lesson plan to the user, informing them of the importance and requirements of the respective phase, and is dynamically affected during runtime depending on the mode and the instruction as needed. The right panel acts as a source of respite by providing reference guides and hints depending on the mode to the user if they feel stuck. The central panel is the core interaction panel that relays the current phase-specific behaviour and changes that the user makes, while simultaneously providing the necessary requirements that the learner is expected to reach in order to progress through. Because these panels are tied to the current lesson state, they expose only the support, prompts, and interaction context relevant to the active instruction, phase, and mode.
 
 \section{Representation of Architectural State}
 
-One of the more important implementation concerns in the build was deciding how architectural state should appear to the learner once the datapath was translated into VR. Registers, instruction flow, memory words, control decisions, and the movement of values are much more compact and hidden in the traditional diagram. In this prototype, several of those relationships had to be given physical or world-space form so the learner could follow them clearly enough during the walkthrough.
+One of the central implementation problems concerned the appearance of architectural state once the datapath had been translated into VR. In the standard diagram, some of the most important relationships are carried by buses, register-file reads, memory access, multiplexers, and control decisions that remain visually compact or fully implicit. The final build had to represent enough of that structure to support reasoning while remaining usable as a guided lesson rather than collapsing into manual busywork. The solution was a family of visible objects and interactions that externalise selected relationships without attempting to surface every internal detail literally.
 
 \subsection{Instruction Representation}
 
-One special representation that appears specifically during the fetch phase is the \texttt{InstructionModule}. This is a simplified abstraction of the process of using the program counter to access a specific instruction from instruction memory and placing that in the instruction register. It becomes the physical object carried between the fetch and decode terminals, making the instruction-availability and transfer process visible enough so that the introduction to the lesson still feels like a real handoff process, and not just an invisible background step.
+The opening representation of the active instruction appears during fetch as a physical instruction module transferred between two terminals. In textbook single-cycle terms, this stands in for the point at which the current instruction becomes available from instruction memory under program-counter control, stored in the instruction register. Within the lesson, that availability is staged as a concrete handoff that marks the learner's entry into the route.
 
-The instruction terminals themselves represent a simple spawner-and-docker type of physical station that is placed in the Fetch and Decode zones respectively to drive the initial trip for the user into the lesson flow.
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{InstructionModuleInactive.jpg}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{InstructionModuleSpawned.jpg}
+\end{minipage}
+\caption[Instruction-module states across fetch progression]{The instruction module in its inactive pre-lesson state and after successful validation at the end of instruction fetch.}
+\label{fig:instructionModuleStates}
+\end{figure}
+
+Figure~\ref{fig:instructionModuleStates} shows the instruction module first in its inactive state before a lesson begins and then after successful validation at the end of the fetch stage. The module is best understood as a pedagogical stand-in for fetched-instruction availability, giving the route a definite beginning and making the transition from instruction selection to instruction interpretation easier to follow.
 
 \subsection{Register Representation}
 
-The register file is represented through an authored 32-register physical bank which stores a group of scene-side register objects. Each register contains a token which holds both its visual identity with its display ID, and also its stored logical value. The bank maintains the lookup structure for register IDs and for the authored lesson scanners that participate in decode.
+The register file is represented as a physical 32-register bank placed beside the decode region, accompanied by a larger state display that presents the same contents in a more readable overview. Each register remains a persistent architectural object with a stable identity and stored value. This directly supports one of the main learning outcomes established in Chapter 4: recognising which registers a supported instruction reads from or writes to and connecting those identities to later state change.
 
-The register zone also provides a large-scale representative UI of the register bank that shows the current state of each of the registers, as well as their dynamic updates through the completion of an instruction.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{RegisterBankPhysical.jpg}
+\caption[Physical register-bank representation]{The physical register bank used during decode and later state verification. Persistent register identity is carried by visible scene objects rather than by labels alone.}
+\label{fig:registerBankPhysical}
+\end{figure}
 
-Altogether, this representation provides a physically available architectural object that can be selected and validated by the user themselves, giving presence to the otherwise more invisible process of accessing the registers through their respective addresses and using or updating their values over time.
+In the standard datapath, register access is compact and mostly internal, and the significance of \texttt{rs}, \texttt{rt}, or \texttt{rd} is usually inferred from field labels and a small register-file box. Here, the bank gives those relationships a stronger presence, as the source and destination registers can be approached, selected, validated, and revisited. That visibility matters later as well, because write-back is easier to understand as an actual update to the architectural state already in play than as a merely local station event.
 
 \subsection{Datapackets and Value Flow}
 
-After operand selection, in order to prevent the registers from needing to be carried across the remainder of the lesson flow, an asset called a datapacket was developed to provide a physical identity to the value provided by the registers, and in later phases to an immediate, ALU result, memory address or data, branch target, and so on. In simple terms, a datapacket represents a value that has already been read or produced and is now moving through a later stage of the flow.
+Once the lesson moves beyond register selection, the focus shifts to which value is now moving and what later phase depends on it. The implementation answers that problem through datapackets. A datapacket is a portable learner-facing object that carries a value already produced or retrieved, whether that value comes from a register, an immediate, the ALU, memory, or a later control-flow calculation.
 
-This abstraction is how the traditional wires and buses of the datapath were translated to a physically accessible identity. This helps externalize the value flow and give a visual identity to states like \texttt{Read Data 1}, \texttt{Read Data 2}, \texttt{Write Data}, \texttt{Immediate}, \texttt{Sign Extension}, \texttt{ALUResult}, \texttt{ZeroResult}, \texttt{Memory Address}, \texttt{Memory Data}, branch target addresses, and jump targets. This also helped avoid the case of needing the same register for multiple operands, and better supports a future development of a multi-cycle variation of the datapath.
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{SignExtensionAndImmediate.jpg}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{AluResultWithAlu.jpg}
+\end{minipage}
+\caption[Datapackets for immediate extension and ALU output]{Datapackets produced from immediate extension and ALU execution. The pair shows that both transformed immediates and later computational results are carried onward as visible lesson objects rather than left to invisible internal buses.}
+\label{fig:datapackets}
+\end{figure}
+
+Figure~\ref{fig:datapackets} shows this translation clearly. Instead of asking the learner to imagine internal buses carrying \texttt{Read Data 1}, \texttt{Read Data 2}, an immediate, an ALU result, or a memory value, the build gives those states a portable physical identity. This helps abstract the hardware by preserving the reasoning structure that later stages depend on: a value was sourced or produced here, and that exact value must now be carried onward correctly.
+
+This is also where sign extension becomes pedagogically visible. In an ordinary datapath explanation, the immediate may be shown entering an extender and then simply treated as ready for later use. In the implemented lesson, the immediate is externalised through its own transformed datapacket so that the learner can see that a raw immediate is not merely copied forward unchanged. The route therefore makes sign extension legible as part of operand preparation rather than leaving it as a silent internal conversion.
 
 \subsection{Scanner Representation}
 
-One major consideration in representing the actual wires and internal multiplexers into a more simplified state that would still require the learner to perform some degree of physical task to produce the result, instead of leaving the process automatic, invisible, and merely consequential, came in the form of introducing a unique interactable object: the scanner.
+Owing to its namesake, scanners were introduced to make value recognition and local validation into learner actions. A scanner accepts either a register token or a datapacket, checks that it matches the expected role for the current instruction, and then either produces the next required state or unlocks the next relevant transition. This is one of the clearest ways in which the implementation redistributes otherwise hidden datapath relationships into visible lesson work.
 
-Matching its namesake, its entire purpose was to scan an architectural object, either a register token or a datapacket, and react correspondingly by accessing the value stored in it to assist the required operation. Each flow came accompanied with its own set of scanners: decode contains \texttt{Read Register 1} and \texttt{Read Register 2}, which are responsible for validating \texttt{rs} or \texttt{rt} and producing their corresponding values in the form of datapackets, with an immediate being spawned next to an extender that represents the act of sign extension; ALU contains scanners for each of its inputs; memory access has scanners for an address as well as possible data to store; write-back has scanners for the data to be written into a register; and PC Update can require a branch or jump target packet as needed.
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{RegisterScanner.jpg}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{RegisterScanOccupied.jpg}
+\end{minipage}
+
+\vspace{0.6em}
+
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{RegisterScanFailure.jpg}
+\end{minipage}\hfill
+\begin{minipage}[t]{0.48\linewidth}
+\centering
+\includegraphics[width=\linewidth]{RegisterScanSuccessAndDataPacketSpawn.jpg}
+\end{minipage}
+\caption[Scanner states across validation]{Scanner states during decode, showing the base scanner, an occupied state, a failed validation, and successful validation followed by datapacket release.}
+\label{fig:registerScanner}
+\end{figure}
+
+In a standard account, reading from the register file, supplying the correct ALU operand, forwarding data for memory access, or passing the correct value into write-back are all internal connections. The build preserves the importance of those relationships, but asks the learner to complete them locally and correctly. The scanner therefore functions both as an interaction device and as an instructional mechanism: it checks the learner's reasoning near the point at which the relevant architectural relationship matters.
 
 \subsection{Control Signals}
 
-Another major representation was the Control Unit that manages the flow of Execute, Memory Access, Write Back, and PC Update steps. In a traditional datapath, these get interpreted by the microprocessor in the decode phase, and are thus responsible for orchestrating the remaining components so that only the instruction-specific connections needed for intended behaviour are made available.
+Control is represented less as one hidden learner-facing control unit than as a distributed set of explicit choices that appear in the later phases of the route. In the textbook datapath shown in Figure~\ref{fig:referenceSingleCycleDatapath}, decode largely determines how execute, memory, write-back, and next-PC behaviour should proceed, often through centralised signal generation and multiplexer selection. The prototype does not automate this process, instead choosing to surface selected control-facing decisions where doing so helps the learner understand why later stages behave as they do.
 
-This prototype instead does not automate this process, and intentionally so. The learner is met by physical interactable buttons whose state is represented dynamically by the interaction panel of a phase, and is required to set them correctly for the instruction-appropriate behaviour to be realized. This was done not only to give more active engagement to the remaining phases after decode, but also to teach the learner the necessity and responsibility of each of the control signals at the appropriate time of need and the role they play in each phase.
+If every control consequence remained internal, the later phases would risk becoming passive confirmations of a decision already made elsewhere. By distributing certain control-facing choices across execute, memory access, write-back, and program-counter update, the implementation gives those later phases clearer instructional weight while still keeping the overall route within a bounded scope.
 
 \subsection{Memory Representation}
 
-Data Memory is represented using an authored memory-bank system that displays a set of authored \texttt{MemoryWord} entities in the actual scene instead of a pure textual panel or hidden process. The bank is displayed in its entirety in the centre of the environment, with an internal store, a central address-and-value display that updates based on a chosen word, and a transfer system that connects it to the memory-access station to give a visual to the memory read and write process.
+Data memory is represented as a visible wall of authored memory words, coupled to a local address-and-value display and to transfer behaviour at the memory-access station. This gives memory a persistent place in the centre of scene rather than reducing it to a hidden lookup or a panel-only display. The memory wall stands in for address-dependent access to stored data while giving the learner a visible distinction between address, stored word, and transferred result.
 
-The memory-bank layer acts as the runtime state storage for supported memory operations and gives the learner a physical place to preview the actual word as a persistent object in the scene, and also a visible animated process that provides an outlet to the actual execution process to make it feel more realized.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.85\linewidth]{DataMemoryWall.jpg}
+\caption[Visible data-memory structure]{The data-memory wall used during memory access. Showing memory as a persistent scene structure helps distinguish stored words, addresses, and transferred data during reasoning.}
+\label{fig:dataMemoryWallImpl}
+\end{figure}
+
+Load and store instructions often cause difficulty because they require the learner to connect register values, offsets, addresses, stored contents, and later updates into one chain of reasoning. By making memory visible in place, as in Figure~\ref{fig:dataMemoryWallImpl}, the implementation gives that chain a stronger local structure than a compact internal datapath branch usually provides on a first pass.
 
 \section{Implementation of the Lesson Phases}
 
-The lesson is experienced as six sequential phases, with each having its own local implementation responsibilities. The structure is familiar from the previous chapter, but in practical terms each phase is responsible for handling four major decisions: what the learner is expected to do there, how their input is validated, what state is produced there, and how that state is handed onward.
+The route is experienced as six implemented lesson phases that realise, in slower and more local form, the broad logic already outlined in Figure~\ref{fig:datapathToVrTranslation}. Each phase gives one part of instruction execution its own objects, interactions, and validation rules. What is followed here is the reasoning of instruction execution as it was staged for a guided supplementary lesson rather than the literal timing of the hardware itself.
 
 \subsection{Instruction Fetch}
 
-Fetch begins in the introduction layer, where the active lesson mode and instruction context are already known to the runtime. Unlike the textbook style, the process is abstracted and simplified to produce a softer opening to the lesson process, with the \texttt{InstructionModule} acting as a physical but not literal representation of an Instruction Register. It is closer to a pedagogical object that stands in for the instruction being fetched and being made available, instead of the isolation of an instruction register and the automatic response of instruction memory to the program counter. It is more of a learner-facing metaphor for instruction availability and transition between fetch and decode.
+Fetch begins in the introduction area, where the active lesson mode and current instruction context are already known. The learner activates the fetch terminal, receives the instruction module, and carries it to the decode terminal to begin the rest of the route. This is a clear pedagogical staging of a process that the textbook datapath handles internally and with much greater simultaneity.
 
-As stated in a previous section, \texttt{InstructionTerminal} supports both upload and download behaviour. The uploader materializes a fresh instruction module and associates it with the active instruction context which the learner must then carry to the decode terminal, where it is accepted through an XR socket-style interaction and locked into place as the signal that the decode phase may officially begin. This entire process is a simpler take on making the start of the lesson physically legible with a clear progression gate between the introduction layer and the rest of the lesson.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.82\linewidth]{InstructionModuleDocking.jpg}
+\caption[Instruction-module docking during fetch]{The instruction module being docked at the decode terminal after transfer from fetch.}
+\label{fig:instructionModuleDocking}
+\end{figure}
+
+The implemented fetch phase gives the route a definite beginning. The learner undergoes an explicit transition from instruction availability to instruction interpretation, and the remainder of the lesson is anchored to that opening handoff. Unlike the textbook style, the process is abstracted and simplified to produce a softer opening to the lesson process, with the module acting as a physical but not literal representation of an Instruction Register.
 
 \subsection{Decode and Operand Preparation}
 
-Decode is the densest implementation area because it holds the responsibility of translating the instruction from a selected or encoded object into a usable lesson context for everything that follows.
+Decode is the densest part of the implementation because it is where the instruction stops being an inert object and becomes the usable lesson context for everything that follows. In Learning mode, the phase introduces the instruction structure step by step, surfaces the relevant fields, and prepares the learner for source-register selection and any immediate-related work.
 
-In Learning mode, the phase presents the instruction structure in a guided form, surfaces the relevant fields with a step-by-step structure using the three panels to give an easier introduction to the purpose of the split, and prepares the learner for the required register selections and immediate handling.
+Practice and Test change the point of entry into this phase, with the learner seeing an encoded instruction that must be reconstructed with less or no support before later stages become available. This is where mode variation is strongest, because decode is the place at which the instruction first becomes actionable lesson state rather than merely a selected item.
 
-Practice and Test modes introduce a stricter entry stage, where the learner now sees an encoded instruction and must identify the relevant bitfields through typed input. This is supported by a separate decode flow to handle the reduced-support behaviour, which comes in the form of budgeting validation attempts, as well as replacing the reference panel with a limited hint-generation system. Test further cuts this down by removing the lesson-wise informative text and this hint system entirely, giving only one chance for the user to get it right. Once this step succeeds, the lesson proceeds with register selection, now also abstracting it somewhat and budgeting scanner attempts.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{InstructionDecodePracticeMode.jpg}
+\caption[Reduced-support decode in Practice mode]{Decode in Practice mode, where the instruction is presented in encoded form and the learner must reconstruct the relevant field structure with less support than in Learning mode.}
+\label{fig:instructionDecodePracticeMode}
+\end{figure}
 
-The register-selection process requires the learner to physically grab the correct required source registers and place them on the correct scanners to produce the relevant datapackets that will later be utilized by a different phase downstream. The register bank is situated next to decode for this same purpose. Decode is also responsible for the preparation of an immediate datapacket when needed, and this is externalized through the immediate extender object instead of leaving that as a silent background transformation, allowing the user to understand the importance of the step if the unextended immediate gets rejected downstream.
+Operand preparation then carries that state forward, as the learner retrieves the required source registers from the bank, places them on the correct scanners, and receives the resulting datapackets used downstream. Where an immediate is needed, the lesson also prepares that value in a form suitable for later use through the extender-linked transformation already shown in Figure~\ref{fig:datapackets}, allowing sign-extension-related behaviour to become visible rather than remaining a quiet internal transformation. 
 
 \subsection{Execute}
 
-The execute phase is implemented through \texttt{AluController} and its supporting scanner and validation objects. Once the phase becomes active, the controller receives the current instruction and active lesson automatically, and prepares its state as needed, along with enabling the relevant interactables.
+Execute is realised as a dedicated ALU station in which operand interpretation, operation selection, and result production become local tasks. The learner must supply the appropriate values, set the relevant control-facing options (\texttt{ALUSrc} and \texttt{ALUOp}), and complete the validation required for the active instruction before the result datapacket (\texttt{ALUResult} or \texttt{ZeroResult}) is produced. This gives ALU reasoning enough local presence without overloading the user with information pertaining to logic gates or surfacing mux-like decisions.
 
-The ALU station validates the control-facing decisions for \texttt{ALUSrc} and \texttt{ALUOp} and uses them to control the state of the user-facing interaction panel as well as the input-handling scanners that validate the incoming operands. This turns the process into an explicit stage in which the learner must recognize how the instruction uses its operands and what kind of result should emerge depending on how they tune the control signals. It also enforces limited hints, validation attempts, and scanner failures in stricter modes. Once completed correctly, it produces a relevant datapacket representing the \texttt{ALUResult} or \texttt{ZeroResult}, containing the actual value of the performed arithmetic or logical operation.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{AluValidationLearningMode.jpg}
+\caption[ALU validation during execute]{Execute-phase validation in Learning mode, showing operand handling and ALU-related decision making.}
+\label{fig:aluValidationLearningMode}
+\end{figure}
 
-This also abstracts the inner workings of a traditional ALU so that only the decision-making process is made available for the user to recognize and understand. The learner is not asked to operate the actual hardware systems, but rather to understand the process. Similarly, it does not surface mux-like decisions as explicit interactions, but instead provides the ALU Control unit as a simpler operation-selection dropdown. This helped establish the fine line that would prevent turning the phase into either a nearly invisible step or an overly bloated step of micromanaging different combinations of logic gates.
+In the standard datapath, ALU behaviour is often recognised in principle before it is understood in use. The implementation addresses that gap by slowing the process down and making later consequence depend visibly on earlier correctness, making it one of the clearest places where the lesson preserves the reasoning of the datapath while redistributing its internal compactness into a human-scale teaching phase.
 
 \subsection{Memory Access}
 
-The memory phase is implemented through \texttt{MemoryController}, the address scanner, the optional data scanner for store behaviour, and the memory-bank system. When the phase becomes active, the controller determines whether the current instruction actually requires interactive behaviour, and allows unrelated instructions to comfortably skip the phase entirely for the sake of simplicity.
+Memory access handles the point at which the active instruction either interacts with data memory or passes onward without needing it. For load instructions, the learner must establish the correct address path before the memory wall reveals the targeted word and transfers the resulting data onward. For store instructions, the learner must supply both the correct address and the correct data before the update can occur. Instructions that do not use data memory are allowed to pass through without artificial interaction, which keeps the phase aligned with the actual architectural differences between instruction classes.
 
-For load instructions, the memory system validates the address path and highlights the relevant word on the data-memory wall, along with its information being displayed for the user. Once read, the data is visibly transferred from the bank towards the memory-access unit, and spawns a memory-data packet for the later write-back phase.
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{MemoryAccessStationActivePracticeMode.jpg}
+\caption[Memory-access interaction in Practice mode]{The memory-access station during reduced-support use. The phase makes address validation and memory-specific consequence visible within a local interaction space.}
+\label{fig:memoryAccessPracticeMode}
+\end{figure}
 
-For store instructions, the address validation happens similarly, but the learner is also required to supply the relevant data that needs to be stored at the relevant address. Once validated, the data is visibly transferred from the unit into the bank and formally updated in the data memory itself, with the updated bank state becoming part of the ongoing architectural state of the lesson, and potentially being verified to persist past the phase and even lesson completion.
-
-This whole phase establishes the otherwise quieter interaction of the register bank and ALU to memory as a more active process that the user must participate in. The learner is also required to set the appropriate control-signal decisions of \texttt{MemRead} and \texttt{MemWrite} to facilitate the read and write options and dictate the flow of memory access.
+The phase also surfaces the relevant control-signal decisions through \texttt{MemRead} and \texttt{MemWrite}, making the distinction between read and write behaviour part of the learner-facing interaction. Address calculation, stored value, loaded value, and later result use all appear here as connected but locally distinguishable ideas. Once a store updates memory, that change remains part of the lesson state in the data memory. Once a load retrieves a word, the resulting datapacket can be understood as coming from a visible memory location rather than from an abstract internal branch of the diagram.
 
 \subsection{Write-Back}
 
-Write-back eventually became a full physical phase handled by \texttt{WriteBackController}, which then required a proper interaction system with a register scanner, a datapacket scanner, and a transfer service that applies the result to the register bank. This particular aspect of the datapath was also the origin point of the decision to split off the control-signal automation process into its current active, user-required tuning version.
+Write-back became a full physical phase in the final build where the learner must identify whether register write-back should occur, determine the correct destination register, supply the appropriate result source, and validate the resulting update to the register bank. This gives the route a clear culminating moment at which earlier decisions resolve into a visible architectural consequence.
 
-The learner is required to make use of the culmination of all the different types of interactions they have experienced thus far. They are required to make control-signal decisions to set \texttt{RegWrite}, tune the register-scanner validation using \texttt{RegDst} to pick between \texttt{rt} and \texttt{rd}, and tune the datapacket scanner using \texttt{MemToReg} to pick between \texttt{ALUResult} and \texttt{MemResult}. They are also required to carry forward the relevant datapacket for the source data, revisit the register bank to acquire the correct destination register, and then validate the process for the transfer to take place. This register update can then be verified through the register-bank state UI, as well as a spare register scanner provided, and will persist through the mode for later lessons, wrapping together the entire system with a proper culmination of the various interactions seen on the lesson journey.
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{WriteBackLearningModeControlSignals.jpg}
+\caption[Write-back as a visible culmination]{Write-back interaction in Learning mode. Destination selection, source selection, and register update are surfaced.}
+\label{fig:writeBackLearningMode}
+\end{figure}
 
-The hardware-level write-back event is generally more compact, whereas the station here is deliberately allowed to serve as a climactic phase. Additionally, the phase is automatically skipped for instructions that do not write to the register file, instead allowing the route to give a more complete account of why the earlier phases mattered.
+Figure~\ref{fig:writeBackLearningMode} shows why this phase carries more weight than a compact textbook write-back event usually does on first encounter. It brings together the main interaction patterns established earlier in the route. The learner must confirm \texttt{RegWrite}, use \texttt{RegDst} to determine the correct destination register, and use \texttt{MemToReg} to determine the correct result source.
+
+The implemented station gathers together work completed earlier in the route and makes the final update readable through both local interaction and the larger register-state display. Instructions that do not write to the register file simply bypass this stage, which preserves the selective structure already present in the standard datapath.
 
 \subsection{Program Counter Update}
 
-This final phase is implemented through \texttt{PcUpdateController} and its related helpers. In practice, this phase is more broken down and out of sequence with the regular datapath, as the program counter increments by 4 to advance after the instruction register already holds the active instruction, whereas the target selection and redirection gates happen after the decoding and required target-address execution steps.
+The final phase handles next-PC reasoning, branch consequence, and the limited jump behaviour supported in the study build. In a strict single-cycle account, these relationships are resolved in parallel within the same overall cycle, alongside other internal work. The implementation reorganises them into a dedicated concluding station so that control-flow consequence has a clear instructional place in the route.
 
-Here, however, the entire process is left for the conclusive step to serve as a simple sendoff and reminder to the user of the importance of the program counter. It is placed just outside the beginning-zone area, to serve in a rhetorical sense of its parallel importance in the traditional datapath. In addition to just the program-counter update, this phase is also leveraged to handle branch or jump target-calculation logic.
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{PcUpdateLearningModeBranchUi.jpg}
+\caption[Program-counter update and branch consequence]{Program-counter update in Learning mode, where branch-related consequence is treated as an explicit final decision.}
+\label{fig:pcUpdateLearningMode}
+\end{figure}
 
-The user is required to set the \texttt{Branch} or \texttt{Jump} control signals, and then tune UI objects to facilitate the advancement of the program counter, branch-target calculation, branch-condition evaluation, and finally present the user with the \texttt{PCSrc} that the program counter will be redirected to in order to complete the single-cycle version of the instruction execution. This is the strongest example of pedagogical serialization in the build, as the next-PC reasoning is now separated out of the overall cycle to signify the control-flow consequence of the instruction while also leveraging the various gated-style logic that goes into address-target calculation to produce a visible teaching moment.
+Figure~\ref{fig:pcUpdateLearningMode} illustrates the logic of that decision. The aim is control-flow legibility over literal timing fidelity. \texttt{Branch} or \texttt{Jump} reasoning are difficult to absorb when they remain implicit or compressed into the same space as every other datapath consequence. By giving next-PC reasoning its own station, the lesson allows the route to close with a clear account of where execution would go next and why. 
+
+This is the strongest example of pedagogical serialization in the build, as the next-PC reasoning is now separated out of the overall cycle to signify the control-flow consequence of the instruction while also leveraging the various gated-style logic that goes into address-target calculation to produce a visible teaching moment.
 
 \section{Implementation of the Three Lesson Modes}
 
-The three lesson modes all share the same core lesson architecture, but differ in how much information the learner receives, how much error tolerance is allowed, and how much of the task must be reconstructed independently, making the continuity and progression feel more practical to the user.
+The three lesson modes share one route and one broad lesson architecture while changing the amount of support, tolerance, and independent reconstruction expected from the learner. In implementation terms, this realises the pedagogical progression already described in Chapter 4 and shown in Figure~\ref{fig:modeProgression}.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.84\linewidth]{LessonIntroUiModes.jpg}
+\caption[Mode selection at lesson entry]{The lesson-introduction interface for mode selection.}
+\label{fig:lessonIntroUiModes}
+\end{figure}
 
 \subsection{Learning Mode}
 
@@ -193,16 +294,17 @@ This mode did not require a new architectural path, as it is still the same data
 
 \section{Implemented Content Baseline}
 
-By the time the participant-study build was locked, the prototype supported a bounded but deliberate baseline across arithmetic, immediate, memory, branch, and one limited jump case. This was enough to make the major datapath differences legible without allowing the project to sprawl into a much wider treatment of MIPS than the build could reasonably support.
+By the time the participant-study build was locked, the prototype supported a bounded but deliberate set of arithmetic, immediate, memory, branch, and one limited jump case. This baseline was wide enough to show that different instruction classes activate different parts of the datapath and therefore demand different forms of reasoning, while still remaining narrow enough for the lesson to stay stable, testable, and interpretable within the scope of the study.
 
 \subsection{Supported Instruction Set}
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
 \small
-\caption[Learning-mode instruction set]{Learning-mode instruction set used in the final prototype baseline.}
+\renewcommand{\arraystretch}{1.12}
+\caption[Learning-mode instruction set]{Learning-mode instruction set used in the prototype.}
 \label{tab:implTempLearningInstructions}
-\begin{tabular}{|l|l|}
+\begin{tabular*}{0.72\linewidth}{@{\extracolsep{\fill}}|l|l|}
 \hline
 \textbf{Instruction} & \textbf{Assembly} \\
 \hline
@@ -218,15 +320,16 @@ By the time the participant-study build was locked, the prototype supported a bo
 \texttt{bne} & \texttt{bne a0, a1, 8} \\
 \texttt{j} & \texttt{j target} \\
 \hline
-\end{tabular}
+\end{tabular*}
 \end{table}
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
-\scriptsize
-\caption[Practice-mode instruction set]{Practice-mode instruction pool and its encoded display.}
+\small
+\renewcommand{\arraystretch}{1.12}
+\caption[Practice-mode instruction set]{Practice-mode instruction pool.}
 \label{tab:implTempPracticeInstructions}
-\begin{tabular}{|l|l|l|}
+\begin{tabular*}{0.96\linewidth}{@{\extracolsep{\fill}}|l|l|l|}
 \hline
 \textbf{Instruction} & \textbf{Encoded Display} & \textbf{Runtime Assembly} \\
 \hline
@@ -241,19 +344,20 @@ By the time the participant-study build was locked, the prototype supported a bo
 \texttt{beq} & \texttt{0x105B0004} & \texttt{beq v0, k1, 4} \\
 \texttt{bne} & \texttt{0x14C70004} & \texttt{bne a2, a3, 4} \\
 \hline
-\end{tabular}
+\end{tabular*}
 \end{table}
 
-Test mode currently reuses the same ten-instruction practice pool, but under stricter conditions: instruction selection is randomized at lesson start, lesson and hint panels are hidden, each phase allows only one validation failure and one scanner failure, and no hints are available.
+Test mode currently reuses the same ten-instruction practice pool, but under stricter conditions: instruction selection is randomized at lesson start, lesson and hint panels are hidden, each phase allows only one validation failure and one scanner failure, and no hints are available. The point of this instruction set was not to suggest broad coverage of MIPS as a whole, but to provide enough variation for differences in operand handling, immediate use, memory behaviour, write-back, and control flow to become legible within the lesson.
 
-\subsection{Authored Register and Memory Baseline}
+\subsection{Authored Register and Memory Baseline}\
 
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
-\scriptsize
+\small
+\renewcommand{\arraystretch}{1.12}
 \caption[Authored register baseline]{Authored logical defaults of the register bank used in the final prototype baseline.}
 \label{tab:implTempRegisterBaseline}
-\begin{tabular}{|l|r|l|r|}
+\begin{tabular*}{0.86\linewidth}{@{\extracolsep{\fill}}|l|r|l|r|}
 \hline
 \textbf{Register} & \textbf{Value} & \textbf{Register} & \textbf{Value} \\
 \hline
@@ -274,17 +378,16 @@ Test mode currently reuses the same ten-instruction practice pool, but under str
 \texttt{\$t6} & 70 & \texttt{\$s6} & \texttt{0x1001004C} \\
 \texttt{\$t7} & 80 & \texttt{\$s7} & \texttt{0x10010058} \\
 \hline
-\end{tabular}
+\end{tabular*}
 \end{table}
 
-The \texttt{s} registers together with \texttt{gp} are currently being used as stable data-memory-style base addresses. Ordinary lesson resets do not wipe register values anymore, while authored defaults are restored when the active lesson mode changes.
-
-\begin{table}[htbp]
+\begin{table}[!htbp]
 \centering
-\scriptsize
-\caption[Authored memory baseline]{Authored data-memory baseline used by the final prototype. Addresses are shown in the same hexadecimal style used by the in-world display.}
+\small
+\renewcommand{\arraystretch}{1.12}
+\caption[Authored memory baseline]{Authored data-memory baseline used by the final prototype. Addresses are shown in the hexadecimal style.}
 \label{tab:implTempMemoryBaseline}
-\begin{tabular}{|l|l|r|l|l|r|}
+\begin{tabular*}{0.98\linewidth}{@{\extracolsep{\fill}}|l|l|r|l|l|r|}
 \hline
 \textbf{Word} & \textbf{Address} & \textbf{Value} & \textbf{Word} & \textbf{Address} & \textbf{Value} \\
 \hline
@@ -301,8 +404,10 @@ The \texttt{s} registers together with \texttt{gp} are currently being used as s
 \texttt{Word 11} & \texttt{0x10010028} & 110 & \texttt{Word 23} & \texttt{0x10010058} & 230 \\
 \texttt{Word 12} & \texttt{0x1001002C} & 120 & \texttt{Word 24} & \texttt{0x1001005C} & 240 \\
 \hline
-\end{tabular}
+\end{tabular*}
 \end{table}
+
+The authored register and memory baseline matters because the lesson depends on interpretable state rather than arbitrary values. The learner needs to be able to see why a particular operation produced a particular result, where a load retrieved its value from, why a store updated the word it did, and how those changes relate back to the route they have just completed. Persistent authored state also helps the implementation support coherence across repeated lessons instead of reducing each phase to a self-contained demonstration.
 
 \section{Technical Constraints and Deliberate Simplifications}
 

@@ -49,7 +49,14 @@ For that reason, the design could not simply imitate the diagram and hope that i
 
 \subsection{Preserving Reasoning Rather Than Literal Timing}
 
-The guiding decision was to preserve the reasoning structure of instruction execution even when the literal timing and invisibility of the hardware had to be relaxed, which in practical terms meant treating the familiar phases of fetch, decode, execute, memory, write-back, and PC update as teaching phases rather than as claims about separate clocked steps in a real processor. The prototype thus remains grounded in the logic of a single-cycle datapath, but it presents that logic in a form that can be followed, revisited, and acted upon by a human learner.
+The guiding decision was to preserve the reasoning structure of instruction execution even when the literal timing and invisibility of the hardware had to be relaxed, which in practical terms meant treating the familiar phases of fetch, decode, execute, memory, write-back, and PC update as teaching phases rather than as claims about separate clocked steps in a real processor. The prototype thus remains grounded in the logic of a single-cycle datapath, but, as shown in Figure~\ref{fig:datapathToVrTranslation}, it presents that logic in a form that can be followed, revisited, and acted upon by a human learner.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{DatapathToVrTranslation.png}
+\caption[Datapath-to-VR translation overview]{Overview of how the traditional single-cycle datapath was translated into the routed VR environment, with the major textbook regions connected to their learner-facing counterparts in the final space.}
+\label{fig:datapathToVrTranslation}
+\end{figure}
 
 Several of the prototype's most visible abstractions follow from that choice. Fetch becomes a simpler visible acquisition and transfer event rather than a silent response to the program counter. Decode is given an explicit learner-facing role rather than being left as internal field interpretation and control generation. Memory use, write-back, and program-counter consequences each receive enough space to become legible parts of the execution story. None of these changes deny how the textbook machine works; they redistribute that work into a form that better supports the experience as a journey.
 
@@ -67,17 +74,31 @@ Some hidden relationships were worth externalising because doing so made the log
 
 Once the design had committed itself to guided tracing, the environment could not remain a single flat viewing surface. The lesson needed a route. The prototype was therefore organised as a sequence of world-space stations through which the learner moves while following the instruction. This arrangement gives the environment a narrative function by pacing it.
 
-The routed map, directional cues, gate logic, and local landmarks all serve that purpose. They help the learner keep track of where they are in the execution path, what has already been resolved, and what remains to be decided. Traditional datapath diagrams can be powerful as overview material, but they present the entire system at once. In the prototype, the same system is encountered in a controlled sequence, which reduces the pressure to hold every relationship in mind at the same time.
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=0.85\linewidth]{RoutedLessonMap.png}
+\caption[Routed lesson map]{Annotated route map of the environment showing the ordered movement path through the main lesson stations.}
+\label{fig:routedLessonMap}
+\end{figure}
+
+As shown in Figure~\ref{fig:routedLessonMap}, the routed map, directional cues, gate logic, and local landmarks all serve that purpose. They help the learner keep track of where they are in the execution path, what has already been resolved, and what remains to be decided. Traditional datapath diagrams can be powerful as overview material, but they present the entire system at once. In the prototype, the same system is encountered in a controlled sequence, which reduces the pressure to hold every relationship in mind at the same time.
 
 \subsection{The Six Lesson Phases}
 
-The route itself is organised around six familiar lesson phases, isolated as parts of the reasoning chain: fetch, decode, execute, memory, write-back, and PC update. Fetch introduces the active instruction and establishes that execution begins from a definite source. Decode turns encoded structure into usable information by requiring the learner to identify fields, source operands, and immediate-related meaning where relevant. Execute gives architectural operations a visible decision point rather than leaving the ALU as a silent internal region in the diagram. The memory phase clarifies the distinction between arithmetic behaviour and memory behaviour by giving addressing and data access their own local context. Write-back provides a clear moment at which the learner can connect previous decisions with the final architectural update. Program-counter update is separated for similar reasons: control-flow consequences are often harder to absorb when they remain implicit, so the design gives them a dedicated place in the lesson sequence. Across all six phases, the learner is not being asked to memorise a route through a virtual world for its own sake, but to reconstruct the flow of instruction execution through a series of linked decisions whose order becomes easier to follow once they are made spatial and local.
+As Figure~\ref{fig:routedLessonMap} shows, the route itself is organised around six familiar lesson phases, isolated as parts of the reasoning chain: fetch, decode, execute, memory, write-back, and PC update. Fetch introduces the active instruction and establishes that execution begins from a definite source. Decode turns encoded structure into usable information by requiring the learner to identify fields, source operands, and immediate-related meaning where relevant. Execute gives architectural operations a visible decision point rather than leaving the ALU as a silent internal region in the diagram. The memory phase clarifies the distinction between arithmetic behaviour and memory behaviour by giving addressing and data access their own local context. Write-back provides a clear moment at which the learner can connect previous decisions with the final architectural update. Program-counter update is separated for similar reasons: control-flow consequences are often harder to absorb when they remain implicit, so the design gives them a dedicated place in the lesson sequence. Across all six phases, the learner is not being asked to memorise a route through a virtual world for its own sake, but to reconstruct the flow of instruction execution through a series of linked decisions whose order becomes easier to follow once they are made spatial and local.
 
 \section{Modes, Interaction, and Local Support}
 
 \subsection{Modes as Variations on One Lesson}
 
 As outlined in Section 4.2.2, the prototype uses Learning, Practice, and Test as variations on one lesson structure rather than as separate interpretations of the datapath. What changes across the modes is the level of support, tolerance, and learner responsibility.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{ModeFlowchart.png}
+\caption[Three-mode lesson progression]{Pedagogical progression across Learning, Practice, and Test modes, showing how support is reduced while the same lesson structure is retained.}
+\label{fig:modeProgression}
+\end{figure}
 
 Learning mode provides the fullest local explanation and therefore carries the strongest teaching load, helping the learner build an initial model of how an instruction moves through the datapath. Practice reduces that support while preserving enough scaffolding for the learner to attempt the route more deliberately. Test retains the same structure under stricter conditions and with much less help. This continuity matters because it lets the learner revisit the same reasoning under changing levels of support rather than confronting a different lesson each time.
 

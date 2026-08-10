@@ -113,7 +113,7 @@ What is already solved versus now deferred:
 Current non-build focus:
 - participant-session support
 - thesis-facing consolidation of motivation, literature framing, and learning outcomes
-- methodology consolidation so later thesis writing has stable reference notes instead of scattered chat-only context
+- methodology consolidation so later thesis writing has stable reference material
 - revising the research question and hypotheses so they match the real supplementary-tool scope of the study
 - cutting repetition across Chapters 1 to 4 instead of re-explaining the same framing in each chapter
 - reshaping the implementation chapter to emphasize what was built and how the standard datapath was translated into VR
@@ -135,13 +135,17 @@ Current document/reference state:
 - `Documents/Project_Reference` now holds the higher-value long-lived reference files:
   - learning outcomes
   - real single-cycle MIPS vs VR prototype mapping
-  - supervisor feedback / revision planning notes
   - research plan
 
 Current thesis-planning authority:
 - the original research-plan PDF is now historical reference material
-- the active dissertation-revision note is `Documents/Project_Reference\thesis_revision_plan_2026-08-07.md`
-- if older planning language conflicts with the current supervisor-guided rewrite direction, follow the newer revision plan
+- the active dissertation rewrite is now centered on:
+  - a supplementary-tool framing
+  - revised research-question and hypothesis wording that matches the real
+    study scope
+  - a cleaner split between `Results`, `Discussion`, and `Conclusion and Future Work`
+- if older planning language conflicts with the current supervisor-guided
+  rewrite direction, revise the thesis framing accordingly
 - `Latex` now holds `references.bib` and the questionnaire-related TeX material
 
 ## Authored Register Bank Reference
