@@ -302,7 +302,6 @@ By the time the participant-study build was locked, the prototype supported a bo
 \centering
 \small
 \renewcommand{\arraystretch}{1.12}
-\caption[Learning-mode instruction set]{Learning-mode instruction set used in the prototype.}
 \label{tab:implTempLearningInstructions}
 \begin{tabular*}{0.72\linewidth}{@{\extracolsep{\fill}}|l|l|}
 \hline
@@ -321,13 +320,13 @@ By the time the participant-study build was locked, the prototype supported a bo
 \texttt{j} & \texttt{j target} \\
 \hline
 \end{tabular*}
+\caption[Learning-mode instruction set]{Learning-mode instruction set used in the prototype.}
 \end{table}
 
 \begin{table}[!htbp]
 \centering
 \small
 \renewcommand{\arraystretch}{1.12}
-\caption[Practice-mode instruction set]{Practice-mode instruction pool.}
 \label{tab:implTempPracticeInstructions}
 \begin{tabular*}{0.96\linewidth}{@{\extracolsep{\fill}}|l|l|l|}
 \hline
@@ -345,6 +344,7 @@ By the time the participant-study build was locked, the prototype supported a bo
 \texttt{bne} & \texttt{0x14C70004} & \texttt{bne a2, a3, 4} \\
 \hline
 \end{tabular*}
+\caption[Practice-mode instruction set]{Practice-mode instruction pool.}
 \end{table}
 
 Test mode currently reuses the same ten-instruction practice pool, but under stricter conditions: instruction selection is randomized at lesson start, lesson and hint panels are hidden, each phase allows only one validation failure and one scanner failure, and no hints are available. The point of this instruction set was not to suggest broad coverage of MIPS as a whole, but to provide enough variation for differences in operand handling, immediate use, memory behaviour, write-back, and control flow to become legible within the lesson.
@@ -355,7 +355,6 @@ Test mode currently reuses the same ten-instruction practice pool, but under str
 \centering
 \small
 \renewcommand{\arraystretch}{1.12}
-\caption[Authored register baseline]{Authored logical defaults of the register bank used in the final prototype baseline.}
 \label{tab:implTempRegisterBaseline}
 \begin{tabular*}{0.86\linewidth}{@{\extracolsep{\fill}}|l|r|l|r|}
 \hline
@@ -379,13 +378,13 @@ Test mode currently reuses the same ten-instruction practice pool, but under str
 \texttt{\$t7} & 80 & \texttt{\$s7} & \texttt{0x10010058} \\
 \hline
 \end{tabular*}
+\caption[Authored register baseline]{Authored logical defaults of the register bank used in the final prototype baseline.}
 \end{table}
 
 \begin{table}[!htbp]
 \centering
 \small
 \renewcommand{\arraystretch}{1.12}
-\caption[Authored memory baseline]{Authored data-memory baseline used by the final prototype. Addresses are shown in the hexadecimal style.}
 \label{tab:implTempMemoryBaseline}
 \begin{tabular*}{0.98\linewidth}{@{\extracolsep{\fill}}|l|l|r|l|l|r|}
 \hline
@@ -405,6 +404,7 @@ Test mode currently reuses the same ten-instruction practice pool, but under str
 \texttt{Word 12} & \texttt{0x1001002C} & 120 & \texttt{Word 24} & \texttt{0x1001005C} & 240 \\
 \hline
 \end{tabular*}
+\caption[Authored memory baseline]{Authored data-memory baseline used by the final prototype. Addresses are shown in the hexadecimal style.}
 \end{table}
 
 The authored register and memory baseline matters because the lesson depends on interpretable state rather than arbitrary values. The learner needs to be able to see why a particular operation produced a particular result, where a load retrieved its value from, why a store updated the word it did, and how those changes relate back to the route they have just completed. Persistent authored state also helps the implementation support coherence across repeated lessons instead of reducing each phase to a self-contained demonstration.
