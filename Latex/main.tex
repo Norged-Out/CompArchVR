@@ -33,7 +33,13 @@
 \thesisdeclarationpage
 
 \begin{thesisabstract}
-Abstract to be written.
+This dissertation investigates whether a bounded virtual reality learning environment can support students' understanding of selected single-cycle MIPS datapath concepts as a supplementary educational tool. The project responds to a specific teaching difficulty in computer architecture: although standard diagrams and verbal explanations can introduce instruction execution, learners may still struggle to construct a coherent mental model of how values, control choices, and architectural state changes relate across the datapath. In response, the dissertation presents a VR prototype that translates instruction execution into a guided spatial walkthrough organised around six learner-facing phases: Fetch, Decode, Execute, Memory, Write-Back, and Program Counter Update. The prototype was designed as a scoped pedagogical abstraction rather than as a cycle-accurate simulator. It supports selected instructions across Learning, Practice, and Test modes and externalises otherwise hidden datapath relationships through guided spatial interaction. 
+
+%The system is positioned as a supplement to conventional teaching materials rather than as a replacement for them.
+
+The prototype was evaluated through a small exploratory participant study combining questionnaire responses, a post-session knowledge check, a limited repeated baseline/post-session comparison, open-ended feedback, and researcher observations. Results showed generally positive usability and perceived-learning responses, alongside recurring discomfort and interface-friction issues. Knowledge-check performance was generally strong across several targeted concepts, while the repeated comparison showed stronger descriptive performance on some items following the overall learning session. These differences cannot be attributed to VR alone because participants received a tailored refresher before entering the headset. Observations also indicated initial progression from guided to reduced-support use while identifying continuing difficulties around controls, text burden, and selected instruction-stage decisions.
+
+The findings suggest that the prototype shows promise as a supplementary means of making selected computer architecture concepts more tangible and easier to follow, while remaining limited by the exploratory study design, participant comfort, interface readability, and narrow instructional scope. The dissertation's main contribution is the development and evaluation of a pedagogical translation of single-cycle datapath reasoning into a sequential, learner-facing VR experience.
 \end{thesisabstract}
 
 \begin{thesisacknowledgments}
@@ -62,5 +68,8 @@ Acknowledgments to be written.
 
 \appendix
 \include{sections/appendix_questionnaire}
+\include{sections/appendix_pil}
+\include{sections/appendix_consent}
+\include{sections/appendix_recruitment}
 
 \end{document}

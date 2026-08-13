@@ -1,75 +1,115 @@
 \chapter{Discussion}
 
-todo.
+This chapter interprets the findings reported in Chapter~6 in relation to the research question, the educational problem established earlier in the dissertation, and the design choices through which the prototype attempted to address it. The evaluation remains bounded by the exploratory study design described in Chapter~3: the sample was small, there was no non-VR control condition, the baseline probe was followed by a tailored refresher before headset use, and exposure to the later lesson modes was uneven. The findings therefore cannot establish that virtual reality caused improved understanding or that it is more effective than conventional teaching. They can, however, be used to judge whether this representation of single-cycle instruction execution was sufficiently usable, conceptually useful, and educationally coherent to justify its role as a supplementary learning environment.
 
-\section{Returning to the Research Question}
+As such, the argument is organized around four main evaluation dimensions outlined in Chapter~3. The first concerns usability and clarity, including the extent to which interface or physical friction competed with the intended learning task. The second considers conceptual support by bringing together perceived learning, post-session knowledge performance, and the limited repeated baseline/post-session evidence. The third examines the progression from guided to reduced support across Learning, Practice, and Test modes. The fourth considers how participants positioned the environment as a supplementary tool and what this implies for its most appropriate educational role. These dimensions are considered together rather than as independent outcomes, since the educational usefulness of the environment depends on their interaction.
 
-Restate then answer
+\section{Usability, Clarity, and Interface Friction}
+
+The educational value of the prototype depends first on whether learners can understand and operate the environment well enough for the instructional structure to matter. A route intended to clarify instruction execution would be of limited use if navigation, controls, or local interfaces became a greater source of confusion than the datapath itself. On this point, the results provide reasonable support for the basic structure of the environment: eleven of the 12 participants agreed or strongly agreed that they could navigate the environment without difficulty, that the controls felt intuitive, and that the visual presentation made the concepts easier to follow, while the six-item usability grouping produced a mean of 3.99. These responses suggest that the routed organisation described in Chapter~4 and implemented through stable lesson stations, gates, directional guidance, and repeated interaction patterns in Chapter~5 was broadly legible during the study.
+
+This matters because usability has repeatedly been identified as a necessary condition for educational VR rather than as a secondary matter of polish. Work on immersive computer-organisation learning keeps usability central to evaluation \cite{alnuaimi2025vr}, while broader reviews of educational VR emphasise practical concerns around interaction design, deployment, accessibility, and the ability of learners to remain oriented within the experience \cite{cook2019challenges,samala2025virtual}. The results here indicate that the prototype generally cleared that initial threshold, with participants being able to follow the route, engage with the lesson stations, and progress into reduced-support use. This provides some support for the design decision to distribute instruction execution across stable world-space stations rather than recreating the full datapath as one dense three-dimensional object.
+
+The more detailed feedback nevertheless shows that clarity was not uniform across the interface. The weakest positively framed usability item concerned the ability to focus on the learning task without distraction from the interface, for which only half of the sample selected Agree or Strongly Agree. Participants described the three-panel arrangement as text-heavy in places, requested clearer panel labels and reduced scrolling, and identified uncertainty around some interaction targets and input locations. Other comments concerned joystick speed, repeated movement between areas, guidance arrows that were not always useful during reduced-support work, and text-entry elements that were difficult to distinguish visually.
+
+These findings closely reflect the information-design concerns discussed in Chapter~2. Immersive visualisation does not remove the problems of clutter, layout, or interaction complexity; it relocates them into a larger and more embodied space \cite{korkut2023visualization}. The prototype deliberately avoided presenting the entire datapath at once, but the local interfaces could still become dense enough to compete for attention. The design strategy of dividing the machine into smaller spaces therefore appears useful at the level of route organisation while still requiring restraint within each space. A future version would benefit less from adding further explanation than from making the existing explanation easier to scan, reducing unnecessary text, and making interaction targets and local task order more visually stable.
+
+On the other hand, physical comfort was a more substantial limitation than interface legibility. Nine participants agreed or strongly agreed that they experienced discomfort, motion sickness, or visual fatigue, while the researcher notes recorded nausea, dizziness, or disorientation-related breaks across several sessions. Furthermore, this often occurred alongside otherwise favourable responses to navigation and visual presentation, suggesting that while the participants could understand how to use the environment, experiencing enough physical strain interrupted or shortened their learning session.
+
+The findings are consistent with broader concerns in educational VR, with reviews identifying discomfort, hardware readiness, accessibility, and practical deployment as persistent constraints on immersive learning \cite{cook2019challenges,samala2025virtual}. Dengel likewise cautions against assuming that greater immersion automatically produces stronger learning outcomes \cite{dengel2020important}. In this study, the representational advantages of VR and its physical costs appeared simultaneously, reinforcing those challenges. Because the study procedure placed participant welfare ahead of task completion, as required by the ethical boundaries established in Chapter~3, some participants stopped, paused, or progressed less far once discomfort accumulated. The later-mode evidence is consequently shaped not only by understanding or interface competence, but also by the amount of headset use each participant could comfortably sustain. 
+
+The participant background makes this issue harder to dismiss as simple inexperience with VR, as eleven of the 12 participants had previously used a headset, and nine described their level of VR experience as Good or High. Movement speed emerged as a recurring practical concern during the sessions, with teleportation used as an alternative where smooth locomotion became uncomfortable. Although the sample is too small to draw conclusions about predictors of discomfort, the prevalence of these reports suggests that locomotion, movement speed, session duration, turning, and the physical organisation of the route should be treated as substantive design concerns in further development.
+
+The usability evidence therefore supports the broad environmental strategy more strongly than the current implementation details. The route, phase separation, and repeated interaction logic appear clear enough to provide a workable teaching structure, while the interface and locomotion systems still impose avoidable costs. For the educational purpose of the prototype, this shows that while spatial organisation seems capable of clarifying the lesson, learners must be able to remain comfortable and focused long enough to benefit from it.
+
+\section{Conceptual Support and Knowledge Outcomes}
+
+The central question is whether the experience offered conceptual support rather than only novelty, attention, or a visually distinctive way of presenting familiar information. The strongest participant-reported evidence concerning mental-model formation showed that all 12 participants agreed or strongly agreed that the visualisations helped them build a mental model of what was happening and that the system made abstract processes easier to understand. Eleven participants agreed or strongly agreed that they learned something useful from the session, while ten reported that the VR experience helped them understand the topic better.
+
+Participants referred to handling registers, moving values through the environment, seeing stages locally, and being required to perform actions rather than only read about them. Several also identified the local instructions, notes, hints, and panels as important forms of support. These comments closely match the original educational problem described in Chapters~1 and~2. 
+
+Porter et al. show that procedural success in computer architecture does not necessarily imply secure conceptual understanding \cite{porter2013evaluating}, while Yehezkel et al. emphasise the importance of helping learners construct a viable mental model of computer behaviour \cite{yehezkel2007contribution}. Broader work on VR in computer science education similarly identifies abstract and process-oriented topics as plausible uses of immersive visualisation \cite{pirker2020virtual,agbo2021application,janani2026virtual}. Checa et al. provide a nearby example in hardware learning, where immersive presentation was especially relevant to understanding and making connections between concepts rather than simply recalling isolated facts \cite{checa2023immersive}. The participant responses in this study fit that pattern more closely than a claim centred on memorisation.
+
+The results also provide some support for that representational strategy, as participants repeatedly identified direct interaction and visible stages as useful, while the perceived-learning items were strongest on mental-model formation and the clarification of abstract processes. Lee et al.'s account of immersive ``visceralisation'' is useful here because it describes how immersive representation can restore a more intuitive sense of relationships that abstraction has compressed \cite{lee2020data}. In that limited sense, the prototype appears to have made parts of datapath execution easier to follow without abandoning the abstraction altogether.
+
+The post-session knowledge check provides a more demanding test of how far that support extended. Overall performance was reasonably strong, with a mean of 11.33 correct answers out of 15, corresponding to 75.56\%, so several questions were answered correctly by most or all participants. The execute-stage question was answered correctly by all 12 participants, while questions concerning the currently executing instruction, the fixed value of \texttt{\$zero}, unconditional jump behaviour, and the broad order of instruction stages were each answered correctly by 11 participants. These results are consistent with several of the core ideas addressed by the prototype being understood after the session.
+
+However, performance was not equally strong across all concepts, as the weakest item concerned the component primarily affected by a branch instruction, where only five participants selected the Program Counter and four instead selected the Instruction Register. The general question on identifying the instruction class that loads data from memory and the specific \texttt{sw} question were also weaker, with seven correct responses each. The store-word distractor was especially informative because four participants selected the response describing data moving from memory into a register, reversing the direction of the operation.
+
+These errors point to areas where the prototype's instructional translation may still be weaker than intended. Branch behaviour was given its own concluding PC-update phase precisely because next-PC reasoning can become compressed or implicit in a conventional datapath, yet the weak Q16 result suggests that recognising a branch or completing a branch-related action did not always produce a secure conceptual connection between the instruction and the Program Counter. Similarly, the memory results suggest that address calculation, memory location, and data-transfer direction did not become equally secure for all participants. These are not peripheral ideas to the design; they sit close to the learning outcomes around tracing values and predicting architectural state.
+
+The fetch/decode distinction presents a similar case, as Q12 was answered correctly by eight participants and all four incorrect responses selected Decode rather than Fetch. The item also showed no aggregate change in the repeated baseline/post-session comparison. Because Fetch and Decode were physically separated in the environment, one possible reading is that the abstraction of much of Fetch into a simple carry-and-walk segment may have left the boundary between the two phases less explicit than intended. Future versions may therefore need to foreground the relationship between the neighbouring phases more clearly, rather than assuming that physical separation alone will establish the conceptual distinction.
+
+The repeated baseline/post-session comparison offers additional evidence, but its methodological position is different. Among the eight complete cases, the mean score across the five repeated questions increased from 3.38 to 4.25. The participant-specific available-item comparison showed a similar descriptive movement, from 60.97\% at baseline to 74.72\% after the session. At item level, Q11, Q13, and Q25 showed net increases, Q12 was unchanged, and Q14 retained the same aggregate percentage while individual participants moved in both directions.
+
+These differences cannot be attributed to the VR environment alone, since the tailored refresher took place between the baseline probe and headset use, meaning that the post-session result reflects the overall learning sequence rather than an isolated VR intervention. Although this limitation is central to the interpretation, it does not make the comparison meaningless, as the repeated questions show that some of the targeted concepts were in a stronger descriptive position at the end of the combined session than at the beginning, while others remained stable or mixed. The pattern therefore supports a cautious account of concept reinforcement across the session rather than a causal claim of VR-driven improvement.
+
+Participants were highly consistent in reporting that the environment helped them visualise and organise the process, whereas the objective concept evidence remained uneven. That combination of perceived learning and knowledge performance is more credible than treating either source in isolation. The prototype appears to have helped learners form and follow a representation of instruction execution, but one guided session did not eliminate every misconception. This distinction follows the concern raised by Porter et al. that conceptual understanding cannot be assumed from successful performance on selected tasks alone \cite{porter2013evaluating}. The evidence therefore supports conceptual assistance within the intended scope, while leaving clear room for stronger reinforcement of branch behaviour, memory direction, and the distinction between adjacent phases.
+
+\section{Progression from Guided to Reduced Support}
+
+The Learning, Practice, and Test structure was designed to move the learner from explanation toward increasingly independent reconstruction. Learning mode provided the fullest local guidance, Practice reduced that support and required more deliberate decoding and decision-making, and Test retained the same route while removing most remaining assistance. The design follows a pattern already visible in architecture-facing educational systems, where tutorials or step-by-step support are provided before learners are expected to work with less guidance \cite{tlili2016improving,tan2023vr}. Similar use of prompts and staged support appears across the wider VR-in-computer-science literature \cite{janani2026virtual}.
+
+The study provides partial evidence that this progression functioned as intended, since all 12 participants attempted both Learning and Practice modes. The transition into Practice therefore represented a genuine reduction in support rather than confinement to the most explanatory version of the lesson. At the same time, two Practice-mode attempts were not completed, only two participants attempted Test mode, and the researcher notes recorded support needs ranging from isolated intervention to substantial assistance. The progression evidence should therefore be interpreted as successful movement into reduced guidance rather than as evidence of reliable independent completion. In the terms of the final learning outcome established in Chapter~4, every participant reached the first reduced-support condition, but the data remain too uneven to show whether most participants could reconstruct the entire lesson independently.
+
+The observation notes help explain where the transition became difficult, with hesitation occurring around navigation and controls, register handling, ALU and control-signal reasoning, memory-stage behaviour, write-back, and the broader sequencing of what to do next. Participants requested clearer prompts, better indication of where individual inputs should be placed, colour coding, a drawing or segmentation aid during Practice-mode decode, and clearer organisation of the information provided by the local panels. This reveals an important distinction between conceptual and interaction scaffolding. Practice mode is intended to reduce help with the architecture problem by asking the learner to remember how to decode an instruction, identify the necessary operands, and make the relevant control-facing decisions. It is less useful if difficulty arises because the learner cannot determine which object to pick up, where to place an input, or how to navigate to the next station, since the mode then begins to test familiarity with the interface rather than independence in architecture reasoning.
+
+A future revision should therefore preserve stable interaction conventions while withdrawing conceptual explanation more selectively. The local mechanics of selecting, placing, validating, and progressing should remain predictable across modes, while hints, reference material, worked explanation, and tolerance for conceptual errors can be reduced. This would make failure in Practice or Test more interpretable: a learner who cannot continue would be more likely to be revealing a gap in architectural reasoning rather than a gap in interface memory.
+
+Tan et al.'s architecture VR system is relevant to this point because its support is provided step by step before being reduced in later tasks \cite{tan2023vr}. The principle is similar to the current three-mode structure, but the study findings show that the timing and form of support withdrawal require careful calibration. Guidance needs to recede far enough for the learner to reconstruct the reasoning, while the underlying interaction language of the environment remains sufficiently stable that it does not become a second assessment target.
+
+The limited Test-mode exposure further constrains the interpretation of independence. Although the mode was intended to provide the clearest indication that a learner could complete the route with minimal assistance, only two participants attempted it, and session duration, discomfort, background, and earlier support needs all affected whether it was reached. The small number of Test attempts should therefore be treated as insufficient evidence rather than as evidence of incapacity.
 
 
-- answer is bounded...
-\\ - maybe some support within scope...
-\\ - usefulness seems strongest as supplement...
-\\ - broader claim not supported here...
+Instruction exposure also varied across participants due to time constraints and participant understanding. The session records include arithmetic, immediate, memory, and branch instructions, with \texttt{add} and \texttt{addi} encountered most often. That breadth helped exercise different regions of the prototype, but it also means that reduced-support performance was not based on one identical task. An arithmetic instruction does not place the same demands on memory, control flow, or write-back reasoning as a load, store, or branch. A later study intended to compare progression directly would benefit from a standardised mode sequence and a smaller common instruction set before introducing additional variation.
+
+Even with these limitations, the three-mode architecture created a meaningful distinction between being taught the route and being asked to reconstruct it, and all participants reached the point at which that distinction became relevant. The present study therefore supports the progression model as a pedagogical structure more strongly than it supports Test mode as an assessment mechanism. Further work should concentrate on making the reduction of support cleaner, standardising progression where possible, and ensuring that comfort and interface demands do not determine who reaches the later modes.
 
 
-avoid: 
+\section{Value as a Supplementary Educational Tool}
 
- - prototype proves X
-\\ - VR is better than traditional teaching
+The participant evidence supports the supplementary role established throughout the dissertation more strongly than any claim that the environment should replace conventional teaching. Nine participants agreed or strongly agreed that they would prefer the system as a supplement to traditional teaching materials, while the open-ended responses also showed that future use was often tied to factors such as prior familiarity, stronger novice support, reduced discomfort, or further polish.
 
+These qualifications are consistent with the pedagogical position established in Chapters~2 and~4. Lectures, tutorials, diagrams, simulators, and worked examples already provide terminology, structure, reference material, and repeated practice; the prototype was instead designed for the point at which a learner has encountered those representations but still struggles to connect them into a stable account of instruction execution. This also matches broader work that frames immersive tools as complementary support rather than replacements for conventional teaching \cite{janani2026virtual,mohamad2023immersive,dengel2020important}. The participant responses therefore place the prototype most credibly as a bridge between prior exposure to the datapath and a more stable learner-facing account of how instruction execution unfolds.
 
-\section{Usability, Clarity, and Route Legibility}
+\section{Study and Prototype Limitations}
 
-Need a paragraph on whether the environment was clear enough for the teaching goal to matter at all.
+The interpretation of the study is limited first by the size and composition of the sample. Only twelve participants, recruited through voluntary convenience sampling, completed the evaluation. This is sufficient for describing patterns within a small exploratory study, but it does not support broad generalisation to computer-architecture students as a population. Nine participants had previously studied computer architecture or computer organisation, while eleven had previously used a VR headset, so the sample combined different starting points rather than representing a clearly defined novice cohort.
 
-Questions to answer:
+The study design does not permit causal attribution. There was no non-VR comparison condition, and the repeated baseline questions were followed by a tailored verbal refresher before participants entered the headset. Any baseline/post-session difference may therefore reflect the refresher, the VR experience, their combination, or other effects of the overall session.
 
- - was the route readable?
-\\ - where did clarity hold?
-\\ - where did friction remain?
+Long-term retention was not measured, as the post-session knowledge check was completed immediately after the VR experience. The results therefore describe understanding at the end of the session rather than whether that understanding could be reconstructed later.
 
+Progression through the lesson modes was also uneven. All participants attempted Learning and Practice, but only two attempted Test, and the amount of researcher intervention varied across sessions. The study therefore provides stronger evidence about guided use and initial transition into reduced support than about independent completion.
 
-\section{Conceptual Support and Mode Progression}
+Physical discomfort also affected the study conditions. Nine participants endorsed the discomfort item, and the session notes recorded multiple breaks caused by nausea, dizziness, or disorientation. This reduced the amount of comparable exposure across participants and indicates that the current locomotion and route design are not yet suitable for assuming uninterrupted use.
 
-Pull together:
+The interface introduced additional cognitive burden in places through text density, scrolling, visibility problems, unclear interaction sequencing, and uncertainty over some input locations. Because the system was intended to reduce the burden of following a dense datapath representation, these issues risked reintroducing some of that difficulty through the interface itself.
 
- - knowledge-check pattern
-\\ - movement across modes
-\\ - observation notes
-
-check for:
-
- - some conceptual support...
-\\ - some evidence of progression...
-\\ - some ideas still fragile...
-\\ - some phases still needing help...
+The implemented architecture scope was deliberately narrow. The prototype does not evaluate multicycle execution, pipelining, hazards, cache behaviour, or a complete MIPS instruction set. This boundary allowed the design to concentrate on a coherent lesson loop, but it limits transfer of the findings to more complex architecture topics and leaves the value of the pedagogical-serialization strategy beyond single-cycle execution unresolved.
 
 
-\section{Supplementary-Tool Value}
+Finally, the researcher observations were supplementary session notes rather than a formal behavioural observation protocol. They were useful for identifying mode exposure, points of hesitation, intervention, and comfort-related interruption, but they do not support fine-grained quantitative claims about behaviour frequency.
 
-Need to reinforce:
+These limitations narrow the strength of the claims that follow, but they do not remove the value of the study. The evaluation was designed as an exploratory examination of a focused prototype, and the evidence is most useful for judging whether the design direction warrants further development and more controlled study.
 
 
-- not replacement teaching
-\\ more of a bridge
-\\- useful where abstraction becomes hard to follow
 
-Can tie to participants placing it beside lectures / diagrams.
 
-\section{Boundaries and limits}
+\section{Answer to the Research Question}
 
- small sample
-\\ - no control group
-\\ - no retention measure
-\\ - bounded instruction scope
-\\ - supported study setting
+The research question asked:
 
-Keep open-ended?
+\begin{quote}
+\textit{To what extent can an immersive virtual reality learning environment support students' understanding of selected single-cycle MIPS datapath concepts as a supplementary educational tool?}
+\end{quote}
 
-\section{Close}
+Within the scope of this evaluation, the findings support a qualified positive answer. The prototype appears capable of providing useful supplementary support for selected single-cycle datapath concepts, particularly by making instruction execution easier to follow as a sequence of visible and interactive relationships. Participants consistently reported that the visualisations helped them form a mental model and made abstract processes easier to understand, while the open-ended responses repeatedly identified hands-on interaction, visible stages, and local guidance as useful parts of the experience. Post-session knowledge performance was generally strong on several targeted concepts, and the repeated baseline/post-session comparison showed descriptive strengthening on part of the repeated item set after the overall learning session.
 
-- cautious but still meaningful reading...
-\\ -some promise in scope...
-\\ -limits still obvious...
-\\ - more work needed...
+The extent of that support was nevertheless uneven. Branch-to-PC reasoning, memory-transfer direction, and some stage distinctions remained difficult for part of the sample. Movement from Learning into Practice occurred across all participants, but independent progression beyond Practice was not observed consistently enough to establish consistent independent performance. Interface ambiguity and physical discomfort also reduced the amount of effective exposure available to some participants. The study therefore supports conceptual assistance and guided progression more strongly than it supports claims of mastery or independent transfer.
+
+The findings also reinforce the supplementary position established throughout the dissertation. As discussed earlier in this chapter, the environment is better supported as an additional representation of instruction execution than as a replacement for lectures, diagrams, tutorials, or simulators.
+
+The main contribution is consequently not a general demonstration that VR improves computer-architecture learning. It is the design and exploratory evaluation of a pedagogical translation in which hidden and effectively concurrent datapath behaviour is reorganised into sequential teaching phases that can be seen, followed, acted upon, and progressively reconstructed with less support. The findings provide enough evidence to justify that design direction, while the limitations of the study define the next questions that would need to be answered before stronger educational claims could be made.
+
+The research question can therefore be answered in bounded terms: the developed VR environment appears to support understanding of selected single-cycle MIPS datapath concepts as a supplementary learning tool, with its strongest contribution lying in the visual and interactive organisation of instruction execution into a learner-facing reasoning sequence. This conclusion is suggestive rather than definitive, but it establishes a credible basis for further refinement and comparative evaluation.
