@@ -4,8 +4,6 @@ This chapter reports the findings from the participant study described in Chapte
 
 \section{Participant Background and Study Context}
 
-%  Participants were all adults with a background in computer science, and had undergone the appropriate ethical considerations before taking part in a session.
-
 The final study sample comprised 12 participants, all of whom confirmed that they were aged 18 or over. Table~\ref{tab:participant-background} summarises the background information collected before the VR session, including prior exposure to computer architecture or computer organisation, previous VR use, self-reported confidence and difficulty, and prior familiarity with selected topic areas.
 
 \begin{table}[!htbp]
@@ -54,21 +52,15 @@ Topics selected & None of the above & 2 & 16.7 \\
 \label{tab:participant-background}
 \end{table}
 
-% Nine of the 12 participants (75\%) reported that they had previously studied computer architecture or organization during higher education, while 11 participants (91.7\%) reported that they previously experienced the use of a virtual reality headset. Additionally, the level of familiarity was also reported to gauge how to assist them in the onboarding experience for the VR session of the study.
-
 Nine participants (75.0\%) reported previous study of computer architecture or computer organisation, while 11 (91.7\%) had previously used a VR headset. Previous VR experience was rated as Good by five participants and High by four, with one participant each reporting Moderate, Limited, and no prior experience.
 
 Pre-session confidence was distributed across the full five-point scale: four participants selected rating 1, one selected rating 2, two selected rating 3, three selected rating 4, and two selected rating 5. Perceived difficulty was concentrated at the more difficult end of its scale, with one participant selecting Extremely difficult, six selecting Somewhat difficult, and five selecting Neutral; no participant selected either of the two easy categories.
 
-% The screening process additionally gauged topic familiarity to get a further understanding of the participant's background, in order to better help provide descriptive starting context during the tailored refresher session for the later questionnaire and knowledge check reported in the remainder of the chapter.
-
-% in discussion probably talk a little about the choice of topics even though the prototype doesnt contain all of them
-
-Topic familiarity was also recorded before the session as part of the participant background profile. Prior topic exposure also varied across the sample. Stack was the most frequently selected topic, reported by nine participants (75.0\%), followed by Memory Hierarchy by eight (66.7\%) and Pipelining by five (41.7\%). Instruction Flow and Assembly were each selected by three participants (25.0\%), while two participants (16.7\%) selected None of the above. As described in Chapter~3, these background responses formed part of the starting context used when delivering the tailored refresher before the VR session.
+Topic familiarity was also recorded before the session as part of the participant background profile. Stack was the most frequently selected topic, reported by nine participants (75.0\%), followed by Memory Hierarchy by eight (66.7\%) and Pipelining by five (41.7\%). Instruction Flow and Assembly were each selected by three participants (25.0\%), while two participants (16.7\%) selected None of the above. As described in Chapter~3, these background responses formed part of the starting context used when delivering the tailored refresher before the VR session.
 
 \section{System-Experience Results}
 
-The post-session questionnaire included six positively framed usability items, a separate discomfort item, five engagement items, and five items addressing the perceived learning experience. Table~\ref{tab:questionnaire-descriptives} reports the construct-level descriptive statistics, while Figures~\ref{fig:usability-likert}--\ref{fig:learning-likert} retain the item-level response distributions. The full wording of each item is reproduced in Appendix~\ref{app:questionnaire}.
+The post-session questionnaire included six positively framed usability items, a separate discomfort item, five engagement items, and five items addressing the perceived learning experience. Table~\ref{tab:questionnaire-descriptives} reports group-level descriptive summaries, while Figures~\ref{fig:usability-likert}--\ref{fig:learning-likert} retain the item-level response distributions. The full wording of each item is reproduced in Appendix~\ref{app:questionnaire}.
 
 \begin{table}[!htbp]
 \centering
@@ -76,21 +68,23 @@ The post-session questionnaire included six positively framed usability items, a
 \renewcommand{\arraystretch}{1.1}
 \begin{tabularx}{\textwidth}{>{\raggedright\arraybackslash}p{3.3cm} >{\raggedright\arraybackslash}X c c c c c}
 \toprule
-Construct & Measure & $N$ & Mean (SD) & Median & Range & Reliability \\
+Grouping & Measure & $N$ & Mean (SD) & Median & Range & Reliability \\
 \midrule
 Usability & Six-item usability composite & 12 & 3.99 (0.61) & 4.17 & 2.50--4.67 & $\alpha = 0.820$ \\
 Discomfort & Single discomfort item & 12 & 3.92 (1.31) & 4.00 & 1--5 & N/A \\
-Engagement & Five-item engagement composite & 12 & 4.23 (0.37) & 4.20 & 3.60--5.00 & $\alpha = 0.160$ \\
+Engagement & Five-item descriptive summary & 12 & 4.23 (0.37) & 4.20 & 3.60--5.00 & $\alpha = 0.160$ \\
 Learning experience & Five-item learning-experience composite & 12 & 4.38 (0.59) & 4.60 & 3.20--5.00 & $\alpha = 0.836$ \\
 \bottomrule
 \end{tabularx}
-\caption[Questionnaire descriptive summary]{Descriptive statistics for the post-session usability, discomfort, engagement, and perceived learning-experience measures, together with internal-consistency estimates where applicable. The table summarises the construct-level responses while the accompanying figures retain the individual item distributions.}
+\caption[Questionnaire descriptive summary]{Descriptive statistics for the post-session usability, discomfort, engagement, and perceived learning-experience measures, together with internal-consistency estimates where applicable. The table provides group-level descriptive statistics while the accompanying figures retain the individual item distributions.}
 \label{tab:questionnaire-descriptives}
 \end{table}
 
-The usability and learning-experience groupings returned Cronbach's $\alpha$ values of 0.820 and 0.836 respectively. The engagement grouping returned $\alpha=0.160$, and its composite value is retained here only as a descriptive summary alongside the individual item distributions.
+The usability and learning-experience groupings returned Cronbach's $\alpha$ values of 0.820 and 0.836 respectively. The engagement items returned $\alpha=0.160$, and their mean is retained here only as a descriptive summary alongside the individual item distributions.
 
 \subsection{Usability}
+
+The six-item usability composite had a mean of 3.99 ($SD=0.61$), a median of 4.17, and a range of 2.50 to 4.67. Figure~\ref{fig:usability-likert} reports the response distribution across the six statements. Eleven of the 12 participants (91.7\%) selected Agree or Strongly Agree for navigation without difficulty, intuitive controls, and the statement that the visual presentation made the concepts easier to follow. Nine participants (75.0\%) selected Agree or Strongly Agree for ease of learning and confidence in using the system again. The focus item had the lowest level of agreement within the usability group, with six participants (50.0\%) selecting Agree or Strongly Agree, three selecting Neutral, and three selecting Disagree.
 
 \begin{figure}[!htbp]
 \centering
@@ -98,8 +92,6 @@ The usability and learning-experience groupings returned Cronbach's $\alpha$ val
 \caption[Usability-item response distribution]{Distribution of participant responses across the six positively framed usability items following the VR session. The item-level view allows the individual usability responses to be compared rather than relying only on the overall usability composite.}
 \label{fig:usability-likert}
 \end{figure}
-
-The six-item usability composite had a mean of 3.99 ($SD=0.61$), a median of 4.17, and a range of 2.50 to 4.67. Figure~\ref{fig:usability-likert} reports the response distribution across the six statements. Eleven of the 12 participants (91.7\%) selected Agree or Strongly Agree for navigation without difficulty, intuitive controls, and the statement that the visual presentation made the concepts easier to follow. Nine participants (75.0\%) selected Agree or Strongly Agree for ease of learning and confidence in using the system again. The focus item had the lowest level of agreement within the usability group, with six participants (50.0\%) selecting Agree or Strongly Agree, three selecting Neutral, and three selecting Disagree.
 
 \subsection{Discomfort}
 
@@ -117,11 +109,11 @@ The single discomfort item had a mean response of 3.92 ($SD=1.31$), a median of 
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=\textwidth]{Figure_02_Engagement_Likert_12P}
-\caption[Engagement-item response distribution]{Distribution of participant responses across the five engagement items following the VR session. The individual item distributions are shown separately because the engagement composite had weak internal consistency and is therefore treated only as a descriptive summary.}
+\caption[Engagement-item response distribution]{Distribution of participant responses across the five engagement items following the VR session. The individual item distributions are shown separately because the five engagement items had weak internal consistency and are therefore interpreted at item level, with the mean retained only for descriptive context.}
 \label{fig:engagement-likert}
 \end{figure}
 
-The five engagement items produced a composite mean of 4.23 ($SD=0.37$), a median of 4.20, and a range of 3.60 to 5.00. Figure~\ref{fig:engagement-likert} reports the individual response distributions. All 12 participants (100.0\%) selected Agree or Strongly Agree for the statement that the experience held their attention. Eleven participants (91.7\%) selected Agree or Strongly Agree that the system made the topic feel more interesting. Active involvement in the learning process, motivation to explore the concepts further, and improved focus compared with standard learning materials each received Agree or Strongly Agree responses from 10 participants (83.3\%). The final focus-comparison item also included one Strongly Disagree response.
+For descriptive context only, the mean across the five engagement items was 4.23 ($SD=0.37$), with a median of 4.20 and a range of 3.60 to 5.00. Figure~\ref{fig:engagement-likert} reports the individual response distributions. All 12 participants (100.0\%) selected Agree or Strongly Agree for the statement that the experience held their attention. Eleven participants (91.7\%) selected Agree or Strongly Agree that the system made the topic feel more interesting. Active involvement in the learning process, motivation to explore the concepts further, and improved focus compared with standard learning materials each received Agree or Strongly Agree responses from 10 participants (83.3\%). The final focus-comparison item also included one Strongly Disagree response.
 
 \subsection{Perceived Learning Experience}
 
@@ -145,6 +137,15 @@ As described in Chapter~3, the post-session knowledge check provided a descripti
 \label{fig:post-knowledge-correct}
 \end{figure}
 
+Table~\ref{tab:post-knowledge-summary} reports the overall descriptive summary of post-session knowledge-check performance and confidence. Across the 15-item post-session knowledge check, the mean total score was 11.33 out of 15 ($SD=2.02$), with a median of 10.50 and a range of 9 to 15. Expressed as a percentage, the mean was 75.56\% ($SD=13.43$), the median was 70.00\%, and the observed range was 60.00\% to 100.00\%.
+
+Question 26 asked participants to rate their confidence in the preceding knowledge-check answers. The mean confidence rating was 3.08 ($SD=1.00$), with a median of 3.00 and a range of 1 to 4. One participant selected rating 1, two selected rating 2, four selected rating 3, and five selected rating 4; no participant selected rating 5.
+Figure~\ref{fig:post-knowledge-correct} reports the item-level percentage-correct results. Q15 was answered correctly by all 12 participants (100.0\%). Q13, Q20, Q24, and Q25 each received 11 correct responses (91.7\%), while Q18 received 10 (83.3\%). Q11, Q17, and Q23 each received nine correct responses (75.0\%); Q12, Q14, and Q21 each received eight (66.7\%); Q19 and Q22 each received seven (58.3\%); and Q16 had the lowest correct-response count, with five participants answering correctly (41.7\%).
+
+The incorrect-response distributions were also inspected for the items with repeated distractor choices. On Q16, four participants selected Instruction Register rather than Program Counter. On Q22, four participants selected the response describing a value being loaded from memory into \texttt{\$t0}, while seven selected the correct store-word response. For Q12, all four incorrect responses selected Decode rather than Fetch. On Q17, the three incorrect responses selected the alternative that reversed the source and destination registers.
+
+
+
 \begin{table}[!htbp]
 \centering
 \small
@@ -161,15 +162,6 @@ Post-session confidence rating & 12 & 3.08 (1.00) & 3.00 & 1--4 \\
 \caption[Post-session knowledge summary]{Summary of post-session knowledge-check performance and confidence, reporting the total score, percentage-correct score, and self-reported confidence rating across the 12 participants. These measures provide an overall descriptive view of performance after the complete learning session.}
 \label{tab:post-knowledge-summary}
 \end{table}
-
-Across the 15-item post-session knowledge check, the mean total score was 11.33 out of 15 ($SD=2.02$), with a median of 10.50 and a range of 9 to 15. Expressed as a percentage, the mean was 75.56\% ($SD=13.43$), the median was 70.00\%, and the observed range was 60.00\% to 100.00\%.
-
-Question 26 asked participants to rate their confidence in the preceding knowledge-check answers. The mean confidence rating was 3.08 ($SD=1.00$), with a median of 3.00 and a range of 1 to 4. One participant selected rating 1, two selected rating 2, four selected rating 3, and five selected rating 4; no participant selected rating 5.
-
-% in discussion include a paragraph on the questions on topic of relevancy and purpose served
-Figure~\ref{fig:post-knowledge-correct} reports the item-level percentage-correct results. Q15 was answered correctly by all 12 participants (100.0\%). Q13, Q20, Q24, and Q25 each received 11 correct responses (91.7\%), while Q18 received 10 (83.3\%). Q11, Q17, and Q23 each received nine correct responses (75.0\%); Q12, Q14, and Q21 each received eight (66.7\%); Q19 and Q22 each received seven (58.3\%); and Q16 had the lowest correct-response count, with five participants answering correctly (41.7\%).
-
-The incorrect-response distributions were also inspected for the items with repeated distractor choices. On Q16, four participants selected Instruction Register rather than Program Counter. On Q22, four participants selected the response describing a value being loaded from memory into \texttt{\$t0}, while seven selected the correct store-word response. For Q12, all four incorrect responses selected Decode rather than Fetch. On Q17, the three incorrect responses selected the alternative that reversed the source and destination registers.
 
 \section{Baseline and Post-Session Comparison}
 
@@ -205,6 +197,17 @@ For the eight complete cases, the mean baseline score was 3.38 out of 5 ($SD=1.1
 
 The participant-specific available-item comparison retained all 12 participants by comparing each participant only on the repeated items for which a baseline response was available. Eight participants had all five repeated items available, two had four, one had three, and one had one. Across these matched subsets, the mean baseline percentage was 60.97\% ($SD=27.56$), the mean post-session percentage was 74.72\% ($SD=28.11$), and the mean percentage-point difference was 13.75 ($SD=15.83$).
 
+Table~\ref{tab:repeated-item-transitions} and Figure~\ref{fig:baseline-post-repeated} report the item-level matched comparison. Q11 increased from 5 correct responses among 11 matched cases at baseline (45.5\%) to 8 of 11 post-session (72.7\%), with three incorrect-to-correct transitions and no correct-to-incorrect transitions. Q13 increased from 6 of 10 matched cases (60.0\%) to 9 of 10 (90.0\%), again with three incorrect-to-correct transitions and no movement in the opposite direction. Q25 increased from 8 of 11 (72.7\%) to 10 of 11 (90.9\%); three participants moved from incorrect to correct and one moved from correct to incorrect.
+
+The aggregate percentage for Q12 remained at 72.7\%, with the same eight participants answering correctly at both time points. Q14 also remained at 77.8\% at the aggregate level, although the matched responses changed within the group: two participants moved from incorrect to correct and two moved from correct to incorrect. The transition counts are retained in Table~\ref{tab:repeated-item-transitions} because the unchanged aggregate percentage for Q14 concealed movement in both directions.
+
+\begin{figure}[!htbp]
+\centering
+\includegraphics[width=\textwidth]{Figure_06_Baseline_vs_Post_Repeated_Knowledge_12P}
+\caption[Repeated-item baseline/post comparison]{Matched baseline and post-session percentage-correct performance for the five repeated knowledge items. The comparison shows descriptive change across the overall learning session and should not be interpreted as an effect attributable to VR alone because the tailored refresher occurred between the two measurements.}
+\label{fig:baseline-post-repeated}
+\end{figure}
+
 \begin{table}[!htbp]
 \centering
 \small
@@ -238,38 +241,29 @@ Q25 & 11 & 8/11 (72.7\%) & 10/11 (90.9\%) & 3 & 1 \\
 \label{tab:repeated-item-transitions}
 \end{table}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=\textwidth]{Figure_06_Baseline_vs_Post_Repeated_Knowledge_12P}
-\caption[Repeated-item baseline/post comparison]{Matched baseline and post-session percentage-correct performance for the five repeated knowledge items. The comparison shows descriptive change across the overall learning session and should not be interpreted as an effect attributable to VR alone because the tailored refresher occurred between the two measurements.}
-\label{fig:baseline-post-repeated}
-\end{figure}
-
-Table~\ref{tab:repeated-item-transitions} and Figure~\ref{fig:baseline-post-repeated} report the item-level matched comparison. Q11 increased from 5 correct responses among 11 matched cases at baseline (45.5\%) to 8 of 11 post-session (72.7\%), with three incorrect-to-correct transitions and no correct-to-incorrect transitions. Q13 increased from 6 of 10 matched cases (60.0\%) to 9 of 10 (90.0\%), again with three incorrect-to-correct transitions and no movement in the opposite direction. Q25 increased from 8 of 11 (72.7\%) to 10 of 11 (90.9\%); three participants moved from incorrect to correct and one moved from correct to incorrect.
-
-The aggregate percentage for Q12 remained at 72.7\%, with the same eight participants answering correctly at both time points. Q14 also remained at 77.8\% at the aggregate level, although the matched responses changed within the group: two participants moved from incorrect to correct and two moved from correct to incorrect. The transition counts are retained in Table~\ref{tab:repeated-item-transitions} because the unchanged aggregate percentage for Q14 concealed movement in both directions.
-
 \section{Qualitative Results}
 
-The final five questionnaire questions invited open-ended comments on what helped understanding, what remained confusing, what participants would change, whether the interface interfered with learning, and whether they would use the system again. These responses were considered alongside the anonymised researcher notes recorded during the sessions. The qualitative material was grouped into a small set of recurring categories, while participant comments and researcher observations were kept distinguishable because they represent different forms of evidence.
+The final five questionnaire questions invited open-ended comments on what helped understanding, what remained confusing, what participants would change, whether the interface interfered with learning, and whether they would use the system again. These responses were considered alongside the anonymised researcher notes recorded during the sessions. Participant comments and researcher observations are reported separately because they represent different forms of evidence.
 
 \subsection{Open-Ended Questionnaire Feedback}
 
 Two forms of support appeared repeatedly in responses to the question asking what helped understanding most: direct interaction with the represented architecture and the local explanatory material provided around the lesson. One participant referred specifically to ``the hands-on interactions such as picking up the registers and loading them'', while another described ``the act of doing things'' as the aspect that helped most. Similar responses referred to grabbing registers, the interactive structure of the application, simplified block representations, and the visibility of decode and execute stages. Guidance also appeared frequently in this part of the questionnaire. Six participants referred to instructions, notes, hints, or panels as useful parts of the experience, while one participant identified the explanation before entering VR as particularly important for following the later task.
 
-The responses describing confusion and possible improvements were more varied. Several comments concerned the local interaction sequence rather than the overall route between the six lesson phases described in Chapters~4 and~5. One participant wanted clearer indication of where individual inputs should be placed, another participant described the control signals and some input locations as unclear, and one participant requested more explicit prompts showing ``what to interact with, in what order, and what to do next''. Other comments focused on particular architecture tasks, including difficulties with register identification, ALU calculation, control-switch configuration, and the write-back stage. Practice-mode decode also produced requests for additional visual support, including colour coding and a drawing or segmentation aid for the encoded instruction.
+The responses describing confusion and possible improvements were more varied. Several comments concerned the local interaction sequence rather than the overall route between the six lesson phases described in Chapters~4 and~5. One participant wanted clearer indication of where individual inputs should be placed, another participant described the control signals and some input locations as unclear, and one participant requested more explicit prompts showing ``what to interact with, in what order, and what to do next''. Other comments focused on particular architecture tasks, including difficulties with register identification, ALU calculation, control-switch configuration, and the write-back stage. Decode in Practice mode also produced requests for additional visual support, including colour coding and a drawing or segmentation aid for the encoded instruction.
 
 Information presentation and physical navigation formed another recurring group of comments. One participant described the three-panel arrangement as containing too much text to follow comfortably, while another requested clearer panel labels, less scrolling, and slower joystick movement. One commented on repeated movement back to the register area and on guidance arrows that were not always helpful in the reduced-support task. Another reported a visibility problem in which some text-input areas were difficult to distinguish because the text and background were both light. These comments refer to the same panel, routing, and interaction systems described in Chapter~5, but record how those systems were experienced during the study.
 
-Question~30 asked directly whether the VR interface had ever obstructed learning. Six participants described a specific interface or comfort-related problem, including nausea, dizziness, rotation and teleportation confusion, fast movement, object-placement difficulty, and text-input visibility. The remaining six answered No, Not really, Not at all, or otherwise stated that the interface had not interfered. The responses therefore included both participants who reported no meaningful interface interference and participants who identified physical comfort or interaction mechanics as sources of difficulty during the session.
+Question~30 asked directly whether the VR interface had ever obstructed learning. Six participants described a specific interface or comfort-related problem, including nausea, dizziness, rotation and teleportation confusion, fast movement, object-placement difficulty, and text-input visibility. The remaining six answered No, Not really, Not at all, or otherwise stated that the interface had not interfered.
 
-Responses concerning future use of the system varied in the conditions participants attached to continued use. Six participants gave an unqualified positive response, five described future use as conditional on factors such as additional polish, reduced discomfort, greater novice support, or some prior understanding of the topic, and one participant answered No because dizziness outweighed the perceived benefit. One participant described the system as useful when the learner already knows ``a little bit about the topics'' and wants to clarify concepts, while another questioned whether the current level of terminology and prior knowledge expected by the prototype would make it more suitable for learners who already partly understand the material. A participant similarly made future use conditional on the system becoming more novice-friendly.
+Responses concerning future use of the system varied in the conditions participants attached to continued use. Six participants gave an unqualified positive response, five described future use as conditional on factors such as additional polish, reduced discomfort, greater novice support, or some prior understanding of the topic, and one participant answered No because dizziness outweighed the perceived benefit. One participant described the system as useful when the learner already knows ``a little bit about the topics'' and wants to clarify concepts, while another questioned whether the current level of terminology and prior knowledge expected by the prototype would make it more suitable for learners who already partly understand the material.
 
 \subsection{Researcher Observations and Lesson Progression}
 
 The researcher notes recorded mode exposure, points of hesitation, support requirements, and comfort-related interruptions across the participant sessions. Since these notes were supplementary observational records rather than a formal completion log, the results are reported at group level where possible.
 
-As shown in Table~\ref{tab:session-progression}, all 12 participants attempted both Learning and Practice modes, while Test mode was attempted by two participants. Two Practice-mode attempts were not completed. The amount of researcher support varied across the sessions, ranging from isolated navigation or interface assistance to more substantial guidance with task progression and interaction. Recurring points of difficulty included navigation and control handling, register interaction, control-signal and ALU-related reasoning, memory-stage behaviour, and write-back.
+As shown in Table~\ref{tab:session-progression}, all 12 participants attempted both Learning mode and Practice mode, while Test mode was attempted by two participants. Two Practice mode attempts were not completed. The amount of researcher support varied across the sessions, ranging from isolated navigation or interface assistance to more substantial guidance with task progression and interaction. Recurring points of difficulty included navigation and control handling, register interaction, control-signal and ALU-related reasoning, memory-stage behaviour, and write-back.
+
+Comfort-related interruptions were also recorded during the sessions. Nausea, dizziness, or breaks associated with discomfort were explicitly noted for seven participants, with an additional case of movement-related disorientation. These observations are reported alongside the structured discomfort responses presented earlier in the chapter rather than being treated as a separate quantitative measure. 
 
 \begin{table}[!htbp]
 \centering
@@ -287,7 +281,7 @@ Practice mode attempted
 & All 12 participants \\
 Test mode attempted
 & 2 participants \\
-Explicitly unfinished Practice-mode attempt
+Explicitly unfinished Practice mode attempt
 & 2 participants \\
 Minimal researcher assistance recorded
 & 2 participants \\
@@ -304,10 +298,6 @@ Recurring conceptual or interaction difficulties
 \caption[Summary of recorded lesson progression and support]{Summary of recorded lesson-mode exposure, incomplete attempts, researcher assistance, comfort-related interruptions, and recurring difficulties observed during the participant sessions. The table provides a group-level account of how far participants progressed and where additional support or interruption occurred.}
 \label{tab:session-progression}
 \end{table}
-
-Comfort-related interruptions were also recorded during the sessions. Nausea, dizziness, or breaks associated with discomfort were explicitly noted for seven participants, with an additional case of movement-related disorientation. These observations are reported alongside the structured discomfort responses presented earlier in the chapter rather than being treated as a separate quantitative measure. 
-
-The instructions encountered during the sessions also varied across the three modes. Table~\ref{tab:instruction-usage} summarises the recorded instruction attempts without linking individual instruction histories to specific participants.
 
 \begin{table}[!htbp]
 \centering
@@ -334,15 +324,15 @@ The instructions encountered during the sessions also varied across the three mo
 \texttt{slt}  & 0 & 1 & 0 & 1 \\
 \bottomrule
 \end{tabularx}
-\caption[Recorded instruction use across lesson modes]{Recorded instruction attempts across Learning, Practice, and Test modes during the participant sessions. The table shows how instruction exposure varied by mode and makes clear that later-mode performance was based on a smaller and less uniform set of instruction attempts.}
+\caption[Recorded instruction use across lesson modes]{Recorded instruction attempts across Learning mode, Practice mode, and Test mode during the participant sessions. The table shows how instruction exposure varied by mode and makes clear that later-mode performance was based on a smaller and less uniform set of instruction attempts.}
 \label{tab:instruction-usage}
 \end{table}
 
-Table~\ref{tab:instruction-usage} summarises the instructions recorded across the three lesson modes. \texttt{add} was the most frequently encountered instruction, with 11 recorded attempts, followed by \texttt{addi} with six. Learning mode included the widest range of recorded instruction exposure, while practice mode contained one recorded instruction attempt per participant. Test-mode exposure was limited to two recorded attempts, involving \texttt{lw} and \texttt{beq}, reflecting the uneven progression through the three modes across the study sessions.
+Table~\ref{tab:instruction-usage} summarises the instructions recorded across the three lesson modes. \texttt{add} was the most frequently encountered instruction, with 11 recorded attempts, followed by \texttt{addi} with six. Learning mode included the widest range of recorded instruction exposure, while Practice mode contained one recorded instruction attempt per participant. Test mode exposure was limited to two recorded attempts, involving \texttt{lw} and \texttt{beq}, reflecting the uneven progression through the three modes across the study sessions.
 
 
 \section{Summary}
 
 The participant sample entered the study with varied prior architecture knowledge, VR experience, confidence, and topic familiarity. The post-session questionnaire recorded frequent agreement on the usability, engagement, and perceived-learning items, while the separate discomfort item was endorsed by nine participants. Post-session knowledge performance averaged 75.56\% across Questions 11--25, with substantial variation between individual items. On the five repeated questions, the complete-case and available-item comparisons both recorded higher post-session descriptive averages than at baseline, alongside item-level cases in which performance remained unchanged or moved in both directions.
 
-The open-ended responses and session notes added detail that was not captured by the structured measures. Participants repeatedly referred to hands-on interaction, visual representation, instructions, and hints when describing what helped them, while confusion and requested improvements concerned control signals, register and memory interactions, information density, local interaction sequencing, movement, and comfort. All 12 participants attempted Learning and Practice modes, two attempted Test mode, and the amount of researcher support recorded during the sessions ranged from minimal assistance to substantial guidance. Chapter~7 considers how these findings bear on the research question, the design choices established in Chapter~4, and the literature reviewed in Chapter~2.
+The open-ended responses and session notes added detail that was not captured by the structured measures. Participants repeatedly referred to hands-on interaction, visual representation, instructions, and hints when describing what helped them, while confusion and requested improvements concerned control signals, register and memory interactions, information density, local interaction sequencing, movement, and comfort. All 12 participants attempted Learning mode and Practice mode, two attempted Test mode, and the amount of researcher support recorded during the sessions ranged from minimal assistance to substantial guidance. Chapter~7 considers how these findings bear on the research question, the design choices established in Chapter~4, and the literature reviewed in Chapter~2.
