@@ -54,7 +54,7 @@ The guiding decision was to preserve the reasoning structure of instruction exec
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{DatapathToVrTranslation.png}
-\caption[Datapath-to-VR translation overview]{Overview of how the traditional single-cycle datapath was translated into the routed VR environment, with the major textbook regions connected to their learner-facing counterparts in the final space.}
+\caption[Datapath-to-VR translation overview]{Overview of how the traditional single-cycle datapath was translated into the routed VR environment. The figure shows how major textbook datapath regions were reorganised into learner-facing stations so that instruction execution could be followed as a visible sequence without implying separate hardware clock stages.}
 \label{fig:datapathToVrTranslation}
 \end{figure}
 
@@ -77,7 +77,7 @@ Once the design had committed itself to guided tracing, the environment could no
 \begin{figure}[!htbp]
 \centering
 \includegraphics[width=0.85\linewidth]{RoutedLessonMap.png}
-\caption[Routed lesson map]{Annotated route map of the environment showing the ordered movement path through the main lesson stations.}
+\caption[Routed lesson map]{Annotated map of the VR environment showing the ordered route through the main lesson stations. The spatial sequence controls when each part of instruction execution becomes available to the learner and supports progression from one learner-facing phase to the next.}
 \label{fig:routedLessonMap}
 \end{figure}
 
@@ -96,7 +96,7 @@ As outlined in Section 4.2.2, the prototype uses Learning, Practice, and Test as
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=\linewidth]{ModeFlowchart.png}
-\caption[Three-mode lesson progression]{Pedagogical progression across Learning, Practice, and Test modes, showing how support is reduced while the same lesson structure is retained.}
+\caption[Three-mode lesson progression]{Pedagogical progression across Learning, Practice, and Test modes. The same lesson route is retained across all three modes while explanation, hints, tolerance, and other forms of support are progressively reduced so that the learner is asked to reconstruct more of the reasoning independently.}
 \label{fig:modeProgression}
 \end{figure}
 
@@ -123,3 +123,7 @@ There is also a trade-off between automation and learner action. If too much of 
 Finally, the design was shaped by the demands of participant use. This prototype does not have the freedom of an indefinitely expanding research platform. It had to become stable, navigable, and teachable within the available scope, which meant that features had to earn their place pedagogically and practically. Some ideas remained outside the final build not because they were uninteresting, but because they did not strengthen the educational core strongly enough to justify the complexity they would have introduced.
 
 Taken together, these trade-offs define the design more accurately than any simple claim about immersion or simulation could. The prototype is best understood through the selective representational choices and practical constraints developed across this chapter.
+
+\section{Summary}
+
+This chapter defined the prototype as a supplementary learning environment built around a bounded set of learning outcomes for selected single-cycle MIPS datapath concepts. It established the decision to reorganise instruction execution into six learner-facing phases and showed how this shaped the routed environment, the progression across Learning, Practice, and Test modes, and the use of physical interaction, local guidance, and validation. The resulting design prioritises the reasoning structure needed by the learner while balancing architectural fidelity against clarity, interaction burden, and practical scope. Chapter~5 turns from these design decisions to their implementation in the prototype used for the participant study.

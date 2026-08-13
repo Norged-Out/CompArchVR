@@ -16,7 +16,7 @@ The work reported here concentrates on instruction execution in a single-cycle M
 \centering
 \includegraphics[width=0.9\linewidth]{ReferenceSingleCycleDatapath.png}
 \captionsetup{width=.9\linewidth}
-\caption[Reference single-cycle datapath overview]{Reference overview of a single-cycle MIPS datapath, attributed to Jyotiprakash Mishra's blog post on the topic \cite{mishraMipsSingleCycleDatapath}.}
+\caption[Reference single-cycle datapath overview]{Reference single-cycle MIPS datapath used to establish the conventional processor representation discussed throughout the dissertation, attributed to Jyotiprakash Mishra's blog post on the topic \cite{mishraMipsSingleCycleDatapath}. The diagram provides the structural baseline against which the later VR translation of instruction flow, register access, ALU behaviour, memory access, and program-counter updates is compared.}
 \label{fig:referenceSingleCycleDatapath}
 \end{figure}
 
@@ -34,29 +34,29 @@ The limitation of conventional teaching is therefore narrower than a claim that 
 
 \section{Interactive Support for Computer Architecture Learning}
 
-Before turning to VR, it is worth noting that architecture learning has already been explored through other interactive formats, including an educational mobile game for computer architecture in which learners found the approach motivating and were willing to use it again \cite{tlili2016improving}. Even without immersion, the study still matters because it suggests that the subject responds well to interactive presentation and because it keeps attention on the deeper issue of making abstract system behaviour easier to follow.
+Before turning to VR, it is worth noting that Tlili et al. had already explored architecture learning through another interactive format, using an educational mobile game in which learners found the approach motivating and were willing to use it again \cite{tlili2016improving}. Even without immersion, the study still matters because it suggests that the subject responds well to interactive presentation and because it keeps attention on the deeper issue of making abstract system behaviour easier to follow.
 
-More directly related work appears in immersive and experiential systems. One early VR environment for studying computer architecture through experiential learning asked learners to assemble virtual computer components while receiving textual guidance \cite{dascalu2017experiential}. The emphasis differs from the current project, yet the paper remains important because it treats computer architecture as a credible target for immersive learning rather than as a novelty application. It also represents an early attempt to move architecture teaching away from passive explanation and toward structured activity inside a virtual environment.
+More directly related work appears in immersive and experiential systems. Dascalu et al. describe an early VR environment for studying computer architecture through experiential learning, in which learners assembled virtual computer components while receiving textual guidance \cite{dascalu2017experiential}. The emphasis differs from the current project, yet the paper remains important because it treats computer architecture as a credible target for immersive learning rather than as a novelty application. It also represents an early attempt to move architecture teaching away from passive explanation and toward structured activity inside a virtual environment.
 
 The paper closest in spirit to this project is the VR serious game described by Tan et al. \cite{tan2023vr}, whose authors describe Computer Organisation and Architecture as ``dry, tough, and complex'' and argue that students struggle because they cannot ``visualize the procedures of various CPU functions'' \cite{tan2023vr}. Their system is organised around tutorials, self-guided assignments, and quizzes, and it covers topics such as fetching and executing instructions, interrupt handling, interrupt-driven I/O, and context switches. Help material is provided in a ``step-by-step manner'' before that support is reduced in later tasks \cite{tan2023vr}. The relevance of that work lies not only in its use of VR, but in the way it turns architecture learning into a guided sequence of actions rather than a static visual reference, even though the prototype developed here narrows its scope more tightly around single-cycle datapath execution.
 
 Checa et al. provide a nearby precedent from computer-hardware learning rather than architecture proper \cite{checa2023immersive}. Their VR serious game is about hardware assembly, not datapath tracing, but the study suggests that immersive learning may be more helpful for understanding, visual recognition, and making connections between concepts than for simple factual recall \cite{checa2023immersive}. That distinction matters here. The aim is not primarily to help students memorise terminology, but to help them connect instruction fields, datapath structure, and resulting machine state into one explanation.
 
-A recent VR environment for digital design and computer organisation laboratory learning is also relevant for a simpler reason: it keeps usability in view throughout the evaluation \cite{alnuaimi2025vr}. Even a promising educational VR system has to be learnable and comfortable enough to use before any learning claim can matter. A tool intended to support understanding of hidden processes can just as easily create another layer of confusion if the interface is awkward or overloaded.
+Alnuaimi and Awad's recent VR environment for digital design and computer organisation laboratory learning is also relevant for a simpler reason: it keeps usability in view throughout the evaluation \cite{alnuaimi2025vr}. Even a promising educational VR system has to be learnable and comfortable enough to use before any learning claim can matter. A tool intended to support understanding of hidden processes can just as easily create another layer of confusion if the interface is awkward or overloaded.
 
 \section{Virtual Reality in Computer Science Education}
 
 The broader computer science education literature gives a clearer sense of where architecture sits within immersive teaching work. Reviews of VR in computer science education note its promise in areas where abstract concepts benefit from interactive visualisation and show that many applications are directed toward conceptual learning rather than toward full practical programming tasks \cite{pirker2020virtual,agbo2021application,janani2026virtual}. Janani et al. are especially useful because they treat VR as strongest for abstract and process-oriented topics while also describing it as a complementary teaching medium \cite{janani2026virtual}.
 
-One comparison of VR and desktop learning for sorting algorithms reports stronger subjective measures such as presence, absorption, and positive emotion in the VR condition \cite{pirker2021potential}. A mobile VR application for learning Python also reports encouraging results, but frames VR more as a useful aid than as a complete substitute for ordinary teaching \cite{mohamad2023immersive}. Dengel reaches a similarly cautious conclusion from another angle, arguing that immersive environments can support learning in computer science without implying that higher immersion will automatically yield better learning outcomes in every case \cite{dengel2020important}. Across these studies, the same pattern appears: VR is often most plausible as a way of making a first encounter with a difficult idea more concrete.
+Pirker et al. report stronger subjective measures such as presence, absorption, and positive emotion when comparing VR and desktop learning for sorting algorithms \cite{pirker2021potential}. A mobile VR application for learning Python also reports encouraging results, but frames VR more as a useful aid than as a complete substitute for ordinary teaching \cite{mohamad2023immersive}. Dengel reaches a similarly cautious conclusion from another angle, arguing that immersive environments can support learning in computer science without implying that higher immersion will automatically yield better learning outcomes in every case \cite{dengel2020important}. Across these studies, the same pattern appears: VR is often most plausible as a way of making a first encounter with a difficult idea more concrete.
 
 The same reviews also point to the limits of the field. Recurring usability issues, weak collaborative features, and a lack of clear instructional grounding appear across parts of the literature, and the work remains scattered across topics and methods \cite{janani2026virtual,agbo2021application}. A useful contribution, then, does not depend on claiming that VR in computer science education is entirely new; it can instead take the form of a careful application in a domain where the match between problem and medium is especially strong.
 
 \section{Design Constraints and Transferable Lessons}
 
-A case for VR still has to be carried by the quality of the design itself. The harder question is what kind of VR design is likely to help rather than hinder. Work on educational VR discusses practical constraints as much as opportunity and draws attention to issues such as deployment, accessibility, sustainability, and the amount of support institutions need before VR becomes a normal teaching tool \cite{cook2019challenges}. The emphasis therefore shifts away from spectacle and toward a more modest question: can a system be clear, usable, and worth the time required to use it?
+A case for VR still has to be carried by the quality of the design itself. The harder question is what kind of VR design is likely to help rather than hinder. Cook et al. discuss practical constraints in educational VR, drawing attention to issues such as deployment, accessibility, sustainability, and the amount of support institutions need before VR becomes a normal teaching tool \cite{cook2019challenges}. The emphasis therefore shifts away from spectacle and toward a more modest question: can a system be clear, usable, and worth the time required to use it?
 
-A related point appears in work on VR visualisation, which shows that immersive space does not automatically solve information-design problems \cite{korkut2023visualization}. Poor layout, visual clutter, and badly organised interaction can still make a system hard to read. That lesson carries directly into architecture teaching, where the central challenge is already one of representing a hidden process without losing the learner in detail: if too much of the datapath is surfaced at once, VR may simply reproduce the original problem in another form.
+Korkut and Surer similarly show that immersive space does not automatically solve information-design problems \cite{korkut2023visualization}. Poor layout, visual clutter, and badly organised interaction can still make a system hard to read. That lesson carries directly into architecture teaching, where the central challenge is already one of representing a hidden process without losing the learner in detail: if too much of the datapath is surfaced at once, VR may simply reproduce the original problem in another form.
 
 A broader review of VR in education reaches a similar conclusion by showing continuing interest in the medium alongside repeated concerns about readiness, hardware access, discomfort, and the quality of actual learning design \cite{samala2025virtual}. Lee et al. make a different but related argument: immersive experience can help restore intuitive understanding where abstraction has flattened away the underlying reality \cite{lee2020data}. Although their work is not about architecture, the idea transfers well: a datapath diagram is useful precisely because it abstracts, yet that abstraction can become too detached from the felt sequence of execution. The central design problem is therefore not how to make the learner wander through a visually impressive machine, but how to make the essential steps of execution more graspable without adding another layer of clutter.
 
@@ -64,7 +64,7 @@ A broader review of VR in education reaches a similar conclusion by showing cont
 
 The literature points toward a fairly specific use of VR in computer architecture. It also suggests that the most useful systems are selective in what they externalise, what they keep simple, and where they ask the learner to act rather than only observe.
 
-Architecture learning also appears to benefit from guidance and progression. The architecture-facing papers repeatedly use tutorials, staged tasks, and support material before learners are expected to work more independently \cite{tlili2016improving,tan2023vr}. Similar patterns appear in the broader computer science education literature, where prompts, panels, and gradual reduction of support are common design choices \cite{janani2026virtual}.
+Architecture learning also appears to benefit from guidance and progression. Tlili et al. and Tan et al. both use structured support before learners are expected to work more independently \cite{tlili2016improving,tan2023vr}. Similar patterns appear in the broader computer science education literature, where prompts, panels, and gradual reduction of support are common design choices \cite{janani2026virtual}.
 
 The literature also warns repeatedly against overload. A datapath can be made more visible in VR, but that does not mean every hidden detail should be turned into an explicit interaction. If the learner is asked to manage too many objects, too much text, or too much movement at once, much of the value of the medium quickly disappears \cite{cook2019challenges,korkut2023visualization,samala2025virtual,lee2020data}.
 
@@ -72,4 +72,71 @@ Against that background, the gap addressed here can be stated fairly plainly. Th
 
 \section{Summary}
 
-The literature supports a narrower claim than any simple assertion that VR is automatically good for education, or automatically good for computer architecture. Existing work shows that architecture learning has already been explored through mobile games, experiential environments, and VR serious games, while the wider VR-in-computer-science-education literature suggests that conceptual learning is one of the medium's more plausible uses. The same literature also sets clear limits: guidance matters, usability matters, and information has to be presented with restraint. Those conditions shape the prototype evaluated in the next chapter.
+The literature supports a narrower claim than any simple assertion that VR is automatically good for education, or automatically good for computer architecture. Existing work shows that architecture learning has already been explored through mobile games, experiential environments, and VR serious games, while the wider VR-in-computer-science-education literature suggests that conceptual learning is one of the medium's more plausible uses. Table~\ref{tab:related-work-comparison} provides a compact comparison of the key interactive, immersive, and design-oriented works reviewed in this chapter, showing how the literature progresses from game-based architecture support toward more immersive and more explicitly constrained educational VR systems. As that comparison makes clear, the same literature also sets clear limits: guidance matters, usability matters, and information has to be presented with restraint. Those conditions shape the prototype evaluated in the next chapter.
+
+\begin{table}[!htbp]
+\centering
+\small
+\setlength{\tabcolsep}{3.5pt}
+\renewcommand{\arraystretch}{1.12}
+\begin{tabularx}{\textwidth}{@{}
+    >{\raggedright\arraybackslash}p{2.3cm}
+    >{\raggedright\arraybackslash}p{1.6cm}
+    >{\raggedright\arraybackslash}p{2.0cm}
+    >{\raggedright\arraybackslash}X
+    >{\raggedright\arraybackslash}p{3.8cm}
+@{}}
+\toprule
+\textbf{Study} &
+\textbf{Medium} &
+\textbf{Focus} &
+\textbf{Support style} &
+\textbf{Relevance} \\
+\midrule
+Tlili et al. \cite{tlili2016improving} &
+Mobile serious game &
+Computer architecture learning &
+Guided interactive tasks with feedback and increasing difficulty &
+Early interactive architecture-learning precedent. \\
+
+Dascalu et al. \cite{dascalu2017experiential} &
+Virtual reality environment &
+Experiential computer-architecture learning &
+Text-guided virtual component assembly &
+Early immersive architecture-learning precedent. \\
+
+Tan et al. \cite{tan2023vr} &
+VR serious game &
+Computer organisation and architecture &
+Step-by-step tutorials followed by self-guided tasks and quizzes &
+Closest direct precedent for guided visualisation of CPU procedures. \\
+
+Checa et al. \cite{checa2023immersive} &
+VR serious game &
+Computer hardware assembly &
+Guided tutorials followed by autonomous assembly &
+Adjacent evidence for immersive hands-on technical learning. \\
+
+Alnuaimi and Awad \cite{alnuaimi2025vr} &
+VR laboratory &
+Digital design and computer organisation &
+Task-based virtual laboratory with usability evaluation &
+Near-domain precedent for usability, clarity, comfort, and learner readiness. \\
+
+Janani et al. \cite{janani2026virtual} &
+Scoping review &
+VR in computer science education &
+Concept-oriented and scaffolded immersive learning patterns &
+Broader positioning for VR as complementary conceptual support in CS education. \\
+
+Cook et al. \cite{cook2019challenges} &
+Expert-led qualitative study &
+Educational VR deployment &
+Institutional design, accessibility, support, and sustainability concerns &
+Practical counterweight on deployability, access, and support burden. \\
+\bottomrule
+\end{tabularx}
+\caption[Comparison of key reviewed literature]{Comparison of selected interactive, immersive, and design-oriented literature reviewed in this chapter. The studies show the progression from game-based computer-architecture support to architecture-focused VR and broader educational-VR work, while highlighting the guidance, usability, and deployment considerations that informed the prototype.}
+\label{tab:related-work-comparison}
+\end{table}
+
