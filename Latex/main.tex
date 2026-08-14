@@ -14,7 +14,7 @@
 \renewcommand{\thesisschool}{School of Computer Science and Statistics}
 \renewcommand{\thesisuniversity}{University of Dublin, Trinity College}
 \renewcommand{\thesisauthor}{Priyansh Nayak}
-\renewcommand{\thesisauthorpreviousdegrees}{\\B.S. in Computer Science, University of Arizona}
+\renewcommand{\thesisauthorpreviousdegrees}{\\B.Sc. in Computer Science, University of Arizona}
 \renewcommand{\thesismonth}{August}
 \renewcommand{\thesisyear}{2026}
 \renewcommand{\thesissubmissiondate}{August 14, 2026}
@@ -25,19 +25,106 @@
 \renewcommand{\thesisdegreeabbreviation}{M.Sc.}
 \renewcommand{\thesistype}{Dissertation}
 
+\makeatletter
+\renewcommand{\thesisdeclarationpage}{{
+    \thispagestyle{empty}
+    \begin{spacing}{2}
+    \begin{center}
+        \section*{Declaration}
+    \end{center}
+    \vspace{26mm}
+
+    I, the undersigned, declare that this work has not previously been submitted as an
+    exercise for a degree at this, or any other University, and that unless otherwise
+    stated, is my own work.
+
+    \vspace{26mm}
+    \begin{flushright}
+    \begin{minipage}{67mm}
+    \raggedright
+    \rule{\linewidth}{0.4pt}\par
+    \thesisauthor\par
+    \vspace{1mm}
+    {\today}\par
+    \end{minipage}
+    \end{flushright}
+    \end{spacing}
+    \newpage}}
+
+\newcommand{\thesispermissionpage}{{
+    \thispagestyle{empty}
+    \begin{spacing}{2}
+    \begin{center}
+        \section*{Permission to Lend and/or Copy}
+    \end{center}
+
+    \vspace{26mm}
+
+    I, the undersigned, agree that Trinity College Library may lend or copy this thesis upon
+    request. \\ \\
+
+    \vspace{26mm}
+    \begin{flushright}
+    \begin{minipage}{67mm}
+    \raggedright
+    \rule{\linewidth}{0.4pt}\par
+    \thesisauthor\par
+    \vspace{1mm}
+    {\today}\par
+    \end{minipage}
+    \end{flushright}
+    \end{spacing}
+    \newpage}}
+
+\renewenvironment{thesisabstract}
+    {\clearpage
+     \thispagestyle{empty}
+     \addcontentsline{toc}{chapter}{Abstract}
+     \vspace*{0mm}
+     \begin{center}
+       \begin{spacing}{1.5}
+       {\Large \bfseries \thesistitle\par}
+       \end{spacing}
+       \vspace{10mm}
+       {\normalsize \thesisauthor, \thesisdegree \par}
+       \vspace{2mm}
+       {\normalsize \thesisuniversity, \thesisyear \par}
+       \vspace{10mm}
+       {\normalsize Supervisor: \thesissupervisor \par}
+     \end{center}
+     \vspace{7mm}
+     \begin{spacing}{1.12}\noindent}
+    {\end{spacing}\newpage}
+
+\renewenvironment{thesisacknowledgments}
+    {\clearpage
+     \thispagestyle{plain}
+     \addcontentsline{toc}{chapter}{Acknowledgments}
+     \vspace*{8mm}
+     {\noindent\Huge\bfseries Acknowledgments\par}
+     \vspace{8mm}
+     \begin{spacing}{1.10}\noindent}
+    {\end{spacing}
+     \par \vspace{14mm}
+     \raggedleft {\large \textsc{\thesisauthor}} \\[8mm]
+     \raggedright {\slshape \thesisuniversity \\ \thesismonth\ \thesisyear}
+     \newpage}
+\makeatother
+
 \begin{document}
 
 \pagenumbering{roman}
 
 \thesistitlepage
 \thesisdeclarationpage
+\thesispermissionpage
 
 \begin{thesisabstract}
-This dissertation investigates whether a bounded virtual reality learning environment can support students' understanding of selected single-cycle MIPS datapath concepts as a supplementary educational tool. The project responds to a specific teaching difficulty in computer architecture: although standard diagrams and verbal explanations can introduce instruction execution, learners may still struggle to construct a coherent mental model of how values, control choices, and architectural state changes relate across the datapath. In response, the dissertation presents a VR prototype that translates instruction execution into a guided spatial walkthrough organised around six learner-facing phases: Fetch, Decode, Execute, Memory, Write-Back, and Program Counter Update. The prototype was designed as a scoped pedagogical abstraction rather than as a cycle-accurate simulator. It supports selected instructions across Learning mode, Practice mode, and Test mode and externalises otherwise hidden datapath relationships through guided spatial interaction.
+This dissertation investigates whether a bounded virtual reality learning environment can support students' understanding of selected single-cycle MIPS datapath concepts as a supplementary educational tool. Although standard diagrams and verbal explanations can introduce instruction execution, learners may still struggle to form a coherent mental model of how values, control choices, and architectural state changes relate across the datapath. In response, the dissertation presents a VR prototype that translates instruction execution into a guided spatial walkthrough organised around six learner-facing phases: Fetch, Decode, Execute, Memory, Write-Back, and Program Counter Update. Designed as a pedagogical abstraction rather than a cycle-accurate simulator, the prototype supports selected instructions across Learning mode, Practice mode, and Test mode.
 
-The prototype was evaluated through a small exploratory participant study using questionnaire responses, a post-session knowledge check, a limited repeated baseline/post-session comparison, open-ended feedback, and researcher observations. The results showed generally positive usability and perceived-learning responses, alongside recurring discomfort and interface-friction issues. Knowledge-check performance was generally strong across several targeted concepts, while the repeated comparison showed stronger descriptive performance on some items following the overall learning session. Because participants received a tailored refresher before entering the headset, these differences cannot be attributed to VR alone. Researcher observations also indicated initial progression from guided to reduced-support use, while identifying continuing difficulties around controls, text burden, and selected instruction-stage decisions.
+The prototype was evaluated through an exploratory participant study using questionnaire responses, a post-session knowledge check, a limited baseline/post-session comparison, open-ended feedback, and researcher observations. Results showed generally positive usability and perceived-learning responses alongside recurring discomfort and interface-friction issues. Knowledge-check performance was generally strong, while the repeated comparison showed stronger descriptive performance on some items following the overall learning session. Because participants received a tailored refresher before entering the headset, these differences cannot be attributed to VR alone. Researcher observations showed some progression into reduced-support use alongside continuing difficulties with controls, information presentation, and selected lesson decisions.
 
-The findings suggest that the prototype shows promise as a supplementary means of making selected computer architecture concepts more tangible and easier to follow, while remaining limited by the exploratory study design, participant comfort, interface readability, and narrow instructional scope. The dissertation's main contribution is the development and evaluation of a pedagogical translation of single-cycle datapath reasoning into a sequential, learner-facing VR experience.
+The findings suggest that the prototype shows promise as a supplementary means of making selected computer architecture concepts more tangible and easier to follow, while remaining limited by the exploratory study design, participant comfort, and interface readability. The dissertation's main contribution is the development and evaluation of a pedagogical translation of single-cycle datapath reasoning into a sequential, learner-facing VR experience.
 \end{thesisabstract}
 
 \begin{thesisacknowledgments}
