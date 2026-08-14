@@ -168,3 +168,16 @@ Documents/Presentation/Prep/
 Documents/Dissertation_Template/
 Documents/Project_Reference/qb/
 SPSS/
+!SPSS/
+SPSS/*
+!SPSS/Data.sav
+!SPSS/scripts/
+SPSS/scripts/*
+!SPSS/scripts/build_study_data.py
+!SPSS/scripts/build_study_workbooks.mjs
+!SPSS/scripts/generate_full_figure_set.py
+!SPSS/analysis/
+SPSS/analysis/*
+!SPSS/analysis/quantitative/
+SPSS/analysis/quantitative/*
+!SPSS/analysis/quantitative/SPSS_metadata_setup.sps
