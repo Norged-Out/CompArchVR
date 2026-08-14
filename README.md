@@ -12,6 +12,9 @@ https://youtu.be/Y8tFYnWeLtI
 - `ThePrototype/`  
   The main Unity project. This is where the actual VR system lives.
 
+  - [`Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture.pdf`](./Creating%20Novel%20Virtual%20Reality%20Interfaces%20for%20Teaching%20Computer%20Architecture.pdf)  
+  The MSc dissertation report associated with this project.
+
 - `Documents/Literature_Review/`  
   Research papers, reading notes, and bibliography support material used to shape the research gap and dissertation framing.
 
