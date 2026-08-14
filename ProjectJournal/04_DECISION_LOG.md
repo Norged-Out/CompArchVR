@@ -646,3 +646,121 @@ Implication:
 - `Discussion` should connect those findings back to the hypotheses, design goals, literature, and contribution
 - `Conclusion and Future Work` should close from that basis rather than carrying the full interpretive burden alone
 - the dissertation should explicitly frame its contribution as the design and exploratory evaluation of a new supplementary VR teaching tool for selected computer architecture concepts
+
+## 2026-08-03 to 2026-08-14 - Study Analysis, Dissertation Finalisation, And Submission-Phase Decisions
+
+### The Live LaTeX Project Is The Real Dissertation Source Of Truth
+
+Decision:
+- treat the root `Latex` project as the live dissertation source rather than continuing to rely on scattered drafting files
+
+Why:
+- once the project entered the heavy writing phase, the real report needed to become the main working artifact
+- continuing to split effort across temporary drafting files would only increase drift
+
+Implication:
+- chapter work, appendix work, front matter, references, and figure placement all belong to the live LaTeX project first
+- support notes may still help planning, but they should not be mistaken for the dissertation itself
+
+### Evaluation Dimensions Are A Better Fit Than Formal H1 To H4 Hypotheses
+
+Decision:
+- keep the main research question, but treat usability/clarity, conceptual support, guided-to-reduced-support progression, and supplementary value as evaluation aspects rather than as formal experimental-style sub-hypotheses
+
+Why:
+- the actual study is exploratory and descriptive
+- the discussion was already reasoning through those areas as dimensions of the same bounded question rather than as formal causal tests
+
+Implication:
+- the dissertation framing should stay honest about scope
+- this also makes the later chapter structure cleaner, because `Results` and `Discussion` can speak to the same four aspects without pretending to support a stronger experimental design than was actually run
+
+### Baseline/Post-Session Comparisons Must Be Framed As The Overall Learning Session
+
+Decision:
+- describe repeated-item baseline/post-session differences as evidence following the overall learning session, not as evidence attributable to VR alone
+
+Why:
+- the tailored refresher and uneven mode exposure are both part of what participants actually received
+- the study is still useful, but its interpretation becomes weaker if the writing quietly slides into VR-only causal language
+
+Implication:
+- methodology, results phrasing, discussion, and conclusion should all preserve this bounded interpretation
+- the refresher therefore becomes something that must be documented, not something that should be rhetorically ignored
+
+### Quantitative Analysis Must Be Reproducible, Scripted, And Identity-Safe
+
+Decision:
+- handle study-data processing through a reproducible pipeline using participant IDs, scripted encoding, and explicit metadata setup rather than through one-off spreadsheet manipulation
+
+Why:
+- the questionnaire, baseline notes, repeated-item comparisons, and derived scores needed to stay auditable and internally consistent
+- later schema corrections were much safer to apply once the processing logic existed in code rather than in manual edits
+
+Implication:
+- open-ended responses stay out of the SPSS quantitative export
+- raw identifying information does not belong in analysis outputs
+- future reruns should start from the raw sources and regenerate outputs instead of patching processed files by hand
+
+### Low-Reliability Composites Should Not Be Quietly Upgraded Into Strong Constructs
+
+Decision:
+- retain the engagement composite only as a descriptive convenience when needed, while treating the item-level responses as the more trustworthy evidence
+
+Why:
+- the observed internal consistency was too weak to justify treating the five engagement items as a strong validated scale in the same way as the more coherent constructs
+
+Implication:
+- the results chapter may still report the item pattern clearly
+- later interpretation should stay cautious and should not lean too heavily on the composite mean as if it carried the same evidential weight as a reliable scale
+
+### Appendices Should Preserve What Was Actually Used, Not A Retroactive Idealised Protocol
+
+Decision:
+- include the real participant-facing materials and useful transparency-supporting appendices, but do not reconstruct cleaner historical documents after the fact just to make the study look tidier
+
+Why:
+- the dissertation benefits from showing the actual questionnaire, information materials, consent, recruitment wording, and related study support
+- retroactively inventing cleaner materials would weaken the honesty of the record
+
+Implication:
+- actual historical wording may remain broader than the final implemented prototype scope
+- where needed, the methodology should clarify that the evaluated implementation was narrower without rewriting the historical appendix materials to pretend otherwise
+
+### Late Literature Additions Should Be Targeted And Discussion-Led
+
+Decision:
+- if late literature additions are made at all, keep them narrow and use them to support specific findings emerging from the study rather than reopening the whole review
+
+Why:
+- the report was already literature-heavy enough by the final phase
+- broad expansion this late would create more disruption than value
+
+Implication:
+- targeted support in `Discussion` is acceptable when it strengthens a real finding
+- large-scale rebalancing of Chapter 2 is not the right use of late-stage time once the dissertation is already structurally complete
+
+### Final-Phase Repository Cleanup Should Support Inspection, Not Reopen Development
+
+Decision:
+- treat the final repository pass as an archival/inspection exercise rather than as a new development phase
+
+Why:
+- by the final days, the important tasks were making the report accessible, preserving approved data-processing assets, and exposing the build cleanly through the repo and release channels
+
+Implication:
+- public build links, dissertation PDF access, and approved tracked study assets matter more than further feature work
+- final cleanup should therefore make the finished project easier to inspect without changing what the project fundamentally is
+
+### The Project Should Now Be Treated As Closed In Its Formal Dissertation Form
+
+Decision:
+- treat the project as complete in its dissertation-submitted form, with any later changes framed as personal-interest continuation rather than as part of the original obligation
+
+Why:
+- the build, study, analysis pipeline, report, appendices, and release/support materials now exist as a coherent final baseline
+- continuing to write the journals as though the project were still live would misrepresent its actual state
+
+Implication:
+- current-state journal sections should read as archival rather than anticipatory
+- future additions, if they ever happen, should be clearly marked as post-submission personal extensions

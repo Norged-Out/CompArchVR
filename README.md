@@ -2,18 +2,23 @@
 
 This repository contains my Master’s dissertation project at Trinity College Dublin.
 
-At its core, this project is an attempt to make computer architecture feel less abstract and less miserable to learn. The main prototype is a VR learning environment built around a single-cycle MIPS datapath, where the learner can move through the instruction flow step by step and interact with the system in a more physical, spatial way than a normal diagram or lecture slide would allow.
+It now reflects the final submitted baseline of the project as evaluated for the dissertation. Any future changes would be personal-interest extensions rather than part of the formal submission.
+
+At its core, this project was an attempt to make computer architecture feel less abstract and less miserable to learn. The main prototype is a VR learning environment built around a single-cycle MIPS datapath, where the learner can move through the instruction flow step by step and interact with the system in a more physical, spatial way than a normal diagram or lecture slide would allow.
 
 Demo video:  
-https://youtu.be/Y8tFYnWeLtI
+[YouTube walkthrough](https://youtu.be/Y8tFYnWeLtI)
+
+Official build release:  
+[itch.io page](https://norgedout.itch.io/comparchvr)
 
 ## What’s in here
 
+- [Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture.pdf](<Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture.pdf>)  
+  The main dissertation report in PDF form.
+
 - `ThePrototype/`  
   The main Unity project. This is where the actual VR system lives.
-
-  - [`Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture.pdf`](./Creating%20Novel%20Virtual%20Reality%20Interfaces%20for%20Teaching%20Computer%20Architecture.pdf)  
-  The MSc dissertation report associated with this project.
 
 - `Documents/Literature_Review/`  
   Research papers, reading notes, and bibliography support material used to shape the research gap and dissertation framing.
@@ -32,7 +37,7 @@ https://youtu.be/Y8tFYnWeLtI
 
 ## Quick Project Summary
 
-The prototype currently supports three modes:
+The final prototype supports three modes:
 
 - **Learning Mode** for guided walkthroughs
 - **Practice Mode** for reduced-support completion
@@ -122,4 +127,4 @@ The authored data-memory bank currently starts with the following word values:
 
 ## Extra Note
 
-The actual playable build is distributed through GitHub Releases rather than being stored directly in the repository itself.
+The final playable build is distributed through [GitHub Releases](https://github.com/Norged-Out/CompArchVR/releases) and the public [itch.io page](https://norgedout.itch.io/comparchvr), rather than being stored directly in the repository itself.

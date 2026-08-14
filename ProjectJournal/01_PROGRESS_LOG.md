@@ -3,7 +3,7 @@
 ## Current Status
 
 Project phase:
-- participant-study follow-through and dissertation revision phase
+- formally completed dissertation project archived at final submission baseline
 
 Current working scene:
 - `D:\CompArchVR\ThePrototype\Assets\Scenes\Testing Ground.unity`
@@ -42,24 +42,25 @@ Current architecture truths:
 
 Current delivery state:
 - supervisor checkpoint on `2026-07-24` is complete
-- official presentation / demo target is now in its final ready state
-- participant-study use has begun
-- the Android XR build should now be treated as the real research baseline unless a blocker-grade regression appears
+- official presentation / demo target is complete
+- participant-study use has now passed through its active session window
+- the dissertation has now been expanded through `Results`, `Discussion`, and `Conclusion` and submitted for formal evaluation
+- the reproducible study-data pipeline, SPSS metadata setup, and dissertation-ready quantitative figures now exist
+- the Android XR build and accompanying repository/release materials should now be treated as the finished archived baseline
 
 Current non-build focus:
-- participant-session support
-- thesis-facing consolidation of motivation, learning outcomes, study procedure, and references
-- keeping documentation aligned with the actual built scope
-- revising the research question and hypotheses so they match the prototype's real supplementary-tool scope
-- cutting repetition across the written chapters during revision
-- preparing a revised full dissertation draft for supervisor review by `2026-08-10`
+- preserving a clean repository-side record of the study, analysis, and writing work
+- keeping the dissertation, appendices, references, and release links in a stable final state
+- leaving any further changes as optional personal-interest continuation rather than required project work
 
-Presentation support now prepared:
+Current delivery materials now prepared:
+- dissertation PDF at `D:\CompArchVR\Creating Novel Virtual Reality Interfaces for Teaching Computer Architecture.pdf`
 - deck under `D:\CompArchVR\Documents\Presentation\Presentation_PriyanshNayak.pptx`
 - phone-readable script under `D:\CompArchVR\Documents\Presentation\presentation_script.md`
-- recorded walkthrough demo prepared for presentation use
+- recorded walkthrough demo on YouTube
+- repository README now points directly to the report PDF, GitHub release build, and itch.io build page
 
-## Remaining Future Work / Post-Presentation Backlog
+## Optional Personal-Interest Continuation Only
 
 Main future-work items:
 - additional jump-family work beyond `j`, such as `jal` or `jr`
@@ -76,9 +77,9 @@ Higher-scope future directions:
 - broader follow-up studies after the current participant-testing phase
 
 Interpretation:
-- the datapath lesson itself is complete enough for the presentation and studies
-- the remaining risk is regression, not missing core single-cycle coverage
-- future work should extend from this baseline rather than reopen the core lesson architecture
+- the datapath lesson itself is complete enough for the presentation, study, and submitted dissertation
+- the formal project obligation is complete
+- any future work would be a personal extension from this baseline rather than a live project requirement
 
 ## Historical Milestone Archive
 
@@ -327,3 +328,55 @@ Completed:
 Why it mattered:
 - this removed the biggest thesis-side structural problem, namely the mismatch between the broad comparative research question and the narrower exploratory study that was actually carried out
 - it also gave the revision pass a much cleaner target: less repetition, stronger contribution framing, and a more explicit datapath-to-VR translation story
+
+### 2026-08-03 to 2026-08-05 - Dissertation Writing Fully Moved Into The Live LaTeX Project
+
+Completed:
+- treated the root `Latex` project as the live dissertation workspace instead of continuing to spread active writing across support-note drafts
+- set up the main thesis structure, style package, and chapter includes around the real report rather than around temporary planning files
+- started replacing older methodology-and-study drafting files with live chapter writing
+- expanded and reshaped the early report chapters so the dissertation had a usable written spine rather than a partially scaffolded outline
+- began trimming and reorganizing the bibliography so the literature being kept in play was closer to what the report was actually using
+
+Why it mattered:
+- this was the real handover from build-heavy work into dissertation-heavy work
+- after this point, the thesis itself became the main active artifact alongside the participant-study follow-through
+
+### 2026-08-08 to 2026-08-10 - The Core Dissertation Rewrite Turned Into A Full Reviewable Draft
+
+Completed:
+- applied the revised supplementary-tool framing across the methodology, design, and implementation chapters
+- reworked Chapter 5 so it foregrounded the datapath-to-VR translation and the learner-facing role of each major station
+- added the chapter-5 figure set needed to connect the VR environment back to the standard datapath and the three learning modes
+- populated the previously incomplete `Results`, `Discussion`, and `Conclusion` chapters
+- moved the dissertation from a structurally incomplete draft into a full manuscript suitable for supervisor review
+
+Why it mattered:
+- the report stopped being a build companion with missing late chapters and became a complete dissertation draft with a clear empirical arc
+- cutting repetition and strengthening the contribution framing made the later chapters much easier to reason about
+
+### 2026-08-11 to 2026-08-12 - Study Data Processing And Results Assets Became Reproducible
+
+Completed:
+- consolidated the questionnaire export, baseline notes, and analysis guide into a reproducible study-data pipeline under `SPSS`
+- encoded questionnaire background items, Likert responses, repeated knowledge items, and post-session knowledge outputs into SPSS-ready quantitative files
+- generated metadata syntax, cleaned workbooks, and supporting documentation for the analysis outputs
+- produced the dissertation-ready figure set for the 12-participant results chapter
+- turned the results chapter into a data-backed section rather than a placeholder structure
+
+Why it mattered:
+- the quantitative chapter now rested on a reproducible processing baseline rather than on ad hoc spreadsheet handling
+- this also made later schema corrections and chapter revisions easier to apply consistently
+
+### 2026-08-13 to 2026-08-14 - Final Feedback Application, Proofing, And Submission Packaging
+
+Completed:
+- applied the late supervisor feedback, especially around evaluation-aspects framing, engagement-scale caution, appendix scope, and final methodological consistency
+- completed the appendix set with questionnaire, participant information, consent, and recruitment materials
+- aligned the front matter more closely with the official template while preserving the dissertation's actual content and approved wording
+- performed targeted final cleanup across citations, captions, section summaries, figure/table references, and repetition-heavy passages
+- prepared the repository with the final dissertation PDF, approved password-protected study data tracking, and public README/build links
+
+Why it mattered:
+- the project moved from active redrafting into finalisation and submission packaging
+- by this point the remaining work had clearly become polish, verification, and final archival preparation rather than substantive rewriting

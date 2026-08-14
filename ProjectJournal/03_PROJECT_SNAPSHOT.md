@@ -70,11 +70,12 @@ Current build truth:
 - all listed learning-mode instructions work through the current guided loop
 - the ten non-jump instructions also have authored practice-mode variants that feed the shared downstream phase flow
 - test mode is the stripped-down assessment variant of that same practice foundation
-- the project is now effectively complete for the presentation and participant studies
-- participant-study use has now begun, so the build should be treated as locked unless a real blocker appears
-- further work should be treated as future work unless it fixes a real blocker
+- the project is now effectively complete for the presentation, participant studies, and dissertation submission
+- participant-study use has now passed through its active session window, so the build should be treated as locked unless a real blocker appears
+- further work should be treated as optional personal continuation unless it fixes a real archival issue
 - centralized dev-mode support now exists inside the settings menu so late-phase testing no longer depends on replaying the whole lesson every time
 - presentation support now lives under `D:\CompArchVR\Documents\Presentation`, with the active deck and phone-readable speaking script prepared there
+- the final dissertation PDF now exists at the repository root, and the repo-facing README points directly to the report and build links
 
 More detailed current-state notes:
 - fetch is no longer just UI framing; it uses a physical instruction upload/download handoff
@@ -111,13 +112,9 @@ What is already solved versus now deferred:
   - optional VFX / ambience expansion beyond the current baseline
 
 Current non-build focus:
-- participant-session support
-- thesis-facing consolidation of motivation, literature framing, and learning outcomes
-- methodology consolidation so later thesis writing has stable reference material
-- revising the research question and hypotheses so they match the real supplementary-tool scope of the study
-- cutting repetition across Chapters 1 to 4 instead of re-explaining the same framing in each chapter
-- reshaping the implementation chapter to emphasize what was built and how the standard datapath was translated into VR
-- preparing a revised full dissertation draft for supervisor review by `2026-08-10`
+- preserving the quantitative-analysis baseline and supporting outputs under `SPSS`
+- preserving the dissertation, appendices, references, and release links as the finished project record
+- leaving any additional expansion to personal interest rather than formal project need
 
 Current presentation state:
 - the presentation deck has been condensed into the active delivery version
@@ -128,6 +125,12 @@ Current presentation state:
   - how the learner experiences it
   - how the participant study evaluates it
 
+Current quantitative-analysis state:
+- the study-data pipeline now lives under `D:\CompArchVR\SPSS`
+- the password-protected raw dataset is stored there as `Data.sav`
+- reproducible scripts now generate cleaned quantitative outputs, metadata syntax, and the six results figures used in the dissertation
+- the final reported quantitative baseline is the 12-participant set reflected in the results assets
+
 Current document/reference state:
 - `Documents/Literature_Review` now holds readings, reading notes, shortlist material, and bibliography-support files
 - `Documents/Methodology_and_Study` now holds methodology drafts, comparative-analysis notes, hypothesis support, and the reusable participant-study notes template
@@ -136,6 +139,7 @@ Current document/reference state:
   - learning outcomes
   - real single-cycle MIPS vs VR prototype mapping
   - research plan
+  - supervisor-feedback and rewrite-planning support
 
 Current thesis-planning authority:
 - the original research-plan PDF is now historical reference material
@@ -147,6 +151,8 @@ Current thesis-planning authority:
 - if older planning language conflicts with the current supervisor-guided
   rewrite direction, revise the thesis framing accordingly
 - `Latex` now holds `references.bib` and the questionnaire-related TeX material
+- `Latex` is now the live source of truth for the dissertation, including appendices, figures, and front matter
+- the repository root now also contains the final dissertation PDF for direct access
 
 ## Authored Register Bank Reference
 
@@ -278,9 +284,9 @@ Why:
 ## Current Project Stage
 
 - supervisor checkpoint on `2026-07-24` is complete
-- the project is now in final participant-study and dissertation revision mode
+- the project is now completed and submitted for formal evaluation
 - the Android XR build is now the study-use baseline
-- core development is effectively complete; remaining work should be limited to critical fixes or clearly justified future extensions
+- core development is effectively complete; any further extension would be personal-interest continuation from this archived baseline
 
 ## If I Resume After A Break
 

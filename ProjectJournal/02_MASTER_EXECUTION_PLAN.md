@@ -58,15 +58,16 @@ This principle should override ambitious expansion pressure.
 
 Active schedule:
 - supervisor meeting target on `2026-07-24` is complete
-- the project and presentation baseline are now effectively locked for delivery
-- the current build should now be treated as the participant-study and presentation baseline unless a critical regression appears
-- participant-study use has now begun, so changes should be judged against study risk before feature value
+- the project and presentation baseline are complete
+- the participant-study period has now been carried through its active session window
+- the dissertation, analysis pipeline, and public support materials now exist in submitted final form
+- the current build should now be treated as the finished archived project baseline
 
 Current risk:
 - not missing datapath coverage
-- but destabilizing the now-working final build with unnecessary late changes
+- but introducing late inconsistencies across the archived dissertation, appendices, references, and release/support materials
 - plus any last device-only regression that does not appear during editor testing
-- and, on the dissertation side, allowing the research question, hypotheses, and chapter framing to drift away from the actual scope of the study
+- and, on the repo side, obscuring the final project state with rushed cleanup or poorly scoped late changes
 
 Historical note:
 - the June 29, 2026 V1 checkpoint is complete and should now be treated as project history, not as the live plan
@@ -161,7 +162,7 @@ The project has already moved beyond the old three-instruction V1 boundary, so f
 Current extension note:
 - practice mode has already been extended safely from the existing lesson architecture
 - test mode now also exists as the harsher assessment layer derived from the same baseline
-- the main question is no longer whether the three-mode structure can be built, but how little should be changed now that the study build is effectively locked
+- the main question is no longer whether the three-mode structure can be built, but how little should be changed now that the study build and dissertation are effectively complete
 
 ## Non-Goals
 
@@ -216,7 +217,7 @@ Poor candidate interactions for a first version:
 
 Current near-term note:
 - `RegDst` vs `ALUSrc` lesson placement is still an open pedagogical question
-- for the current polish phase, keep the existing interaction split stable unless a clearer teaching need emerges
+- for the final archived baseline, keep the existing interaction split stable unless a clearer teaching need emerges
 
 ## Architecture Direction
 
@@ -271,7 +272,7 @@ This structure aligns better with the emerging design than a simple "advance hig
 
 Current deadline anchor:
 - the `2026-07-24` supervisor meeting is now complete
-- the official project/demo target remains `2026-07-29`
+- the project/demo target is complete and now belongs to project history
 
 ## Fallback Plan
 
@@ -294,9 +295,9 @@ A strong demo should show that a learner can:
 ## Remaining Near-Term Posture
 
 At this point:
-- the project is effectively complete for the presentation and research sessions
-- the current build should be defended, not heavily reshaped
-- only critical fixes or clearly justified participant-facing improvements should be made before real use
+- the project is effectively complete for the presentation, research sessions, and dissertation submission
+- the current build should be preserved, not actively reshaped
+- any further work should be treated as optional continuation rather than required project delivery
 
 If anything still changes, it should be small and low-risk:
 1. deployment sanity / device-only fixes
@@ -346,6 +347,7 @@ Current dissertation-structure note:
 - the research question and hypotheses should be revised where needed so they describe the project honestly as a supplementary educational tool rather than as a broad classroom-versus-traditional-methods comparison
 - the results chapter should commit the findings cleanly without interpretation, and the discussion chapter should handle interpretation, contribution, and comparison with the literature
 - the implementation chapter should emphasize what was built and how the traditional datapath was translated into VR, with figures and component-to-datapath connections doing more work than internal class inventories
+- the final report now also includes the appendix set, front matter, and results assets needed to support submission and later inspection cleanly
 
 Current note:
 - the project is now at the stage where presentation and paper framing should describe the implemented build faithfully instead of arguing for speculative expansion
@@ -357,18 +359,27 @@ Current note:
   - the finalized learning outcomes supported by the built three-mode lesson flow
   - future work kept clearly separate from the finished participant-study baseline
   - repetition cut down across the draft so major points are stated once in their strongest location and only referred back to when needed
+  - reproducible quantitative processing and clear appendix support for the study materials
+  - a final repo/release pass that exposes the build and report cleanly without reopening the project scope
 
 The more disciplined the scope, the easier the paper will be to write.
 
 Thesis-side authority note:
 - the original research-plan PDF remains useful as a historical record of the approved project direction
-- for the current August 2026 dissertation rewrite, `Documents/Project_Reference\thesis_revision_plan_2026-08-07.md` should be treated as the active corrective planning reference wherever the older plan wording now overclaims
+- for the current August 2026 dissertation rewrite, the live paper direction
+  should be treated as:
+  - a supplementary-tool framing rather than a broad
+    classroom-versus-traditional-methods claim
+  - revised research-question and hypothesis wording that matches the actual
+    study scope
+  - a clear split between `Results`, `Discussion`, and `Conclusion and Future Work`
+- if older plan wording overclaims, revise the thesis framing toward the
+  supplementary-tool direction rather than trying to defend the older wording
 
-## Immediate Dissertation Revision Posture
+## Final Archived Posture
 
-Current writing priority for the coming revision pass:
-- align the research question, hypotheses, and methodology with the real scope of the study
-- reduce repeated re-explanation across Chapters 1 to 4
-- reshape the implementation chapter around datapath-to-VR translation and learner-facing function
-- keep the dissertation's contribution visible across the later draft
-- prepare one revised full draft for supervisor review by `2026-08-10`
+Current posture:
+- keep the dissertation, appendices, and references internally consistent as the submitted record
+- preserve the reproducible study-data/SPSS baseline already prepared under `SPSS`
+- keep the public-facing repository notes and build links aligned with the finished project state
+- treat any future expansion as personal-interest continuation rather than as part of the formal dissertation obligation
