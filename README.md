@@ -18,17 +18,14 @@ https://youtu.be/Y8tFYnWeLtI
 - `Documents/Presentation/Presentation_PriyanshNayak.pptx`  
   The presentation deck used for the dissertation demo.
 
-- `Documents/Methodology_and_Study/`  
-  The tracked study-side reference material, including the live study procedure and reusable participant-session template.
-
-- `Documents/Project_Reference/`  
-  Long-lived dissertation reference material, including learning outcomes, the single-cycle MIPS-to-VR mapping note, and the original research plan.
-
 - `ProjectJournal/`  
   My running project notes: progress tracking, design decisions, planning, pivots, and general project state over time.
 
 - `Latex/`  
-  LaTeX-side material, including the working bibliography file and questionnaire-related TeX files.
+  The live dissertation source project, including chapter files, appendices, figures, bibliography, and front-matter material.
+
+- `SPSS/`  
+  Study-analysis material, including the data-processing scripts, SPSS syntax, password-protected raw data file, and supporting quantitative-analysis outputs.
 
 ## Quick Project Summary
 
@@ -122,4 +119,4 @@ The authored data-memory bank currently starts with the following word values:
 
 ## Extra Note
 
-The build itself is not stored directly in this repository. Final builds are intended to be distributed through GitHub Releases, and later through itch.io as well.
+The actual playable build is distributed through GitHub Releases rather than being stored directly in the repository itself.
